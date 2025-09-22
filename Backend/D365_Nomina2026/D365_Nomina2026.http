@@ -1,0 +1,6 @@
+@D365_Nomina2026_HostAddress = http://localhost:5260
+
+GET {{D365_Nomina2026_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

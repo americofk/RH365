@@ -1,0 +1,67 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <!-- Include the above in your HEAD tag -->
+    <link href="~/css/login.css" rel="stylesheet" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div class="main">
+        <center>
+        <div class="logo2">
+                <img class="image" src="..\img\LogoD365_blanco.png" width="450" alt="Italian Trulli">
+            <div class="clearfix"></div>
+        </div>
+            </center>
+        <div class="container">            
+            <center>
+                <div class="middle">                    
+                    <div id="login">                        
+                        <form action="javascript:void(0);" method="get">                            
+                            <fieldset class="clearfix">
+                                <p><span class="fa fa-user"></span><input type="text" Placeholder="Email" ></p> <!-- JS because of IE support; better: placeholder="Username" -->
+                                <p><span class="fa fa-lock"></span><input type="password" Placeholder="Password" ></p> <!-- JS because of IE support; better: placeholder="Password" -->
+                                 <div>
+                                    <span style="width:48%; text-align:left; font-size: 13px;  display: inline-block;">
+                                        <a class="small-text" href="#">
+                                            Forgot
+                                            password?
+                                        </a>
+                                    </span>
+                                    
+                                    <span style="width:50%; text-align:right; display: inline-block;">
+                                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Sign In</a>
+                                    </span>
+
+                                </div>
+                            </fieldset>
+                            <div class="clearfix"></div>
+                        </form>
+                        <div class="clearfix"></div>
+                    </div> <!-- end login -->
+                    <div class="logo">
+                        Dynacorp Cargo
+                        <div >
+                            Experience
+                        <div class="clearfix"></div>
+                    </div>           
+                </div>            
+        </div>
+                <div class="logo">
+                    <a class="futter" style=" color: white"> Engine by Dynacorp 365... </a>
+                </div>
+    </div>
+</body>
+</html>
