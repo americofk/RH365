@@ -1,39 +1,20 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-[Table("EmployeeBanckAccount")]
-public partial class EmployeeBankAccount : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
-
-    public int ID { get; set; }
-
-    public long EmployeeRefRecID { get; set; }
-
-    [StringLength(100)]
-    public string BankName { get; set; } = null!;
-
-    public int AccountType { get; set; }
-
-    [StringLength(30)]
-    public string AccountNum { get; set; } = null!;
-
-    [StringLength(5)]
-    public string? Currency { get; set; }
-
-    public bool IsPrincipal { get; set; }
-
-    [StringLength(200)]
-    public string? Comment { get; set; }
-
-    [ForeignKey("EmployeeRefRecID")]
-    [InverseProperty("EmployeeBanckAccounts")]
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+    public class EmployeeBankAccount: AuditableCompanyEntity
+    {
+        public string EmployeeId { get; set; }
+        public int InternalId { get; set; }
+        public string BankName { get; set; }
+        public AccountType AccountType { get; set; }
+        public string AccountNum { get; set; }
+        public string Comment { get; set; }
+        public bool IsPrincipal { get; set; }
+        public string Currency { get; set; }
+    }
 }

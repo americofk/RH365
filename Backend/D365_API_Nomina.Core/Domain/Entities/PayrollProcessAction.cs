@@ -1,42 +1,24 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class PayrollProcessAction : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    public class PayrollProcessAction: AuditableCompanyEntity
+    {
+        public int InternalId { get; set; }
+        public string PayrollProcessId { get; set; }
+        public string EmployeeId { get; set; }
 
-    public int ID { get; set; }
+        public PayrollActionType PayrollActionType { get; set; }
+        public string ActionName { get; set; }
+        public decimal ActionAmount { get; set; }
+        public bool ApplyTax { get; set; }
+        public bool ApplyTSS { get; set; }
+        public bool ApplyRoyaltyPayroll { get; set; }
 
-    public long PayrollProcessRefRecID { get; set; }
-
-    public long EmployeeRefRecID { get; set; }
-
-    public int PayrollActionType { get; set; }
-
-    [StringLength(100)]
-    public string ActionName { get; set; } = null!;
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal ActionAmount { get; set; }
-
-    public bool ApplyTax { get; set; }
-
-    public bool ApplyTSS { get; set; }
-
-    public bool ApplyRoyaltyPayroll { get; set; }
-
-    [ForeignKey("EmployeeRefRecID")]
-    [InverseProperty("PayrollProcessActions")]
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    [ForeignKey("PayrollProcessRefRecID")]
-    [InverseProperty("PayrollProcessActions")]
-    public virtual PayrollsProcess PayrollProcessRefRec { get; set; } = null!;
+        public string ActionId { get; set; }
+    }
 }

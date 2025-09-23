@@ -1,32 +1,13 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class CompaniesAssignedToUser : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-    
-    public long RecID { get; set; }
-
-    public int ID { get; set; }
-
-    public long CompanyRefRecID { get; set; }
-
-    public long UserRefRecID { get; set; }
-
-    public bool IsActive { get; set; }
-
-    
-
-    [ForeignKey("CompanyRefRecID")]
-    [InverseProperty("CompaniesAssignedToUsers")]
-    public virtual Company CompanyRefRec { get; set; } = null!;
-
-    [ForeignKey("UserRefRecID")]
-    [InverseProperty("CompaniesAssignedToUsers")]
-    public virtual User UserRefRec { get; set; } = null!;
+    public class CompaniesAssignedToUser : AuditableEntity
+    {
+        public string CompanyId { get; set; }
+        public string Alias { get; set; }
+    }
 }

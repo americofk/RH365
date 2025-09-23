@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class EmployeeLoanConfiguration : IEntityTypeConfiguration<EmployeeLoan>
     {
         public void Configure(EntityTypeBuilder<EmployeeLoan> builder)
         {
-            builder.HasKey(x => new { x.ID, x.EmployeeRefRecID });
+            builder.HasKey(x => new { x.InternalId, x.EmployeeId });
 
             builder.Property(x => x.ValidFrom).IsRequired();
             builder.Property(x => x.ValidTo).IsRequired();
@@ -19,17 +19,17 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
 
             builder.HasOne<Payroll>()
                 .WithMany()
-                .HasForeignKey(x => x.PayrollRefRecID)
+                .HasForeignKey(x => x.PayrollId)
                 .IsRequired();
 
             builder.HasOne<Employee>()
                 .WithMany()
-                .HasForeignKey(x => x.EmployeeRefRecID)
+                .HasForeignKey(x => x.EmployeeId)
                 .IsRequired();
 
             builder.HasOne<Loan>()
                 .WithMany()
-                .HasForeignKey(x => x.LoanRefRecID)
+                .HasForeignKey(x => x.LoanId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
         }

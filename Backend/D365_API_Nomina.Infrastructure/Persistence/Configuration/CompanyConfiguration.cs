@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class CompanyConfiguration : IEntityTypeConfiguration<Company>
     {
         public void Configure(EntityTypeBuilder<Company> builder)
         {
-            builder.HasKey(x => x.ID);
-            builder.Property(x => x.ID).ValueGeneratedNever().IsRequired().HasMaxLength(4);
+            builder.HasKey(x => x.CompanyId);
+            builder.Property(x => x.CompanyId).ValueGeneratedNever().IsRequired().HasMaxLength(4);
                 //.HasDefaultValueSql("FORMAT((NEXT VALUE FOR dbo.CompanyId),'CPNY-00#')")
                 //.HasMaxLength(8);
 
@@ -24,11 +24,11 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
 
             builder.HasOne<Country>()
                 .WithMany()
-                .HasForeignKey(x => x.CountryRefRecID);
+                .HasForeignKey(x => x.CountryId);
 
             builder.HasOne<Currency>()
                 .WithMany()
-                .HasForeignKey(x => x.CurrencyRefRecID);
+                .HasForeignKey(x => x.CurrencyId);
 
         }
     }

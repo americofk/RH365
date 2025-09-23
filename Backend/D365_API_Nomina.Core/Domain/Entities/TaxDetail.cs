@@ -1,37 +1,25 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class TaxDetail : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    public class TaxDetail: AuditableCompanyEntity
+    {
+        public int InternalId { get; set; }
+        //Salario anual superior a 
+        public decimal AnnualAmountHigher { get; set; }
 
-    public int ID { get; set; }
+        //Salario anual no excede 
+        public decimal AnnualAmountNotExceed { get; set; }
 
-    public long TaxRefRecID { get; set; }
+        public decimal Percent { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal AnnualAmountHigher { get; set; }
+        public decimal FixedAmount { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal AnnualAmountNotExceed { get; set; }
+        public decimal ApplicableScale { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal Percent { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal FixedAmount { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal ApplicableScale { get; set; }
-
-    [ForeignKey("TaxRefRecID")]
-    [InverseProperty("TaxDetails")]
-    public virtual Taxis TaxRefRec { get; set; } = null!;
+        public string TaxId { get; set; }
+    }
 }

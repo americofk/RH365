@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     {
         public void Configure(EntityTypeBuilder<Employee> builder)
         {
-            builder.Property(x => x.ID).HasDefaultValueSql("FORMAT((NEXT VALUE FOR dbo.EmployeeId),'EMP-00000000#')")
+            builder.Property(x => x.EmployeeId).HasDefaultValueSql("FORMAT((NEXT VALUE FOR dbo.EmployeeId),'EMP-00000000#')")
                 .HasMaxLength(20);
 
             builder.Property(x => x.Name).HasMaxLength(50).IsRequired();
@@ -38,7 +38,7 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
             builder.Property(x => x.BreakWorkTo);
 
             builder.Property(x => x.Nationality).HasMaxLength(5);
-            builder.Property(x => x.LocationRecID).HasMaxLength(10);
+            builder.Property(x => x.LocationId).HasMaxLength(10);
 
 
             builder.Property(x => x.IsFixedWorkCalendar);
@@ -47,22 +47,22 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
 
             builder.HasOne<Country>()
                 .WithMany()
-                .HasForeignKey(x => x.CountryRecID)
+                .HasForeignKey(x => x.Country)
                 .IsRequired();
             
             builder.HasOne<Occupation>()
                 .WithMany()
-                .HasForeignKey(x => x.OccupationRecID)
+                .HasForeignKey(x => x.OccupationId)
                 .IsRequired();
             
             builder.HasOne<EducationLevel>()
                 .WithMany()
-                .HasForeignKey(x => x.EducationLevelRecID)
+                .HasForeignKey(x => x.EducationLevelId)
                 .IsRequired();
             
             builder.HasOne<DisabilityType>()
                 .WithMany()
-                .HasForeignKey(x => x.DisabilityTypeRecID)
+                .HasForeignKey(x => x.DisabilityTypeId)
                 .IsRequired();
 
         }

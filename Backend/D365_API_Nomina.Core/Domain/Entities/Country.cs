@@ -1,34 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class Country : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    public class Country
+    {
 
-    public int ID { get; set; }
-
-    [StringLength(20)]
-    public string CountryCode { get; set; } = null!;
-
-    [StringLength(100)]
-    public string Name { get; set; } = null!;
-
-    [StringLength(50)]
-    public string? NationalityCode { get; set; }
-
-    [StringLength(100)]
-    public string? NationalityName { get; set; }
-
-    [InverseProperty("CountryRefRec")]
-    public virtual ICollection<Company> Companies { get; set; } = new List<Company>();
-
-    [InverseProperty("CountryRefRec")]
-    public virtual ICollection<EmployeesAddress> EmployeesAddresses { get; set; } = new List<EmployeesAddress>();
+        public string CountryId { get; set; }
+        public string Name { get; set; }
+        public string NationalityCode { get; set; }
+        public string NationalityName { get; set; }
+    }
 }

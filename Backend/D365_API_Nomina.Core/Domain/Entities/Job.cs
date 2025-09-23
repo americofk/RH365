@@ -1,28 +1,28 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class Job : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    /// <summary>
+    /// Cargo
+    /// </summary>
+    public class Job: AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Automatico
+        /// </summary>
+        public string JobId { get; set; }
+        /// <summary>
+        /// Required / Max 50
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// Max 200
+        /// </summary>
+        public string Description { get; set; }
+        public bool JobStatus { get; set; } = true;
 
-    public int ID { get; set; }
-
-    [StringLength(20)]
-    public string JobCode { get; set; } = null!;
-
-    [StringLength(50)]
-    public string Name { get; set; } = null!;
-
-    [StringLength(200)]
-    public string? Description { get; set; }
-
-    [InverseProperty("JobRefRec")]
-    public virtual ICollection<Position> Positions { get; set; } = new List<Position>();
+    }
 }

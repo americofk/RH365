@@ -1,42 +1,25 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class EmployeeWorkControlCalendar : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    public class EmployeeWorkControlCalendar: AuditableCompanyEntity
+    {
+        public int InternalId { get; set; }
+        public string EmployeeId { get; set; }
+        public DateTime CalendarDate { get; set; }
+        public string CalendarDay { get; set; }
+        public TimeSpan WorkFrom { get; set; }
+        public TimeSpan WorkTo { get; set; }
+        public TimeSpan BreakWorkFrom { get; set; }
+        public TimeSpan BreakWorkTo { get; set; }
+        public decimal TotalHour { get; set; }
+        public StatusWorkControl StatusWorkControl { get; set; }
 
-    public int ID { get; set; }
+        public string PayrollProcessId { get; set; }
 
-    public long EmployeeRefRecID { get; set; }
-
-    public DateTime CalendarDate { get; set; }
-
-    [StringLength(30)]
-    public string CalendarDay { get; set; } = null!;
-
-    public TimeOnly WorkFrom { get; set; }
-
-    public TimeOnly WorkTo { get; set; }
-
-    public TimeOnly BreakWorkFrom { get; set; }
-
-    public TimeOnly BreakWorkTo { get; set; }
-
-    [Column(TypeName = "decimal(32, 16)")]
-    public decimal TotalHour { get; set; }
-
-    public int StatusWorkControl { get; set; }
-
-    public long? PayrollProcessRefRecID { get; set; }
-
-    [ForeignKey("EmployeeRefRecID")]
-    [InverseProperty("EmployeeWorkControlCalendars")]
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+    }
 }

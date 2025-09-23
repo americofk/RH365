@@ -1,26 +1,23 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-
-public partial class CourseInstructor : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long CourseRefRecID { get; set; }
-
-   
-    [StringLength(100)]
-    public string InstructorName { get; set; } = null!;
-
-    [StringLength(300)]
-    public string? Comment { get; set; }
-
-    [ForeignKey("CourseRefRecID")]
-    [InverseProperty("CourseInstructors")]
-    public virtual Course CourseRefRec { get; set; } = null!;
+    public class CourseInstructor: AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Required / Max 20
+        /// </summary>
+        public string CourseId { get; set; }
+        /// <summary>
+        /// Required / Max 20
+        /// </summary>
+        public string InstructorId { get; set; }
+        /// <summary>
+        /// Max 300
+        /// </summary>
+        public string  Comment { get; set; }
+    }
 }

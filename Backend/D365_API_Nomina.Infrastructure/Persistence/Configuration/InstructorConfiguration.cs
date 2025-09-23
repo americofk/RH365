@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class InstructorConfiguration : IEntityTypeConfiguration<Instructor>
     {

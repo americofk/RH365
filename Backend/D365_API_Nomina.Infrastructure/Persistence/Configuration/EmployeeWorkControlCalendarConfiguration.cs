@@ -1,4 +1,4 @@
-﻿using DC365_PayrollHR.Core.Domain.Consts;
+﻿using D365_API_Nomina.Core.Domain.Consts;
 using D365_API_Nomina.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class EmployeeWorkControlCalendarConfiguration : IEntityTypeConfiguration<EmployeeWorkControlCalendar>
     {

@@ -5,21 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
-    public class EmployeeContactInfConfiguration : IEntityTypeConfiguration<EmployeeContactsInf>
+    public class EmployeeContactInfConfiguration : IEntityTypeConfiguration<EmployeeContactInf>
     {
-        public void Configure(EntityTypeBuilder<EmployeeContactsInf> builder)
+        public void Configure(EntityTypeBuilder<EmployeeContactInf> builder)
         {
-            builder.HasKey(x => new { x.ID });
-            builder.Property(x => x.ID).ValueGeneratedNever();
+            builder.HasKey(x => new { x.EmployeeId, x.InternalId });
+            builder.Property(x => x.InternalId).ValueGeneratedNever();
+
+            builder.Property(x => x.NumberAddress).HasMaxLength(200).IsRequired();
             builder.Property(x => x.ContactType);
             builder.Property(x => x.IsPrincipal);
+
             builder.Property(x => x.Comment).HasMaxLength(200);
 
             builder.HasOne<Employee>()
                 .WithMany()
-                .HasForeignKey(x => x.ID)
+                .HasForeignKey(x => x.EmployeeId)
                 .IsRequired();
         }
     }

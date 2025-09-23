@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using D365_API_Nomina.Infrastructure.Persistence.Configuration;
 using D365_API_Nomina.Core.Domain.Entities;
+using D365_API_Nomina.Infrastructure.Persistence;
+using EntityFramework.Audit;
 
 namespace D365_API_Nomina.WEBUI.Controllers
 {
@@ -20,9 +22,9 @@ namespace D365_API_Nomina.WEBUI.Controllers
     [Route("api/[controller]")]
     public class AuditLogsController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
+        private readonly ApplicationDBContext _db;
 
-        public AuditLogsController(ApplicationDbContext db)
+        public AuditLogsController(ApplicationDBContext db)
         {
             _db = db;
         }

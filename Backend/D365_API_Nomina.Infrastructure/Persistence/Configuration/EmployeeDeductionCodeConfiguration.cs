@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class EmployeeDeductionCodeConfiguration : IEntityTypeConfiguration<EmployeeDeductionCode>
     {
         public void Configure(EntityTypeBuilder<EmployeeDeductionCode> builder)
         {
-            builder.HasKey(x => new { x.DeductionCodeRefRecID, x.EmployeeRefRecID, x.PayrollRefRecID });
+            builder.HasKey(x => new { x.DeductionCodeId, x.EmployeeId, x.PayrollId });
 
             builder.Property(x => x.FromDate).IsRequired();
             builder.Property(x => x.ToDate).IsRequired();
@@ -24,17 +24,17 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
 
             builder.HasOne<Employee>()
                 .WithMany()
-                .HasForeignKey(x => x.EmployeeRefRecID)
+                .HasForeignKey(x => x.EmployeeId)
                 .IsRequired();
 
             builder.HasOne<Payroll>()
                 .WithMany()
-                .HasForeignKey(x => x.PayrollRefRecID)
+                .HasForeignKey(x => x.PayrollId)
                 .IsRequired();
 
             builder.HasOne<DeductionCode>()
                 .WithMany()
-                .HasForeignKey(x => x.DeductionCodeRefRecID)
+                .HasForeignKey(x => x.DeductionCodeId)
                 .IsRequired();
         }
     }

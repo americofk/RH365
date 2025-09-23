@@ -1,41 +1,25 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class PayCycle : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    public class PayCycle: AuditableCompanyEntity
+    {        
+        public int PayCycleId{ get; set; }
+        public DateTime PeriodStartDate { get; set; }
+        public DateTime PeriodEndDate { get; set; }
+        public DateTime DefaultPayDate { get; set; }
+        public DateTime PayDate { get; set; }
+        public decimal AmountPaidPerPeriod { get; set; }
+        public StatusPeriod StatusPeriod { get; set; }
 
-    public int ID { get; set; }
+        public string PayrollId { get; set; }
+        public bool IsForTax { get; set; }
 
-    public int PayCycleID { get; set; }
-
-    public long PayrollRefRecID { get; set; }
-
-    public DateTime PeriodStartDate { get; set; }
-
-    public DateTime PeriodEndDate { get; set; }
-
-    public DateTime DefaultPayDate { get; set; }
-
-    public DateTime PayDate { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal AmountPaidPerPeriod { get; set; }
-
-    public int StatusPeriod { get; set; }
-
-    public bool IsForTax { get; set; }
-
-    public bool IsForTss { get; set; }
-
-    [ForeignKey("PayrollRefRecID")]
-    [InverseProperty("PayCycles")]
-    public virtual Payroll PayrollRefRec { get; set; } = null!;
+        //Modificación para calcular el tss
+        public bool IsForTss { get; set; }
+    }
 }

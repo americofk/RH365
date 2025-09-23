@@ -11,8 +11,8 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<ClassRoom> builder)
         {
-            builder.HasKey(x =>x.ID);
-            builder.Property(x => x.ID).HasDefaultValueSql("FORMAT((NEXT VALUE FOR dbo.ClassRoomId),'CR-00000000#')")
+            builder.HasKey(x =>x.ClassRoomId);
+            builder.Property(x => x.ClassRoomId).HasDefaultValueSql("FORMAT((NEXT VALUE FOR dbo.ClassRoomId),'CR-00000000#')")
                 .HasMaxLength(20);
 
             builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
@@ -23,7 +23,7 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 
             builder.HasOne<CourseLocation>()
                 .WithMany()
-                .HasForeignKey(x => x.CourseLocationRefRecID)
+                .HasForeignKey(x => x.CourseLocationId)
                 .IsRequired();
         }
     }

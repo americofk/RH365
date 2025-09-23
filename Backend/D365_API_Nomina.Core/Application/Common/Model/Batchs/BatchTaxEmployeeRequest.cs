@@ -1,0 +1,32 @@
+﻿using D365_API_Nomina.Core.Application.Common.Validation;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+
+namespace D365_API_Nomina.Core.Application.Common.Model.Batchs
+{
+    public class BatchTaxEmployeeRequest : GenericValidation<BatchTaxEmployeeRequest>, IValidatableObject
+    {
+        public string TaxId { get; set; }
+        public string EmployeeId { get; set; }
+        public string EmployeeName { get; set; }
+        public DateTime ValidTo { get; set; }
+        public DateTime ValidFrom { get; set; }
+        public string PayrollId { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            List<ValidationResult> validationResults = new List<ValidationResult>()
+            {
+                ForRule(this, x => string.IsNullOrWhiteSpace(x.EmployeeId), "El empleado no puede estar vacío"),
+                ForRule(this, x => string.IsNullOrWhiteSpace(x.TaxId), $"Empleado:{EmployeeName} - El impuesto no puede estar vacío"),
+                ForRule(this, x => x.ValidFrom == default, $"Empleado:{EmployeeName} - La fecha desde no puede estar vacía"),
+                ForRule(this, x => x.ValidTo == default, $"Empleado:{EmployeeName} - La fecha hasta no puede estar vacía"),
+                ForRule(this, x => x.ValidTo < x.ValidFrom, $"Empleado:{EmployeeName} - La fecha hasta no puede ser menor que la fecha desde")
+            };
+
+            return validationResults;
+        }
+    }
+}

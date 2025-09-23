@@ -2,14 +2,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class EmployeeEarningCodeConfiguration : IEntityTypeConfiguration<EmployeeEarningCode>
     {
         public void Configure(EntityTypeBuilder<EmployeeEarningCode> builder)
         {
-            builder.HasKey(x => new { x.ID, x.EmployeeRefRecID });
-            builder.Property(x => x.ID).ValueGeneratedNever();
+            builder.HasKey(x => new { x.InternalId, x.EmployeeId });
+            builder.Property(x => x.InternalId).ValueGeneratedNever();
+
+
             builder.Property(x => x.FromDate).IsRequired();
             builder.Property(x => x.ToDate).IsRequired();
             builder.Property(x => x.IndexEarning).IsRequired();
@@ -20,17 +22,17 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
 
             builder.HasOne<Employee>()
                 .WithMany()
-                .HasForeignKey(x => x.EmployeeRefRecID)
+                .HasForeignKey(x => x.EmployeeId)
                 .IsRequired();
 
             builder.HasOne<Payroll>()
                 .WithMany()
-                .HasForeignKey(x => x.PayrollRefRecID)
+                .HasForeignKey(x => x.PayrollId)
                 .IsRequired();
 
             builder.HasOne<EarningCode>()
                 .WithMany()
-                .HasForeignKey(x => x.EarningCodeRefRecID)
+                .HasForeignKey(x => x.EarningCodeId)
                 .IsRequired();
         }
     }

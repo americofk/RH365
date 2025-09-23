@@ -1,59 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class EmployeeDeductionCode : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    public class EmployeeDeductionCode: AuditableCompanyEntity
+    {
+        public string DeductionCodeId { get; set; }
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+        public decimal IndexDeduction { get; set; }
+        public decimal PercentDeduction { get; set; }
+        public decimal PercentContribution { get; set; }
+        public string PayrollId { get; set; }
+        public string Comment { get; set; }
+        public string EmployeeId { get; set; }
 
-    public int ID { get; set; }
+        //Actualización
+        public decimal DeductionAmount { get; set; }
 
-    public long DeductionCodeRefRecID { get; set; }
 
-    public long EmployeeRefRecID { get; set; }
+        //Actualización deducciones por período
+        public int QtyPeriodForPaid { get; set; }
+        public int StartPeriodForPaid { get; set; }
 
-    public long PayrollRefRecID { get; set; }
+        public PayFrecuency PayFrecuency { get; set; }
 
-    public DateTime FromDate { get; set; }
-
-    public DateTime ToDate { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal IndexDeduction { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal PercentDeduction { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal PercentContribution { get; set; }
-
-    [StringLength(200)]
-    public string? Comment { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal DeductionAmount { get; set; }
-
-    public int PayFrecuency { get; set; }
-
-    public int QtyPeriodForPaid { get; set; }
-
-    public int StartPeriodForPaid { get; set; }
-
-    [ForeignKey("DeductionCodeRefRecID")]
-    [InverseProperty("EmployeeDeductionCodes")]
-    public virtual DeductionCode DeductionCodeRefRec { get; set; } = null!;
-
-    [ForeignKey("EmployeeRefRecID")]
-    [InverseProperty("EmployeeDeductionCodes")]
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    [ForeignKey("PayrollRefRecID")]
-    [InverseProperty("EmployeeDeductionCodes")]
-    public virtual Payroll PayrollRefRec { get; set; } = null!;
+    }
 }

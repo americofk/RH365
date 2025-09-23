@@ -1,37 +1,48 @@
-﻿// ============================================================================
-// Archivo: LoginController.cs
-// Proyecto: D365_API_Nomina.WEBUI
-// Ruta: D365_API_Nomina.WEBUI/Controllers/v1/LoginController.cs
-// Descripción: Controlador API de autenticación (versión v1). Expone el
-//              endpoint POST /api/v1/login para emitir el JWT.
-// ============================================================================
-using System.Threading.Tasks;
+﻿using D365_API_Nomina.Core.Application.CommandsAndQueries.Login;
+using D365_API_Nomina.Core.Application.Common.Model.User;
+using D365_API_Nomina.Core.Application.Common.Model.Users;
+using D365_API_Nomina.WebUI.Attributes;
+using D365_API_Nomina.WebUI.Filters;
 using Microsoft.AspNetCore.Mvc;
-using D365_API_Nomina.Core.Application.Contracts.Login;
-using D365_API_Nomina.Core.Application.Handlers.Login;
+using System.Threading.Tasks;
 
-namespace D365_API_Nomina.WEBUI.Controllers.v1
+
+namespace D365_API_Nomina.WebUI.Controllers.v2
 {
+    [Route("api/v2.0")]   
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [TypeFilter(typeof(CustomExceptionFilter))]
     public class LoginController : ControllerBase
     {
-        private readonly ILoginCommandHandler _login;
+        private readonly ILoginCommandHandler _loginCommandHandler;
 
-        public LoginController(ILoginCommandHandler login)
+        public LoginController(ILoginCommandHandler loginCommandHandler)
         {
-            _login = login;
+            _loginCommandHandler = loginCommandHandler;
         }
 
-        /// <summary>Autentica y retorna el token + datos básicos del usuario.</summary>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] LoginRequest model)
+        [Route("login")]
+        public async Task<ActionResult> Post([FromBody] LoginRequest _model)
         {
-            var result = await _login.Login(model);
-            if (result is null)
-                return Unauthorized(new { Message = "Credenciales inválidas" });
+            var objectresult = await _loginCommandHandler.Login(_model);
+            return StatusCode(objectresult.StatusHttp, objectresult);
+        }
 
-            return Ok(result);
+        [HttpPost]
+        [Route("requestchangepassword")]
+        public async Task<ActionResult> RequestChangePassword([FromBody] string identification)
+        {
+            var objectresult = await _loginCommandHandler.RequestChangePassword(identification);
+            return StatusCode(objectresult.StatusHttp, objectresult);
+        }
+
+        [HttpPost]
+        [Route("sendnewpassword")]
+        public async Task<ActionResult> SendNewPassword([FromBody] UserChangePasswordRequest model)
+        {
+            var objectresult = await _loginCommandHandler.SendNewPassword(model);
+            return StatusCode(objectresult.StatusHttp, objectresult);
         }
     }
 }

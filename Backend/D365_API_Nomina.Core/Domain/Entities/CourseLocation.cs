@@ -1,28 +1,39 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class CourseLocation : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
-
-    public int ID { get; set; }
-
-    [StringLength(20)]
-    public string CourseLocationCode { get; set; } = null!;
-
-    [StringLength(100)]
-    public string Name { get; set; } = null!;
-
-    [StringLength(300)]
-    public string? Description { get; set; }
-
-    [InverseProperty("CourseLocationRefRec")]
-    public virtual ICollection<ClassRoom> ClassRooms { get; set; } = new List<ClassRoom>();
+    public class CourseLocation: AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Automatic
+        /// </summary>
+        public string CourseLocationId { get; set; }
+        /// <summary>
+        /// Required / Max 50
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// Required / Max 20
+        /// </summary>
+        public string Phone { get; set; }
+        /// <summary>
+        /// Required / Max 100
+        /// </summary>
+        public string Mail { get; set; }
+        /// <summary>
+        /// Required / Max 500
+        /// </summary>
+        public string Address { get; set; }
+        /// <summary>
+        /// Required / Max 50
+        /// </summary>
+        public string ContactName { get; set; }
+        /// <summary>
+        /// Max 100
+        /// </summary>
+        public string Comment { get; set; }
+    }
 }

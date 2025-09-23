@@ -1,67 +1,31 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class PayrollProcessDetail : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
+    public class PayrollProcessDetail: AuditableCompanyEntity
+    {
+        //public string ProcessDetailId { get; set; }
+        public string PayrollProcessId { get; set; }
+        public string EmployeeId { get; set; }
+        public string EmployeeName { get; set; }
 
-    public int ID { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal TotalTaxAmount { get; set; }
+        public PayMethod PayMethod { get; set; } //Usarlo para filtrar los que van al documento de pago electrónico
+        public string BankAccount { get; set; }
+        public string BankName { get; set; }
+        public string Document { get; set; }
+        public string DepartmentId { get; set; }
+        public string DepartmentName { get; set; }
+        public DateTime StartWorkDate { get; set; }
+        public PayrollProcessStatus PayrollProcessStatus { get; set; }
 
-    public long PayrollProcessRefRecID { get; set; }
-
-    public long EmployeeRefRecID { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal TotalAmount { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal TotalTaxAmount { get; set; }
-
-    public int PayMethod { get; set; }
-
-    [StringLength(30)]
-    public string? BankAccount { get; set; }
-
-    [StringLength(100)]
-    public string? BankName { get; set; }
-
-    [StringLength(30)]
-    public string? Document { get; set; }
-
-    public long? DepartmentRefRecID { get; set; }
-
-    [StringLength(60)]
-    public string? DepartmentName { get; set; }
-
-    public int PayrollProcessStatus { get; set; }
-
-    [StringLength(50)]
-    public string? EmployeeName { get; set; }
-
-    public DateTime StartWorkDate { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal TotalTssAmount { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal TotalTssAndTaxAmount { get; set; }
-
-    [ForeignKey("DepartmentRefRecID")]
-    [InverseProperty("PayrollProcessDetails")]
-    public virtual Department? DepartmentRefRec { get; set; }
-
-    [ForeignKey("EmployeeRefRecID")]
-    [InverseProperty("PayrollProcessDetails")]
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    [ForeignKey("PayrollProcessRefRecID")]
-    [InverseProperty("PayrollProcessDetails")]
-    public virtual PayrollsProcess PayrollProcessRefRec { get; set; } = null!;
+        //Modificación para el calculo de las deducciones de tss
+        public decimal TotalTssAmount { get; set; }
+        public decimal TotalTssAndTaxAmount { get; set; }
+    }
 }

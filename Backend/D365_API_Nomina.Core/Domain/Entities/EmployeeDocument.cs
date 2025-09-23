@@ -1,36 +1,20 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class EmployeeDocument : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-   
-    public long RecID { get; set; }
-
-    public int ID { get; set; }
-
-    public long EmployeeRefRecID { get; set; }
-
-    public int DocumentType { get; set; }
-
-    [StringLength(30)]
-    public string DocumentNumber { get; set; } = null!;
-
-    public DateTime DueDate { get; set; }
-
-    public byte[]? FileAttach { get; set; }
-
-    public bool IsPrincipal { get; set; }
-
-    [StringLength(200)]
-    public string? Comment { get; set; }
-
-    [ForeignKey("EmployeeRefRecID")]
-    [InverseProperty("EmployeeDocuments")]
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+    public class EmployeeDocument: AuditableCompanyEntity
+    {
+        public int InternalId { get; set; }
+        public string EmployeeId { get; set; }
+        public DocumentType DocumentType { get; set; }
+        public string DocumentNumber { get; set; }
+        public DateTime DueDate { get; set; }
+        public string Comment { get; set; }
+        public byte[] FileAttach { get; set; }
+        public bool IsPrincipal { get; set; }
+    }
 }

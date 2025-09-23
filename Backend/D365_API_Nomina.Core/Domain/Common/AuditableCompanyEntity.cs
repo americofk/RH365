@@ -1,24 +1,21 @@
-﻿// ============================================================================
-// Archivo: AuditableCompanyEntity.cs
-// Proyecto: D365_API_Nomina.Core
-// Ruta: D365_API_Nomina.Core/Domain/Common/AuditableCompanyEntity.cs
-// Descripción: Clase base para entidades AUDITABLES con ámbito de compañía.
-//              Hereda de AuditableEntity y agrega DataareaID (NVARCHAR(10)).
-// ============================================================================
-
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace D365_API_Nomina.Core.Domain.Common
 {
-    /// <summary>
-    /// Base auditable con ámbito de compañía (DataareaID).
-    /// </summary>
-    public abstract class AuditableCompanyEntity : AuditableEntity
+    public class AuditableCompanyEntity
     {
-        /// <summary>
-        /// Identificador de compañía/área (NVARCHAR(10), NOT NULL).
-        /// </summary>
-        [Required, StringLength(10)]
-        public string DataareaID { get; set; } = string.Empty;
+        [MaxLength(10)]
+        public string CreatedBy { get; set; }
+        public DateTime CreatedDateTime { get; set; }
+
+        [MaxLength(10)]
+        public string ModifiedBy { get; set; }
+        public DateTime ModifiedDateTime { get; set; }
+
+        [MaxLength(5)]
+        public string InCompany { get; set; }
     }
 }

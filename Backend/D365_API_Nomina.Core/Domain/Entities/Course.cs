@@ -1,73 +1,82 @@
-﻿using System;
+﻿using D365_API_Nomina.Core.Domain.Common;
+using D365_API_Nomina.Core.Domain.Enums;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using D365_API_Nomina.Core.Domain.Common;
+using System.Text;
 
-
-namespace D365_API_Nomina.Core.Domain.Entities;
-
-public partial class Course : AuditableCompanyEntity
+namespace D365_API_Nomina.Core.Domain.Entities
 {
-    
-    public long RecID { get; set; }
+    public class Course : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Automatic
+        /// </summary>
+        public string CourseId { get; set; }
+        /// <summary>
+        /// Required / Max 50
+        /// </summary>
+        public string CourseName { get; set; }
+        /// <summary>
+        /// Required / Max 20
+        /// </summary>
+        public string CourseTypeId { get; set; }
+        public bool IsMatrixTraining { get; set; }
+        /// <summary>
+        /// Internal = 0, External = 1
+        /// </summary>
+        public InternalExternal InternalExternal { get; set; }
+        /// <summary>
+        /// Max 20
+        /// </summary>
+        public string CourseParentId { get; set; }
+        /// <summary>
+        /// Required / Max 20
+        /// </summary>
+        public string ClassRoomId { get; set; }
+        /// <summary>
+        /// Required
+        /// </summary>
+        public DateTime StartDateTime { get; set; }
+        /// <summary>
+        /// Required
+        /// </summary>
+        public DateTime EndDateTime { get; set; }
+        /// <summary>
+        /// Required
+        /// </summary>
+        public int MinStudents { get; set; }
+        /// <summary>
+        /// Required
+        /// </summary>
+        public int MaxStudents { get; set; }
+        /// <summary>
+        /// Required
+        /// </summary>
+        public int Periodicity { get; set; }
+        /// <summary>
+        /// Required
+        /// </summary>
+        public int QtySessions { get; set; }
 
-    public int ID { get; set; }
+        /// <summary>
+        /// Max 300
+        /// </summary>
+        public string Description { get; set; }
+        /// <summary>
+        /// Required / Max 1000
+        /// </summary>
+        public string Objetives { get; set; }
+        /// <summary>
+        /// Required / Max 1000
+        /// </summary>
+        public string Topics { get; set; }
 
-    [StringLength(20)]
-    public string CourseCode { get; set; } = null!;
+        /// <summary>
+        /// Created = 0, InProcess = 1, Closed = 2
+        /// </summary>
+        public CourseStatus CourseStatus { get; set; }
 
-    [StringLength(100)]
-    public string Name { get; set; } = null!;
+        public string URLDocuments { get; set; }
 
-    public long CourseTypeRefRecID { get; set; }
-
-    public long? ClassRoomRefRecID { get; set; }
-
-    [StringLength(200)]
-    public string? Description { get; set; }
-
-    public DateTime StartDate { get; set; }
-
-    public DateTime EndDate { get; set; }
-
-    public bool IsMatrixTraining { get; set; }
-
-    public int InternalExternal { get; set; }
-
-    [StringLength(20)]
-    public string? CourseParentId { get; set; }
-
-    public int MinStudents { get; set; }
-
-    public int MaxStudents { get; set; }
-
-    public int Periodicity { get; set; }
-
-    public int QtySessions { get; set; }
-
-    [StringLength(1000)]
-    public string Objetives { get; set; } = null!;
-
-    [StringLength(1000)]
-    public string Topics { get; set; } = null!;
-
-    public int CourseStatus { get; set; }
-
-    [StringLength(1000)]
-    public string? URLDocuments { get; set; }
-
-    [ForeignKey("ClassRoomRefRecID")]
-    [InverseProperty("Courses")]
-    public virtual ClassRoom? ClassRoomRefRec { get; set; }
-
-    [InverseProperty("CourseRefRec")]
-    public virtual ICollection<CourseEmployee> CourseEmployees { get; set; } = new List<CourseEmployee>();
-
-    [InverseProperty("CourseRefRec")]
-    public virtual ICollection<CourseInstructor> CourseInstructors { get; set; } = new List<CourseInstructor>();
-
-    [ForeignKey("CourseTypeRefRecID")]
-    [InverseProperty("Courses")]
-    public virtual CourseType CourseTypeRefRec { get; set; } = null!;
+    }
 }

@@ -1,7 +1,7 @@
 ﻿using D365_API_Nomina.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
     public class CoursePositionConfiguration : IEntityTypeConfiguration<CoursePosition>
     {

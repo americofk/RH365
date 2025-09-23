@@ -5,30 +5,30 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace D365_API_Nomina.Infrastructure.Persistence.Configurations
+namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
-    public class EmployeeTaxConfiguration : IEntityTypeConfiguration<EmployeeTaxis>
+    public class EmployeeTaxConfiguration : IEntityTypeConfiguration<EmployeeTax>
     {
-        public void Configure(EntityTypeBuilder<EmployeeTaxis> builder)
+        public void Configure(EntityTypeBuilder<EmployeeTax> builder)
         {
-            builder.HasKey(x => new { x.ID, x.EmployeeRefRecID, x.PayrollRefRecID});
+            builder.HasKey(x => new { x.TaxId, x.EmployeeId, x.PayrollId});
 
             builder.Property(x => x.ValidFrom).IsRequired();
             builder.Property(x => x.ValidTo).IsRequired();
 
             builder.HasOne<Payroll>()
                 .WithMany()
-                .HasForeignKey(x => x.PayrollRefRecID)
+                .HasForeignKey(x => x.PayrollId)
                 .IsRequired();
 
             builder.HasOne<Employee>()
                 .WithMany()
-                .HasForeignKey(x => x.EmployeeRefRecID)
+                .HasForeignKey(x => x.EmployeeId)
                 .IsRequired();
 
-            builder.HasOne<Taxis>()
+            builder.HasOne<Tax>()
                 .WithMany()
-                .HasForeignKey(x => new { x.ID, x.DataareaID })
+                .HasForeignKey(x => new { x.TaxId, x.InCompany })
                 .IsRequired();
         }
     }
