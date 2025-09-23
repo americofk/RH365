@@ -55,9 +55,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                 BatchEntity = entity,
                 StartDate = DateTime.Now,
 
-                InCompany = session[0],
+                DataareaID = session[0],
                 CreatedBy = session[1],
-                CreatedDateTime = DateTime.Now
+                CreatedOn = DateTime.Now
             };
 
             _NewDbContext.BatchHistories.Add(newEntity);
@@ -69,7 +69,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
         private async Task UpdateHistory(int internalid, bool iserror, string information, string[] session)
         {
             var response = await _NewDbContext.BatchHistories.Where(x => x.InternalId == internalid
-                                                                    && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                    && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
             response.IsError = iserror;
             response.Information = information;
@@ -111,7 +111,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         if (!string.IsNullOrEmpty(item.PositionId))
                         {
-                            var position = await _NewDbContext.Positions.Where(x => x.PositionId == item.PositionId && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                            var position = await _NewDbContext.Positions.Where(x => x.PositionId == item.PositionId && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (position == null)
                             {
@@ -124,9 +124,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         {
                             var entity = BuildDtoHelper<Employee>.OnBuild(item, new Employee());
 
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
                             entity.Nationality = country.NationalityCode;
 
                             if (!string.IsNullOrEmpty(item.PositionId))
@@ -150,9 +150,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                                     ToDate = item.PositionToDate,
                                     FromDate = item.PositionFromDate,
                                     EmployeeId = entity.EmployeeId,
-                                    InCompany = session[0],
+                                    DataareaID = session[0],
                                     CreatedBy = session[1],
-                                    CreatedDateTime = DateTime.Now
+                                    CreatedOn = DateTime.Now
                                 };
 
                                 _NewDbContext.EmployeePositions.Add(employeeposition);
@@ -239,7 +239,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var response = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
                         var Province = await _NewDbContext.Provinces.Where(x => x.ProvinceId == item.Province).FirstOrDefaultAsync();
 
                         if (Province == null)
@@ -270,7 +270,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         if (!isError)
                         {
                             var address = await _NewDbContext.EmployeesAddress.Where(x => x.EmployeeId == item.EmployeeId
-                                                                                     && x.InCompany == session[0]).IgnoreQueryFilters().OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
+                                                                                     && x.DataareaID == session[0]).IgnoreQueryFilters().OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
 
                             var entity = BuildDtoHelper<EmployeeAddress>.OnBuild(item, new EmployeeAddress());
 
@@ -280,13 +280,13 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             {
                                 principalEntity = await _NewDbContext.EmployeesAddress.Where(x => x.EmployeeId == item.EmployeeId
                                                                                              && x.IsPrincipal == true
-                                                                                             && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                                             && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
                             }
 
                             //Guardo la nueva dirección
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             _NewDbContext.EmployeesAddress.Add(entity);
                             await _NewDbContext.SaveChangesAsync();
@@ -366,7 +366,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var response = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (response == null)
                         {
@@ -377,7 +377,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         if (!isError)
                         {
-                            var contactinf = await _NewDbContext.EmployeeContactsInf.Where(x => x.EmployeeId == item.EmployeeId && x.InCompany == session[0])
+                            var contactinf = await _NewDbContext.EmployeeContactsInf.Where(x => x.EmployeeId == item.EmployeeId && x.DataareaID == session[0])
                                                                                     .IgnoreQueryFilters()
                                                                                     .OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
 
@@ -390,15 +390,15 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                                 principalEntity = await _NewDbContext.EmployeeContactsInf.Where(x => x.EmployeeId == item.EmployeeId
                                                                                                && x.IsPrincipal == true
                                                                                                && x.ContactType == item.ContactType
-                                                                                               && x.InCompany == session[0])
+                                                                                               && x.DataareaID == session[0])
                                                                                          .IgnoreQueryFilters()
                                                                                          .FirstOrDefaultAsync();
                             }
 
                             //Guardo la nueva dirección
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             _NewDbContext.EmployeeContactsInf.Add(entity);
                             await _NewDbContext.SaveChangesAsync();
@@ -478,7 +478,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var response = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (response == null)
                         {
@@ -489,7 +489,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         if (!isError)
                         {
-                            var contactinf = await _NewDbContext.EmployeeBankAccounts.Where(x => x.EmployeeId == item.EmployeeId && x.InCompany == session[0])
+                            var contactinf = await _NewDbContext.EmployeeBankAccounts.Where(x => x.EmployeeId == item.EmployeeId && x.DataareaID == session[0])
                                                                                     .IgnoreQueryFilters()
                                                                                     .OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
 
@@ -502,15 +502,15 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                                 principalEntity = await _NewDbContext.EmployeeBankAccounts.Where(x => x.EmployeeId == item.EmployeeId
                                                                                                && x.IsPrincipal == true
                                                                                                && x.AccountType == item.AccountType
-                                                                                               && x.InCompany == session[0])
+                                                                                               && x.DataareaID == session[0])
                                                                                          .IgnoreQueryFilters()
                                                                                          .FirstOrDefaultAsync();
                             }
 
                             //Guardo la nueva dirección
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             _NewDbContext.EmployeeBankAccounts.Add(entity);
                             await _NewDbContext.SaveChangesAsync();
@@ -590,7 +590,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var response = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (response == null)
                         {
@@ -601,7 +601,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         if (!isError)
                         {
-                            var document = await _NewDbContext.EmployeeDocuments.Where(x => x.EmployeeId == item.EmployeeId && x.InCompany == session[0])
+                            var document = await _NewDbContext.EmployeeDocuments.Where(x => x.EmployeeId == item.EmployeeId && x.DataareaID == session[0])
                                                                                 .IgnoreQueryFilters()
                                                                                 .OrderByDescending(x => x.InternalId)
                                                                                 .FirstOrDefaultAsync();
@@ -615,15 +615,15 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                                 principalEntity = await _NewDbContext.EmployeeDocuments.Where(x => x.EmployeeId == item.EmployeeId
                                                                                                && x.IsPrincipal == true
                                                                                                && x.DocumentType == item.DocumentType
-                                                                                               && x.InCompany == session[0])
+                                                                                               && x.DataareaID == session[0])
                                                                                         .IgnoreQueryFilters()
                                                                                         .FirstOrDefaultAsync();
                             }
 
                             //Guardo la nueva dirección
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             _NewDbContext.EmployeeDocuments.Add(entity);
                             await _NewDbContext.SaveChangesAsync();
@@ -701,7 +701,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var employee = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (employee == null)
                         {
@@ -710,7 +710,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var tax = await _NewDbContext.Taxes.Where(x => x.TaxId == item.TaxId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (tax == null)
                         {
@@ -719,7 +719,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var payroll = await _NewDbContext.Payrolls.Where(x => x.PayrollId == item.PayrollId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (payroll == null)
                         {
@@ -732,7 +732,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             var existTaxEmployee = await _NewDbContext.EmployeeTaxes.Where(x => x.TaxId == item.TaxId
                                                                                && x.EmployeeId == item.EmployeeId
                                                                                && x.PayrollId == item.PayrollId
-                                                                               && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                               && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (existTaxEmployee != null)
                             {
@@ -748,9 +748,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             var entity = BuildDtoHelper<EmployeeTax>.OnBuild(item, new EmployeeTax());
 
                             //Guardo el nuevo código de impuesto
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             _NewDbContext.EmployeeTaxes.Add(entity);
                             await _NewDbContext.SaveChangesAsync();
@@ -820,7 +820,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var employee = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (employee == null)
                         {
@@ -832,7 +832,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                                                                                         && x.IndexBase == IndexBase.Hour
                                                                                         && x.MultiplyAmount != 0
                                                                                         && x.ValidFrom <= item.WorkedDay && x.ValidTo >= item.WorkedDay
-                                                                                        && x.InCompany == session[0])
+                                                                                        && x.DataareaID == session[0])
                                                                                  .IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (earningcode == null)
@@ -846,7 +846,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var payroll = await _NewDbContext.Payrolls.Where(x => x.PayrollId == item.PayrollId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (payroll == null)
                         {
@@ -859,7 +859,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             var existExtraHoursEmployee = await _NewDbContext.EmployeeExtraHours.Where(x => x.EmployeeId == item.EmployeeId
                                                                      && x.WorkedDay == item.WorkedDay
                                                                      && x.EarningCodeId == item.EarningCodeId
-                                                                     && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                     && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (existExtraHoursEmployee != null)
                             {
@@ -879,7 +879,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                                     (eec, ec) => new { Eec = eec, Ec = ec })
                                 .Where(x => x.Eec.EmployeeId == item.EmployeeId
                                     && x.Ec.IsExtraHours == true
-                                    && x.Ec.InCompany == session[0])
+                                    && x.Ec.DataareaID == session[0])
                                 .Select(x => new
                                 {
                                     Amount = x.Eec.IndexEarningMonthly
@@ -896,9 +896,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                                     entity.Amount = ((salary.Sum(x => x.Amount) / constans) / 8 * entity.Indice) * item.Quantity;
                                 }
                                 //Guardo el nuevo código de horas extras
-                                entity.InCompany = session[0];
+                                entity.DataareaID = session[0];
                                 entity.CreatedBy = session[1];
-                                entity.CreatedDateTime = DateTime.Now;
+                                entity.CreatedOn = DateTime.Now;
 
                                 _NewDbContext.EmployeeExtraHours.Add(entity);
                                 await _NewDbContext.SaveChangesAsync();
@@ -974,7 +974,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var employee = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (employee == null)
                         {
@@ -984,7 +984,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         var earningcode = await _NewDbContext.EarningCodes.Where(x => x.EarningCodeId == item.EarningCodeId
                                                                                         && x.IndexBase == IndexBase.FixedAmount
-                                                                                        && x.InCompany == session[0])
+                                                                                        && x.DataareaID == session[0])
                                                                                  .IgnoreQueryFilters()
                                                                                  .FirstOrDefaultAsync();
 
@@ -995,7 +995,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var payroll = await _NewDbContext.Payrolls.Where(x => x.PayrollId == item.PayrollId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (payroll == null)
                         {
@@ -1007,7 +1007,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         {
                             var paycycle = await _NewDbContext.PayCycles.Where(x => x.PayrollId == item.PayrollId
                                                                                && x.PayCycleId == item.StartPeriodForPaid
-                                                                               && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                               && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (paycycle == null)
                             {
@@ -1018,7 +1018,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             //var existEarningCodeEmployee = await _NewDbContext.EmployeeEarningCodes.Where(x => x.EmployeeId == item.EmployeeId
                             //                                         && x.EarningCodeId == item.EarningCodeId
                             //                                         && x.PayrollId == item.PayrollId
-                            //                                         && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                            //                                         && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             //if (existEarningCodeEmployee != null)
                             //{
@@ -1032,7 +1032,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         if (!isError)
                         {
                             var response = await _NewDbContext.EmployeeEarningCodes.Where(x => x.EmployeeId == item.EmployeeId
-                                                                                          && x.InCompany == session[0])
+                                                                                          && x.DataareaID == session[0])
                                                                                    .OrderByDescending(x => x.InternalId)
                                                                                    .IgnoreQueryFilters()
                                                                                    .FirstOrDefaultAsync();
@@ -1041,9 +1041,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             var entity = BuildDtoHelper<EmployeeEarningCode>.OnBuild(item, new EmployeeEarningCode());
                             entity.InternalId = response == null ? 1 : response.InternalId + 1;
 
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             entity.PayFrecuency = payroll.PayFrecuency;
 
@@ -1127,7 +1127,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var employee = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (employee == null)
                         {
@@ -1136,7 +1136,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var loan = await _NewDbContext.Loans.Where(x => x.LoanId == item.LoanId
-                                                                        && x.InCompany == session[0])
+                                                                        && x.DataareaID == session[0])
                                                                    .IgnoreQueryFilters()
                                                                    .FirstOrDefaultAsync();
 
@@ -1151,7 +1151,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var payroll = await _NewDbContext.Payrolls.Where(x => x.PayrollId == item.PayrollId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (payroll == null)
                         {
@@ -1163,7 +1163,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         {
                             var paycycle = await _NewDbContext.PayCycles.Where(x => x.PayrollId == item.PayrollId
                                                                                && x.PayCycleId == item.StartPeriodForPaid
-                                                                               && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                               && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (paycycle == null)
                             {
@@ -1173,7 +1173,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                             var existLoanEmployee = await _NewDbContext.EmployeeLoans.Where(x => x.EmployeeId == item.EmployeeId
                                                                      && x.LoanId == item.LoanId
-                                                                     && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                     && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (existLoanEmployee != null)
                             {
@@ -1189,9 +1189,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             //Guardo el nuevo prestamo
                             var entity = BuildDtoHelper<EmployeeLoan>.OnBuild(item, new EmployeeLoan());
 
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             _NewDbContext.EmployeeLoans.Add(entity);
                             await _NewDbContext.SaveChangesAsync();
@@ -1261,7 +1261,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var employee = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (employee == null)
                         {
@@ -1270,7 +1270,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var deductioncode = await _NewDbContext.DeductionCodes.Where(x => x.DeductionCodeId == item.DeductionCodeId
-                                                                        && x.InCompany == session[0])
+                                                                        && x.DataareaID == session[0])
                                                                     .IgnoreQueryFilters()
                                                                     .FirstOrDefaultAsync();
 
@@ -1285,7 +1285,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var payroll = await _NewDbContext.Payrolls.Where(x => x.PayrollId == item.PayrollId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (payroll == null)
                         {
@@ -1298,7 +1298,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             //Modificación de validación para deducciones por frecuencia de pago
                             var paycycle = await _NewDbContext.PayCycles.Where(x => x.PayrollId == item.PayrollId
                                                                                && x.PayCycleId == item.StartPeriodForPaid
-                                                                               && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                               && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (paycycle == null)
                             {
@@ -1310,7 +1310,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                             var existDeductionCodeEmployee = await _NewDbContext.EmployeeDeductionCodes.Where(x => x.EmployeeId == item.EmployeeId
                                                                                                   && x.DeductionCodeId == item.DeductionCodeId
-                                                                                                  && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                                                  && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (existDeductionCodeEmployee != null)
                             {
@@ -1326,9 +1326,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             //Guardo el nuevo código de deducción
                             var entity = BuildDtoHelper<EmployeeDeductionCode>.OnBuild(item, new EmployeeDeductionCode());
 
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             //Modificación para agregar el periodo de pago de la nómina
                             entity.PayFrecuency = payroll.PayFrecuency;
@@ -1392,7 +1392,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var courseType = await _NewDbContext.CourseTypes.Where(x => x.CourseTypeId == item.CourseTypeId
-                                                                               && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                               && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (courseType == null)
                         {
@@ -1401,7 +1401,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         }
 
                         var classroom = await _NewDbContext.ClassRooms.Where(x => x.ClassRoomId == item.ClassRoomId
-                                                                             && x.InCompany == session[0])
+                                                                             && x.DataareaID == session[0])
                                                                       .IgnoreQueryFilters()
                                                                       .FirstOrDefaultAsync();
 
@@ -1415,7 +1415,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         if (!string.IsNullOrEmpty(item.ClassRoomId))
                         {
                             var parentCourse = await _NewDbContext.Courses.Where(x => x.CourseId == item.CourseParentId
-                                                                               && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                               && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                             if (parentCourse == null)
                             {
@@ -1431,9 +1431,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                             //Guardo el nuevo código de curso
                             var entity = BuildDtoHelper<Course>.OnBuild(item, new Course());
 
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             _NewDbContext.Courses.Add(entity);
                             await _NewDbContext.SaveChangesAsync();
@@ -1529,7 +1529,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var response = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (response == null)
                         {
@@ -1539,7 +1539,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         var workcalendar = await _NewDbContext.EmployeeWorkCalendars.Where(x => x.CalendarDate == item.CalendarDate &&
                                                                                             x.EmployeeId == item.EmployeeId &&
-                                                                                            x.InCompany == session[0]).FirstOrDefaultAsync();
+                                                                                            x.DataareaID == session[0]).FirstOrDefaultAsync();
 
                         if (workcalendar != null)
                         {
@@ -1551,16 +1551,16 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         if (!isError)
                         {
                             var employeeWorkCalendar = await _NewDbContext.EmployeeWorkCalendars.Where(x => x.EmployeeId == item.EmployeeId
-                                                                                     && x.InCompany == session[0]).IgnoreQueryFilters().OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
+                                                                                     && x.DataareaID == session[0]).IgnoreQueryFilters().OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
 
                             var entity = BuildDtoHelper<EmployeeWorkCalendar>.OnBuild(item, new EmployeeWorkCalendar());
 
                             entity.InternalId = employeeWorkCalendar == null ? 1 : employeeWorkCalendar.InternalId + 1;
 
                             //Guardo la nueva fecha
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             string weekday = spanishdays[(int)item.CalendarDate.DayOfWeek];
 
@@ -1677,7 +1677,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         //Validaciones
                         var response = await _NewDbContext.Employees.Where(x => x.EmployeeId == item.EmployeeId
-                                                                           && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                           && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (response == null)
                         {
@@ -1687,7 +1687,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
 
                         var workcalendar = await _NewDbContext.EmployeeWorkControlCalendars.Where(x => x.CalendarDate == item.CalendarDate &&
                                                                                             x.EmployeeId == item.EmployeeId &&
-                                                                                            x.InCompany == session[0]).FirstOrDefaultAsync();
+                                                                                            x.DataareaID == session[0]).FirstOrDefaultAsync();
 
                         if (workcalendar != null)
                         {
@@ -1699,16 +1699,16 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Batchs
                         if (!isError)
                         {
                             var employeeWorkCalendar = await _NewDbContext.EmployeeWorkControlCalendars.Where(x => x.EmployeeId == item.EmployeeId
-                                                                                     && x.InCompany == session[0]).IgnoreQueryFilters().OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
+                                                                                     && x.DataareaID == session[0]).IgnoreQueryFilters().OrderByDescending(x => x.InternalId).FirstOrDefaultAsync();
 
                             var entity = BuildDtoHelper<EmployeeWorkControlCalendar>.OnBuild(item, new EmployeeWorkControlCalendar());
 
                             entity.InternalId = employeeWorkCalendar == null ? 1 : employeeWorkCalendar.InternalId + 1;
 
                             //Guardo la nueva fecha
-                            entity.InCompany = session[0];
+                            entity.DataareaID = session[0];
                             entity.CreatedBy = session[1];
-                            entity.CreatedDateTime = DateTime.Now;
+                            entity.CreatedOn = DateTime.Now;
 
                             string weekday = spanishdays[(int)item.CalendarDate.DayOfWeek];
 

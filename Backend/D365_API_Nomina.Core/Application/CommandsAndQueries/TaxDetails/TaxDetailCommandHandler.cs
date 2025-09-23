@@ -46,7 +46,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.TaxDetails
             var entity = BuildDtoHelper<TaxDetail>.OnBuild(model, new TaxDetail());
 
             entity.InternalId = taxdetails == null ? 1 : taxdetails.InternalId + 1;
-            entity.InCompany = response.InCompany;
+            entity.DataareaID = response.DataareaID;
 
             _dbContext.TaxDetails.Add(entity);
             await _dbContext.SaveChangesAsync();

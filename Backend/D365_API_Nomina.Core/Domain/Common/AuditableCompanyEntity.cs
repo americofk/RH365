@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: AuditableCompanyEntity.cs
+// Proyecto: D365_API_Nomina.Core
+// Ruta: D365_API_Nomina.Core/Domain/Common/AuditableCompanyEntity.cs
+// Descripción: Base auditable CON compañía (DataareaID), hereda de AuditableEntity.
+// ============================================================================
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace D365_API_Nomina.Core.Domain.Common
 {
-    public class AuditableCompanyEntity
+    public abstract class AuditableCompanyEntity : AuditableEntity
     {
-        [MaxLength(10)]
-        public string CreatedBy { get; set; }
-        public DateTime CreatedDateTime { get; set; }
-
-        [MaxLength(10)]
-        public string ModifiedBy { get; set; }
-        public DateTime ModifiedDateTime { get; set; }
-
-        [MaxLength(5)]
-        public string InCompany { get; set; }
+        /// <summary>Identificador de compañía/área (NVARCHAR(10)).</summary>
+        [Required, StringLength(10)]
+        public string DataareaID { get; set; } = string.Empty;
     }
 }

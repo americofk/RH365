@@ -47,7 +47,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Taxes
             }
 
             var entity = BuildDtoHelper<Tax>.OnBuild(model, new Tax());
-            entity.InCompany = _currentUser.Company;
+            entity.DataareaID = _currentUser.Company;
 
             _dbContext.Taxes.Add(entity);
             await _dbContext.SaveChangesAsync();

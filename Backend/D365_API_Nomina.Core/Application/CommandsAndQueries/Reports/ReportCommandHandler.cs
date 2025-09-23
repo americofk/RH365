@@ -56,7 +56,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Reports
                     {                        
                         var emailemployee = await _NewDbContext.EmployeeContactsInf.Where(x => x.EmployeeId == item.EmployeeId && x.IsPrincipal == true
                                                                 && x.ContactType == ContactType.Email
-                                                                && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
                         if (emailemployee == null)
                         {
@@ -128,9 +128,9 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Reports
                 BatchEntity = entity,
                 StartDate = DateTime.Now,
 
-                InCompany = session[0],
+                DataareaID = session[0],
                 CreatedBy = session[1],
-                CreatedDateTime = DateTime.Now
+                CreatedOn = DateTime.Now
             };
 
             _NewDbContext.BatchHistories.Add(newEntity);
@@ -142,7 +142,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Reports
         private async Task UpdateHistory(int internalid, bool iserror, string information, string[] session)
         {
             var response = await _NewDbContext.BatchHistories.Where(x => x.InternalId == internalid
-                                                                    && x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+                                                                    && x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
             response.IsError = iserror;
             response.Information = information;
@@ -158,7 +158,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Reports
         {
             List<ReportPayrollPaymentResponse> report = new List<ReportPayrollPaymentResponse>();
             //Loan, ExtraHours, Tax
-            var configuration = await _NewDbContext.ReportsConfig.Where(x => x.InCompany == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
+            var configuration = await _NewDbContext.ReportsConfig.Where(x => x.DataareaID == session[0]).IgnoreQueryFilters().FirstOrDefaultAsync();
 
             if (configuration == null)
             {
@@ -178,7 +178,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Reports
                     ppd => ppd.PayrollProcessId,
                     (pp, ppd) => new { Pp = pp, Ppd = ppd })
                 .Where(x => x.Pp.PayrollProcessId == payrollProcessId
-                        && x.Pp.InCompany == session[0]
+                        && x.Pp.DataareaID == session[0]
                         && x.Ppd.DepartmentId.Contains(departmentid)
                         && x.Ppd.EmployeeId.Contains(employeeid)
                         && x.Pp.PayrollProcessStatus == PayrollProcessStatus.Paid
@@ -199,8 +199,8 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Reports
                                          .Join(_NewDbContext.Positions,
                                             ep => ep.PositionId,
                                             p => p.PositionId,
-                                            (ep, p) => new { ep.EmployeeId, ep.EmployeePositionStatus, p.PositionName, ep.InCompany})
-                                         .Where(y => y.EmployeeId == x.Ppd.EmployeeId && y.EmployeePositionStatus == true && y.InCompany == session[0])
+                                            (ep, p) => new { ep.EmployeeId, ep.EmployeePositionStatus, p.PositionName, ep.DataareaID})
+                                         .Where(y => y.EmployeeId == x.Ppd.EmployeeId && y.EmployeePositionStatus == true && y.DataareaID == session[0])
                                          .Select(x => x.PositionName)
                                          .IgnoreQueryFilters()
                                          .FirstOrDefault()
@@ -209,7 +209,7 @@ namespace D365_API_Nomina.Core.Application.CommandsAndQueries.Reports
             if (a != null)
             {
                 var actions = await _NewDbContext.PayrollProcessActions.Where(x => x.PayrollProcessId == payrollProcessId
-                                                                              && x.InCompany == session[0]).IgnoreQueryFilters().ToListAsync();
+                                                                              && x.DataareaID == session[0]).IgnoreQueryFilters().ToListAsync();
 
                 foreach (var item in a)
                 {

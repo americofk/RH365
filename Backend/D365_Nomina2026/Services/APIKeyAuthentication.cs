@@ -1,21 +1,17 @@
-﻿// ============================================================================
-// Archivo: APIKeyAuthentication.cs
-// Proyecto: D365_API_Nomina.WEBUI
-// Ruta: D365_API_Nomina.WEBUI/Services/APIKeyAuthentication.cs
-// Descripción: Middleware para proteger rutas de configuración con API Key
-//              vía querystring (?apikeyvalue=...). Responde 401 en caso inválido.
-// ============================================================================
-
+﻿using D365_API_Nomina.Core.Application.CommandsAndQueries.LicenseValidations;
+using D365_API_Nomina.Core.Application.Common.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace D365_API_Nomina.WEBUI.Services
+namespace D365_API_Nomina.WebUI.Services
 {
     public static class APIKeyAuthentication
     {
@@ -24,50 +20,56 @@ namespace D365_API_Nomina.WEBUI.Services
             app.UseMiddleware<APIKeyAuthenticationMiddleware>();
             return app;
         }
+
     }
 
-    /// <summary>
-    /// Middleware que valida la API Key para rutas /api/v2.0/config.
-    /// La clave esperada se toma de configuración: AppSettings:Secret-Config.
-    /// </summary>
     public class APIKeyAuthenticationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _Configuration;
 
         public APIKeyAuthenticationMiddleware(RequestDelegate next, IConfiguration configuration)
         {
             _next = next;
-            _configuration = configuration;
+            _Configuration = configuration;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Solo aplica a endpoints de configuración (ajusta el prefijo si lo necesitas)
+            var currentKey = _Configuration["AppSettings:Secret-Config"];
+
             if (context.Request.Path.StartsWithSegments("/api/v2.0/config"))
             {
-                string expectedKey = _configuration["AppSettings:Secret-Config"] ?? string.Empty;
-
-                if (context.Request.Query.TryGetValue("apikeyvalue", out StringValues received) &&
-                    received.FirstOrDefault() == expectedKey)
+                if (context.Request.Query.TryGetValue("apikeyvalue", out StringValues receivedkey))
                 {
-                    await _next(context);
-                    return;
+                    if (receivedkey.First().Equals(currentKey))
+                        await _next(context);
+                    else
+                    {
+                        await context.Response.WriteAsync(JsonConvert.SerializeObject(new Response<string>()
+                        {
+                            Succeeded = false,
+                            StatusHttp = (int)HttpStatusCode.Unauthorized,
+                            Errors = new List<string>() { "User not authorizate!" }
+                        }));
+                    }
                 }
-
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                context.Response.ContentType = "application/json; charset=utf-8";
-                var payload = new
+                else
                 {
-                    Succeeded = false,
-                    StatusHttp = context.Response.StatusCode,
-                    Errors = new[] { "User not authorized." }
-                };
-                await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
-                return;
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new Response<string>()
+                    {
+                        Succeeded = false,
+                        StatusHttp = (int)HttpStatusCode.Unauthorized,
+                        Errors = new List<string>() { "User not authorizate!" }
+                    }));
+                }
             }
-
-            await _next(context);
+            else
+            {
+                await _next(context);
+            }
         }
     }
+
+  
 }

@@ -11,7 +11,7 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<Tax> builder)
         {
-            builder.HasKey(x => new { x.TaxId, x.InCompany });
+            builder.HasKey(x => new { x.TaxId, x.DataareaID });
             builder.Property(x => x.TaxId)
                 .HasMaxLength(20);
 

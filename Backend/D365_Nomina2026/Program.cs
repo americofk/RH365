@@ -5,6 +5,7 @@
 // Descripción: Punto de entrada. Crea el host y usa Startup para la configuración.
 // ============================================================================
 
+using D365_API_Nomina.WebUI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 

@@ -28,7 +28,7 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 
             builder.HasOne<Tax>()
                 .WithMany()
-                .HasForeignKey(x => new { x.TaxId, x.InCompany })
+                .HasForeignKey(x => new { x.TaxId, x.DataareaID })
                 .IsRequired();
         }
     }

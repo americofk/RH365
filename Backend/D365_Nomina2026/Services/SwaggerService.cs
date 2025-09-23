@@ -1,111 +1,67 @@
-﻿// ============================================================================
-// Archivo: SwaggerService.cs
-// Proyecto: D365_API_Nomina.WEBUI
-// Ruta: D365_API_Nomina.WEBUI/Services/Swagger/SwaggerService.cs
-// Descripción: Extensiones para registrar y usar Swagger con versionado por
-//              grupos (ApiExplorer.GroupName). Lee las versiones desde
-//              configuración: "Swagger:Versions": ["v1", "v2.0"].
-//              Incluye esquema de seguridad Bearer (JWT).
-// ============================================================================
-
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using System.Threading.Tasks;
 
-namespace D365_API_Nomina.WEBUI.Services.Swagger
+namespace D365_API_Nomina.WebUI.Services
 {
     public static class SwaggerService
     {
-        /// <summary>
-        /// Registra Swagger con agrupación por versión y soporte JWT Bearer.
-        /// También agrega la convención GroupForVersioningConvention a MVC.
-        /// </summary>
-        public static IServiceCollection AddVersionedSwagger(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
         {
-            // Convención para setear ApiExplorer.GroupName desde el namespace del controller
-            services.Configure<MvcOptions>(opt =>
+            services.AddSwaggerGen(options =>
             {
-                opt.Conventions.Add(new GroupForVersioningConvention());
-            });
+                options.SwaggerDoc("v1.0", new OpenApiInfo { Title = "Service payroll v1.0", Version = "v1.0" });
+                options.SwaggerDoc("v2.0", new OpenApiInfo { Title = "Service payroll v2.0", Version = "v2.0" });
 
-            // Leer versiones desde configuración
-            var versions = configuration.GetSection("Swagger:Versions").Get<string[]>() ?? new[] { "v1" };
-            var title = configuration["Swagger:Title"] ?? "D365 API Nómina";
-            var description = configuration["Swagger:Description"] ?? "API de Nómina";
-
-            services.AddSwaggerGen(c =>
-            {
-                // Definir documentos por versión
-                foreach (var v in versions.Distinct())
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    c.SwaggerDoc(v, new OpenApiInfo
-                    {
-                        Title = $"{title} {v}",
-                        Version = v,
-                        Description = description
-                    });
-                }
-
-                // Incluir solo acciones cuyo GroupName coincida con el doc actual
-                c.DocInclusionPredicate((docName, apiDesc) =>
-                {
-                    var groupName = apiDesc.GroupName ?? "v1";
-                    return string.Equals(groupName, docName, StringComparison.OrdinalIgnoreCase);
-                });
-
-                // Seguridad Bearer (JWT)
-                var securityScheme = new OpenApiSecurityScheme
-                {
+                    Description = "Type into the textbox: Bearer { your JWT token}.",
                     Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "Ingrese el token JWT como: Bearer {token}"
-                };
-                c.AddSecurityDefinition("Bearer", securityScheme);
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    { securityScheme, Array.Empty<string>() }
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header
                 });
 
-                // XML comments (si existen)
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                if (File.Exists(xmlPath))
-                    c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[]{ }
+                    }
+                });
+
+                //var filecommentui = Path.Combine(AppContext.BaseDirectory, "comments_webui.xml");
+                //options.IncludeXmlComments(filecommentui);
             });
 
             return services;
         }
 
-        /// <summary>
-        /// Activa Swagger y SwaggerUI, generando endpoints por cada versión configurada.
-        /// </summary>
-        public static IApplicationBuilder UseVersionedSwagger(this IApplicationBuilder app, IConfiguration configuration)
+        public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app)
         {
-            var versions = configuration.GetSection("Swagger:Versions").Get<string[]>() ?? new[] { "v1" };
-            var uiTitle = configuration["Swagger:UiTitle"] ?? "D365 API Nómina";
-
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                // Agregar cada especificación versionada
-                foreach (var v in versions.Distinct())
-                {
-                    c.SwaggerEndpoint($"/swagger/{v}/swagger.json", $"{uiTitle} {v}");
-                }
+                c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "Versioned API v1.0");
+                c.SwaggerEndpoint("/swagger/v2.0/swagger.json", "Versioned API v2.0");
 
-                // Ruta base de Swagger UI (p. ej. /swagger)
-                c.RoutePrefix = "swagger";
+                c.DocExpansion(DocExpansion.None);
+
             });
 
             return app;

@@ -61,12 +61,12 @@ namespace D365_API_Nomina.Infrastructure.Persistence
                 {
                     case EntityState.Added:
                         entry.Entity.CreatedBy = _CurrentUserInformation.Alias;
-                        entry.Entity.CreatedDateTime = dateTime;
+                        entry.Entity.CreatedOn = dateTime;
                         break;
 
                     case EntityState.Modified:
                         entry.Entity.ModifiedBy = _CurrentUserInformation.Alias;
-                        entry.Entity.ModifiedDateTime = dateTime;
+                        entry.Entity.ModifiedOn = dateTime;
                         break;
                 }
             }
@@ -77,17 +77,17 @@ namespace D365_API_Nomina.Infrastructure.Persistence
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        if (string.IsNullOrEmpty(entry.Entity.InCompany))
+                        if (string.IsNullOrEmpty(entry.Entity.DataareaID))
                         {
                             entry.Entity.CreatedBy = _CurrentUserInformation.Alias;
-                            entry.Entity.CreatedDateTime = dateTime;
-                            entry.Entity.InCompany = _CurrentUserInformation.Company;
+                            entry.Entity.CreatedOn = dateTime;
+                            entry.Entity.DataareaID = _CurrentUserInformation.Company;
                         }
                         break;
 
                     case EntityState.Modified:
                         entry.Entity.ModifiedBy = _CurrentUserInformation.Alias;
-                        entry.Entity.ModifiedDateTime = dateTime;
+                        entry.Entity.ModifiedOn = dateTime;
                         //entry.Entity.InCompany = _CurrentUserInformation.Company;
                         break;
                 }
@@ -107,13 +107,13 @@ namespace D365_API_Nomina.Infrastructure.Persistence
             //modelBuilder.Entity<Tax>().HasQueryFilter(b => b.InCompany == _CurrentUserInformation.Company);
 
             //Se define el filtro a aplicar
-            Expression<Func<AuditableCompanyEntity, bool>> expressionFilter = x => x.InCompany == _CurrentUserInformation.Company;
+            Expression<Func<AuditableCompanyEntity, bool>> expressionFilter = x => x.DataareaID == _CurrentUserInformation.Company;
 
             //Se buscan todas las entidades del context
             foreach (var item in modelBuilder.Model.GetEntityTypes())
             {
                 //Si tiene la propiedad InCompany es porque hereda de la clase AuditableCompanyEntity
-                var property = item.FindProperty("InCompany");
+                var property = item.FindProperty("DataareaID");
 
                 //Si la propiedad no está vacía se crea el nuevo filtro
                 if (property != null)

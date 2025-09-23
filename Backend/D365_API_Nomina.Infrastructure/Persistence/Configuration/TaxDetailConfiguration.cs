@@ -11,12 +11,12 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<TaxDetail> builder)
         {
-            builder.HasKey(x => new { x.InternalId, x.TaxId, x.InCompany });
+            builder.HasKey(x => new { x.InternalId, x.TaxId, x.DataareaID });
             builder.Property(x => x.InternalId).ValueGeneratedNever();
 
             builder.HasOne<Tax>()
                 .WithMany()
-                .HasForeignKey(x => new { x.TaxId, x.InCompany })
+                .HasForeignKey(x => new { x.TaxId, x.DataareaID })
                 .IsRequired();
         }
     }

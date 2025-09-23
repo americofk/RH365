@@ -38,14 +38,14 @@ namespace D365_API_Nomina.WEBUI.Controllers
         {
             // Nota: Si aún no agregaste DbSet<AuditLog> en ApplicationDbContext,
             // EF igual accede usando Set<AuditLog>().
-            var data = await _db.Set<AuditLog>()
+            var data = await _db.Set<Core.Domain.Entities.AuditLog>()
                                 .AsNoTracking()
                                 .OrderByDescending(x => x.RecId)
                                 .Select(x => new
                                 {
                                     x.RecId,
-                                    x.Id,
-                                    x.DataareaID,
+                                    x.ID,
+                                    x.DataAreaId,
                                     x.EntityName,
                                     x.FieldName,
                                     x.ChangedBy,
