@@ -26,7 +26,7 @@ namespace D365_API_Nomina.Core.Domain.Common
         /// Clave primaria INT asignada por SECUENCIA (no Identity).
         /// Configurar en Infrastructure: HasDefaultValueSql("NEXT VALUE FOR [Seq_<Tabla>_Id]").
         /// </summary>
-        [Key]
+       
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
@@ -35,7 +35,7 @@ namespace D365_API_Nomina.Core.Domain.Common
         /// Configurar en Infrastructure: HasDefaultValueSql("NEXT VALUE FOR [Seq_<Tabla>_RecId]").
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public Int64 RecId { get; set; }
+        public long RecId { get; set; }
 
         /// <summary>
         /// Usuario creador (NVARCHAR(50), NOT NULL).

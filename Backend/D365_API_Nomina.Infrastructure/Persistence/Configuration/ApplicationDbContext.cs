@@ -2,14 +2,15 @@
 // Archivo: ApplicationDbContext.cs
 // Proyecto: D365_API_Nomina.Infrastructure
 // Ruta: D365_API_Nomina.Infrastructure/Persistence/Configuration/ApplicationDbContext.cs
-// Descripción: Contexto principal de EF Core. Aplica todas las configuraciones
-//              IEntityTypeConfiguration<> del ensamblado Infrastructure y
+// Descripción: Contexto principal de EF Core. Registra DbSets requeridos,
+//              aplica configuraciones del ensamblado Infrastructure y
 //              configura la secuencia GLOBAL dbo.RecId.
 // ============================================================================
 
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using D365_API_Nomina.Core.Domain.Entities;
 
 namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 {
@@ -23,9 +24,14 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
         {
         }
 
-        // Agrega aquí tus DbSet<> cuando los vayas necesitando.
-        // Ejemplo:
-        // public DbSet<D365_API_Nomina.Core.Domain.Entities.AuditLog> AuditLogs { get; set; }
+        // ---------------------------------------------------------------------
+        // DbSets explícitos (garantizan inclusión de entidades en el modelo)
+        // ---------------------------------------------------------------------
+        public DbSet<AuditLog> AuditLogs { get; set; } = null!;
+        public DbSet<User> Users { get; set; } = null!; // ← Necesario para el login
+        // (Opcional si ya usarás compañías)
+        // public DbSet<Company> Companies { get; set; } = null!;
+        // public DbSet<CompaniesAssignedToUser> CompaniesAssignedToUsers { get; set; } = null!;
 
         /// <summary>
         /// Configuraciones del modelo (convenciones personalizadas).
@@ -36,7 +42,7 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
 
             // 1) Declarar la secuencia GLOBAL de RecId (para entornos nuevos con migrations).
             modelBuilder.HasSequence<long>("RecId", schema: "dbo")
-                        .StartsAt(2020450)  // Opcional: ajusta al valor actual si quieres
+                        .StartsAt(2020450)   // opcional: ajusta al valor actual si lo deseas
                         .IncrementsBy(1);
 
             // 2) Forzar que cualquier propiedad llamada "RecId" use la secuencia GLOBAL.
@@ -53,10 +59,7 @@ namespace D365_API_Nomina.Infrastructure.Persistence.Configuration
             }
 
             // 3) Aplicar automáticamente TODAS las configuraciones del ensamblado Infrastructure.
-            //    (Ej.: AuditableEntityConfiguration, AuditableCompanyEntityConfiguration, DepartmentConfiguration, etc.)
-            modelBuilder.ApplyConfigurationsFromAssembly(
-                Assembly.GetExecutingAssembly() // = Infrastructure
-            );
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

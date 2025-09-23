@@ -9,7 +9,7 @@ namespace D365_API_Nomina.Core.Domain.Entities;
 
 public partial class EmployeeWorkControlCalendar : AuditableCompanyEntity
 {
-    [Key]
+   
     public long RecID { get; set; }
 
     public int ID { get; set; }

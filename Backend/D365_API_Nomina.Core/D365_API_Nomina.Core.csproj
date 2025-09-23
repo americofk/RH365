@@ -7,10 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Application\CommandsAndQueries\" />
-    <Folder Include="Application\Common\" />
-    <Folder Include="Domain\Consts\" />
+    <Folder Include="Application\CommandsAndQueries\LicenseValidations\" />
+    <Folder Include="Application\CommandsAndQueries\Login\" />
+    <Folder Include="Application\Common\Helper\" />
+    <Folder Include="Application\Common\Interface\" />
+    <Folder Include="Application\Common\Model\" />
     <Folder Include="Domain\Enums\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.9" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>
 
 </Project>

@@ -10,10 +10,10 @@ namespace D365_API_Nomina.Core.Domain.Entities;
 
 public partial class CourseInstructor : AuditableCompanyEntity
 {
-    [Key]
+   
     public long CourseRefRecID { get; set; }
 
-    [Key]
+   
     [StringLength(100)]
     public string InstructorName { get; set; } = null!;
 

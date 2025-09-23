@@ -10,7 +10,7 @@ namespace D365_API_Nomina.Core.Domain.Entities;
 [Table("EmployeesAddress")]
 public partial class EmployeesAddress : AuditableCompanyEntity
 {
-    [Key]
+   
     public long RecID { get; set; }
 
     public int ID { get; set; }

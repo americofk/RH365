@@ -8,9 +8,9 @@ using D365_API_Nomina.Core.Domain.Common;
 namespace D365_API_Nomina.Core.Domain.Entities;
 
 [Table("EmployeeBanckAccount")]
-public partial class EmployeeBanckAccount : AuditableCompanyEntity
+public partial class EmployeeBankAccount : AuditableCompanyEntity
 {
-    [Key]
+   
     public long RecID { get; set; }
 
     public int ID { get; set; }
