@@ -18,17 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Common\Interfaces\" />
-    <Folder Include="Application\Common\Models\" />
-    <Folder Include="Application\Common\Filters\" />
-    <Folder Include="Application\Common\Helpers\" />
     <Folder Include="Application\Common\Validators\" />
     <Folder Include="Application\Features\Commands\" />
     <Folder Include="Application\Features\DTOs\" />
     <Folder Include="Application\Features\Queries\" />
-    <Folder Include="Domain\Common\" />
     <Folder Include="Domain\Events\" />
-    <Folder Include="Domain\Entities\" />
     <Folder Include="Domain\Enums\" />
     <Folder Include="Domain\Exceptions\" />
   </ItemGroup>

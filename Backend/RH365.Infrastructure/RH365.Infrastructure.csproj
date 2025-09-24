@@ -21,6 +21,7 @@
     <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\Seeds\" />
     <Folder Include="Service\" />
+    <Folder Include="TempScaffold\" />
   </ItemGroup>
 
   <ItemGroup>
