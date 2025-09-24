@@ -33,11 +33,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.RegisterDate).HasColumnType("datetime2").HasColumnName("RegisterDate");
             builder.Property(e => e.Type).HasMaxLength(255).HasColumnName("Type");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.EmployeeHistoryCode, e.DataareaID })

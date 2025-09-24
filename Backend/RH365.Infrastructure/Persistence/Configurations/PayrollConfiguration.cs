@@ -38,43 +38,43 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
             builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.CurrencyRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CurrencyRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeDeductionCodes)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeEarningCodes)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeExtraHours)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeLoanHistories)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeLoans)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeTaxes)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.PayCycles)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.PayrollsProcesses)
-                .WithOne(d => d.PayrollRefRec)
-                .HasForeignKey(d => d.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.CurrencyRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.CurrencyRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeDeductionCodes)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeEarningCodes)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeExtraHours)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeLoanHistories)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeLoans)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeTaxes)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.PayCycles)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.PayrollsProcesses)
+            //    .WithOne(d => d.PayrollRefRec)
+            //    .HasForeignKey(d => d.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.PayrollCode, e.DataareaID })

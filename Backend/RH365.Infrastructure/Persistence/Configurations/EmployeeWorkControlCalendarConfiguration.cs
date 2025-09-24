@@ -37,11 +37,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.WorkFrom).HasColumnType("time").HasColumnName("WorkFrom");
             builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.EmployeeRefRecID)

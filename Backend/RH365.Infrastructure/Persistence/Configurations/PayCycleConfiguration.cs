@@ -37,11 +37,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PeriodStartDate).HasColumnType("datetime2").HasColumnName("PeriodStartDate");
             builder.Property(e => e.StatusPeriod).HasColumnName("StatusPeriod");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.PayrollRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.PayrollRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.PayrollRefRecID)

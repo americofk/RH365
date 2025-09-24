@@ -25,7 +25,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("Course");
 
             // Configuración de propiedades
-            builder.Property(e => e.ClassRoomRefRec).HasColumnName("ClassRoomRefRec");
+            //builder.Property(e => e.ClassRoomRefRec).HasColumnName("ClassRoomRefRec");
             builder.Property(e => e.ClassRoomRefRecID).HasColumnName("ClassRoomRefRecID");
             builder.Property(e => e.CourseCode).IsRequired().HasMaxLength(50).HasColumnName("CourseCode");
             builder.Property(e => e.CourseParentId).HasMaxLength(255).HasColumnName("CourseParentId");
@@ -46,23 +46,23 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Topics).HasMaxLength(255).HasColumnName("Topics");
             builder.Property(e => e.UrlDocuments).HasMaxLength(255).HasColumnName("UrlDocuments");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.ClassRoomRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.ClassRoomRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.CourseEmployees)
-                .WithOne(d => d.CourseRefRec)
-                .HasForeignKey(d => d.CourseRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.CourseInstructors)
-                .WithOne(d => d.CourseRefRec)
-                .HasForeignKey(d => d.CourseRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.CourseTypeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CourseTypeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.ClassRoomRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.ClassRoomRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.CourseEmployees)
+            //    .WithOne(d => d.CourseRefRec)
+            //    .HasForeignKey(d => d.CourseRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.CourseInstructors)
+            //    .WithOne(d => d.CourseRefRec)
+            //    .HasForeignKey(d => d.CourseRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.CourseTypeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.CourseTypeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.CourseCode, e.DataareaID })

@@ -35,10 +35,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
 
             // Configuración de relaciones
-            builder.HasOne(e => e.CourseLocationRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CourseLocationRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+           
             builder.HasMany(e => e.Courses)
                 .WithOne(d => d.ClassRoomRefRec)
                 .HasForeignKey(d => d.ClassRoomRefRecID)

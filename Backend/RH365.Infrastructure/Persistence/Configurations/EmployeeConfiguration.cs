@@ -61,83 +61,83 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.WorkStatus).HasColumnName("WorkStatus");
             builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.CourseEmployees)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeBankAccounts)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeContactsInfs)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeDeductionCodes)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeDepartments)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeDocuments)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeEarningCodes)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeExtraHours)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeHistories)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeImages)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeLoanHistories)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeLoans)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeePositions)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeTaxes)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeWorkCalendars)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeWorkControlCalendars)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeesAddresses)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.PayrollProcessActions)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.PayrollProcessDetails)
-                .WithOne(d => d.EmployeeRefRec)
-                .HasForeignKey(d => d.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.CourseEmployees)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeBankAccounts)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeContactsInfs)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeDeductionCodes)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeDepartments)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeDocuments)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeEarningCodes)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeExtraHours)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeHistories)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeImages)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeLoanHistories)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeLoans)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeePositions)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeTaxes)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeWorkCalendars)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeWorkControlCalendars)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeesAddresses)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.PayrollProcessActions)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.PayrollProcessDetails)
+            //    .WithOne(d => d.EmployeeRefRec)
+            //    .HasForeignKey(d => d.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.EmployeeCode, e.DataareaID })

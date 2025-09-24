@@ -29,11 +29,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.ClassRooms)
-                .WithOne(d => d.CourseLocationRefRec)
-                .HasForeignKey(d => d.CourseLocationRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.ClassRooms)
+            //    .WithOne(d => d.CourseLocationRefRec)
+            //    .HasForeignKey(d => d.CourseLocationRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.CourseLocationCode, e.DataareaID })

@@ -34,19 +34,19 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
             builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PayrollRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.TaxRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.TaxRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PayrollRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.TaxRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.TaxRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.TaxRefRecID)

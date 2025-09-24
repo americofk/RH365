@@ -44,19 +44,19 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.TotalTssAmount).HasPrecision(18, 4).HasColumnName("TotalTssAmount");
             builder.Property(e => e.TotalTssAndTaxAmount).HasPrecision(18, 4).HasColumnName("TotalTssAndTaxAmount");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.DepartmentRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PayrollProcessRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollProcessRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.DepartmentRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PayrollProcessRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollProcessRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.PayrollProcessRefRecID)

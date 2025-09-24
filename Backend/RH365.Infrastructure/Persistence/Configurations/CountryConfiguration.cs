@@ -30,15 +30,15 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.NationalityCode).IsRequired().HasMaxLength(50).HasColumnName("NationalityCode");
             builder.Property(e => e.NationalityName).IsRequired().HasMaxLength(255).HasColumnName("NationalityName");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.Companies)
-                .WithOne(d => d.CountryRefRec)
-                .HasForeignKey(d => d.CountryRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeesAddresses)
-                .WithOne(d => d.CountryRefRec)
-                .HasForeignKey(d => d.CountryRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.Companies)
+            //    .WithOne(d => d.CountryRefRec)
+            //    .HasForeignKey(d => d.CountryRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeesAddresses)
+            //    .WithOne(d => d.CountryRefRec)
+            //    .HasForeignKey(d => d.CountryRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.CountryCode, e.DataareaID })

@@ -46,31 +46,31 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
             builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.CurrencyRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CurrencyRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.DepartmentRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeTaxes)
-                .WithOne(d => d.TaxRefRec)
-                .HasForeignKey(d => d.TaxRefRec)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.ProjectCategoryRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.ProjectCategoryRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.ProjectRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.ProjectRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.TaxDetails)
-                .WithOne(d => d.TaxRefRec)
-                .HasForeignKey(d => d.TaxRefRec)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.CurrencyRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.CurrencyRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.DepartmentRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeTaxes)
+            //    .WithOne(d => d.TaxRefRec)
+            //    .HasForeignKey(d => d.TaxRefRec)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.ProjectCategoryRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.ProjectCategoryRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.ProjectRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.ProjectRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.TaxDetails)
+            //    .WithOne(d => d.TaxRefRec)
+            //    .HasForeignKey(d => d.TaxRefRec)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.TaxCode, e.DataareaID })

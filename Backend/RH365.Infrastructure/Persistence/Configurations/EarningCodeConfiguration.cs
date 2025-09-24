@@ -46,19 +46,19 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.WorkFrom).HasColumnType("time").HasColumnName("WorkFrom");
             builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.DepartmentRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeEarningCodes)
-                .WithOne(d => d.EarningCodeRefRec)
-                .HasForeignKey(d => d.EarningCodeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeExtraHours)
-                .WithOne(d => d.EarningCodeRefRec)
-                .HasForeignKey(d => d.EarningCodeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.DepartmentRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeEarningCodes)
+            //    .WithOne(d => d.EarningCodeRefRec)
+            //    .HasForeignKey(d => d.EarningCodeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeExtraHours)
+            //    .WithOne(d => d.EarningCodeRefRec)
+            //    .HasForeignKey(d => d.EarningCodeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
         }

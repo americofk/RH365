@@ -33,11 +33,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.TaxRefRec).HasColumnName("TaxRefRec");
             builder.Property(e => e.TaxRefRecID).HasColumnName("TaxRefRecID");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.TaxRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.TaxRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.TaxRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.TaxRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.TaxRefRecID)

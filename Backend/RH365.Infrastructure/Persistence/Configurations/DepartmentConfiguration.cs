@@ -33,31 +33,31 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.QtyWorkers).HasColumnName("QtyWorkers");
             builder.Property(e => e.StartDate).HasColumnType("datetime2").HasColumnName("StartDate");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.EarningCodes)
-                .WithOne(d => d.DepartmentRefRec)
-                .HasForeignKey(d => d.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeDepartments)
-                .WithOne(d => d.DepartmentRefRec)
-                .HasForeignKey(d => d.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.Loans)
-                .WithOne(d => d.DepartmentRefRec)
-                .HasForeignKey(d => d.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.PayrollProcessDetails)
-                .WithOne(d => d.DepartmentRefRec)
-                .HasForeignKey(d => d.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.Positions)
-                .WithOne(d => d.DepartmentRefRec)
-                .HasForeignKey(d => d.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.Taxes)
-                .WithOne(d => d.DepartmentRefRec)
-                .HasForeignKey(d => d.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.EarningCodes)
+            //    .WithOne(d => d.DepartmentRefRec)
+            //    .HasForeignKey(d => d.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeDepartments)
+            //    .WithOne(d => d.DepartmentRefRec)
+            //    .HasForeignKey(d => d.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.Loans)
+            //    .WithOne(d => d.DepartmentRefRec)
+            //    .HasForeignKey(d => d.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.PayrollProcessDetails)
+            //    .WithOne(d => d.DepartmentRefRec)
+            //    .HasForeignKey(d => d.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.Positions)
+            //    .WithOne(d => d.DepartmentRefRec)
+            //    .HasForeignKey(d => d.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.Taxes)
+            //    .WithOne(d => d.DepartmentRefRec)
+            //    .HasForeignKey(d => d.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.DepartmentCode, e.DataareaID })

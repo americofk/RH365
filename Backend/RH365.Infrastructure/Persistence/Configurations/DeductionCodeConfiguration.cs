@@ -51,11 +51,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
             builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.EmployeeDeductionCodes)
-                .WithOne(d => d.DeductionCodeRefRec)
-                .HasForeignKey(d => d.DeductionCodeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.EmployeeDeductionCodes)
+            //    .WithOne(d => d.DeductionCodeRefRec)
+            //    .HasForeignKey(d => d.DeductionCodeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
         }

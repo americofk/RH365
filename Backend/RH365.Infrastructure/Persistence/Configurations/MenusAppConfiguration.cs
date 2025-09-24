@@ -35,19 +35,19 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.MenuName).IsRequired().HasMaxLength(255).HasColumnName("MenuName");
             builder.Property(e => e.Sort).HasColumnName("Sort");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.InverseMenuFatherRefRec)
-                .WithOne(d => d.MenuFatherRefRec)
-                .HasForeignKey(d => d.MenuFatherRefRec)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.MenuAssignedToUsers)
-                .WithOne(d => d.MenuRefRec)
-                .HasForeignKey(d => d.MenuRefRec)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.MenuFatherRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.MenuFatherRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.InverseMenuFatherRefRec)
+            //    .WithOne(d => d.MenuFatherRefRec)
+            //    .HasForeignKey(d => d.MenuFatherRefRec)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.MenuAssignedToUsers)
+            //    .WithOne(d => d.MenuRefRec)
+            //    .HasForeignKey(d => d.MenuRefRec)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.MenuFatherRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.MenuFatherRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.MenuCode, e.DataareaID })

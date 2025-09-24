@@ -28,11 +28,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.FormatCode1).HasMaxLength(50).HasColumnName("FormatCode1");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.Users)
-                .WithOne(d => d.FormatCodeRefRec)
-                .HasForeignKey(d => d.FormatCodeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.Users)
+            //    .WithOne(d => d.FormatCodeRefRec)
+            //    .HasForeignKey(d => d.FormatCodeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
         }

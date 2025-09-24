@@ -28,19 +28,19 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CurrencyCode).IsRequired().HasMaxLength(50).HasColumnName("CurrencyCode");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.Companies)
-                .WithOne(d => d.CurrencyRefRec)
-                .HasForeignKey(d => d.CurrencyRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.Payrolls)
-                .WithOne(d => d.CurrencyRefRec)
-                .HasForeignKey(d => d.CurrencyRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.Taxes)
-                .WithOne(d => d.CurrencyRefRec)
-                .HasForeignKey(d => d.CurrencyRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.Companies)
+            //    .WithOne(d => d.CurrencyRefRec)
+            //    .HasForeignKey(d => d.CurrencyRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.Payrolls)
+            //    .WithOne(d => d.CurrencyRefRec)
+            //    .HasForeignKey(d => d.CurrencyRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.Taxes)
+            //    .WithOne(d => d.CurrencyRefRec)
+            //    .HasForeignKey(d => d.CurrencyRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.CurrencyCode, e.DataareaID })

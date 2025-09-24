@@ -42,27 +42,27 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
             builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.DepartmentRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeLoanHistories)
-                .WithOne(d => d.LoanRefRec)
-                .HasForeignKey(d => d.LoanRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeeLoans)
-                .WithOne(d => d.LoanRefRec)
-                .HasForeignKey(d => d.LoanRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.ProjCategoryRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.ProjCategoryRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.ProjectRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.ProjectRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.DepartmentRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeLoanHistories)
+            //    .WithOne(d => d.LoanRefRec)
+            //    .HasForeignKey(d => d.LoanRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeeLoans)
+            //    .WithOne(d => d.LoanRefRec)
+            //    .HasForeignKey(d => d.LoanRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.ProjCategoryRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.ProjCategoryRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.ProjectRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.ProjectRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.LoanCode, e.DataareaID })

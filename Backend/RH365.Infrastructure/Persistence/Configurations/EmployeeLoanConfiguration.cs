@@ -42,23 +42,23 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
             builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.EmployeeLoanHistories)
-                .WithOne(d => d.EmployeeLoanRefRec)
-                .HasForeignKey(d => d.EmployeeLoanRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.LoanRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.LoanRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PayrollRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.EmployeeLoanHistories)
+            //    .WithOne(d => d.EmployeeLoanRefRec)
+            //    .HasForeignKey(d => d.EmployeeLoanRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.LoanRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.LoanRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PayrollRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.LoanRefRecID)

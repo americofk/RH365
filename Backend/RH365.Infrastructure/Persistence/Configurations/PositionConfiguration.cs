@@ -39,31 +39,31 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PositionStatus).HasColumnName("PositionStatus");
             builder.Property(e => e.StartDate).HasColumnType("datetime2").HasColumnName("StartDate");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.DepartmentRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.DepartmentRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.EmployeePositions)
-                .WithOne(d => d.PositionRefRec)
-                .HasForeignKey(d => d.PositionRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.InverseNotifyPositionRefRec)
-                .WithOne(d => d.NotifyPositionRefRec)
-                .HasForeignKey(d => d.NotifyPositionRefRec)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.JobRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.JobRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.NotifyPositionRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.NotifyPositionRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.PositionRequirements)
-                .WithOne(d => d.PositionRefRec)
-                .HasForeignKey(d => d.PositionRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.DepartmentRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.DepartmentRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.EmployeePositions)
+            //    .WithOne(d => d.PositionRefRec)
+            //    .HasForeignKey(d => d.PositionRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.InverseNotifyPositionRefRec)
+            //    .WithOne(d => d.NotifyPositionRefRec)
+            //    .HasForeignKey(d => d.NotifyPositionRefRec)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.JobRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.JobRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.NotifyPositionRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.NotifyPositionRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.PositionRequirements)
+            //    .WithOne(d => d.PositionRefRec)
+            //    .HasForeignKey(d => d.PositionRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.PositionCode, e.DataareaID })

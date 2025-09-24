@@ -38,15 +38,15 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Sector).HasMaxLength(255).HasColumnName("Sector");
             builder.Property(e => e.Street).HasMaxLength(255).HasColumnName("Street");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.CountryRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CountryRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.CountryRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.CountryRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.EmployeeRefRecID)

@@ -30,11 +30,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.JobStatus).HasColumnName("JobStatus");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.Positions)
-                .WithOne(d => d.JobRefRec)
-                .HasForeignKey(d => d.JobRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.Positions)
+            //    .WithOne(d => d.JobRefRec)
+            //    .HasForeignKey(d => d.JobRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.JobCode, e.DataareaID })

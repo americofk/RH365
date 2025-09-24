@@ -47,23 +47,23 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.StartPeriodForPaid).HasColumnName("StartPeriodForPaid");
             builder.Property(e => e.ToDate).HasColumnType("time").HasColumnName("ToDate");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.EarningCodeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EarningCodeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PayrollProcessRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollProcessRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PayrollRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.EarningCodeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EarningCodeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PayrollProcessRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollProcessRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PayrollRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.EarningCodeRefRecID)

@@ -34,15 +34,15 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PositionRefRecID).HasColumnName("PositionRefRecID");
             builder.Property(e => e.ToDate).HasColumnType("time").HasColumnName("ToDate");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PositionRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PositionRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PositionRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PositionRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.EmployeeRefRecID)

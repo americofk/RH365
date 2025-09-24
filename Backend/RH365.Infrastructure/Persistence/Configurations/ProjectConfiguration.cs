@@ -30,19 +30,19 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ProjectCode).IsRequired().HasMaxLength(50).HasColumnName("ProjectCode");
             builder.Property(e => e.ProjectStatus).HasColumnName("ProjectStatus");
 
-            // Configuración de relaciones
-            builder.HasMany(e => e.Loans)
-                .WithOne(d => d.ProjectRefRec)
-                .HasForeignKey(d => d.ProjectRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.ProjectCategories)
-                .WithOne(d => d.ProjectRefRec)
-                .HasForeignKey(d => d.ProjectRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.Taxes)
-                .WithOne(d => d.ProjectRefRec)
-                .HasForeignKey(d => d.ProjectRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasMany(e => e.Loans)
+            //    .WithOne(d => d.ProjectRefRec)
+            //    .HasForeignKey(d => d.ProjectRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.ProjectCategories)
+            //    .WithOne(d => d.ProjectRefRec)
+            //    .HasForeignKey(d => d.ProjectRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.Taxes)
+            //    .WithOne(d => d.ProjectRefRec)
+            //    .HasForeignKey(d => d.ProjectRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.ProjectCode, e.DataareaID })

@@ -30,11 +30,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.UserRefRec).HasColumnName("UserRefRec");
             builder.Property(e => e.UserRefRecID).HasColumnName("UserRefRecID");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.UserRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.UserRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.UserRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.UserRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.UserRefRecID)

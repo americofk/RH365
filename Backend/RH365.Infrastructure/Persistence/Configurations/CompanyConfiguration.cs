@@ -39,23 +39,23 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Phone).HasMaxLength(20).HasColumnName("Phone");
             builder.Property(e => e.Responsible).HasMaxLength(255).HasColumnName("Responsible");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.CountryRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CountryRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.CurrencyRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CurrencyRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.CompaniesAssignedToUsers)
-                .WithOne(d => d.CompanyRefRec)
-                .HasForeignKey(d => d.CompanyRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasMany(e => e.Users)
-                .WithOne(d => d.CompanyDefaultRefRec)
-                .HasForeignKey(d => d.CompanyDefaultRefRec)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.CountryRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.CountryRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.CurrencyRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.CurrencyRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.CompaniesAssignedToUsers)
+            //    .WithOne(d => d.CompanyRefRec)
+            //    .HasForeignKey(d => d.CompanyRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasMany(e => e.Users)
+            //    .WithOne(d => d.CompanyDefaultRefRec)
+            //    .HasForeignKey(d => d.CompanyDefaultRefRec)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => new { e.CompanyCode, e.DataareaID })

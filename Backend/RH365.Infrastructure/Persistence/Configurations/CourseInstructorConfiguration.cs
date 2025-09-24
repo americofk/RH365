@@ -30,11 +30,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CourseRefRecID).HasColumnName("CourseRefRecID");
             builder.Property(e => e.InstructorName).IsRequired().HasMaxLength(255).HasColumnName("InstructorName");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.CourseRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.CourseRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.CourseRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.CourseRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.CourseRefRecID)

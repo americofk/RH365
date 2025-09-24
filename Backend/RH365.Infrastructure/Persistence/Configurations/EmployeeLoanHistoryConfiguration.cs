@@ -44,27 +44,27 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PeriodStartDate).HasColumnType("datetime2").HasColumnName("PeriodStartDate");
             builder.Property(e => e.TotalDues).HasColumnName("TotalDues");
 
-            // Configuración de relaciones
-            builder.HasOne(e => e.EmployeeLoanRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeLoanRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.LoanRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.LoanRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PayrollProcessRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollProcessRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            builder.HasOne(e => e.PayrollRefRec)
-                .WithMany()
-                .HasForeignKey(e => e.PayrollRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            //// Configuración de relaciones
+            //builder.HasOne(e => e.EmployeeLoanRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeLoanRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.EmployeeRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.EmployeeRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.LoanRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.LoanRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PayrollProcessRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollProcessRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            //builder.HasOne(e => e.PayrollRefRec)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PayrollRefRecID)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.EmployeeLoanRefRecID)
