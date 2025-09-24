@@ -1,35 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: CourseEmployee.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Training/CourseEmployee.cs
+// Descripción: Relación de inscripción de empleados a cursos de capacitación.
+//   - Cumple ISO 27001 heredando de AuditableCompanyEntity (ID, RecID, Auditoría,
+//     DataareaID, Observations, RowVersion)
+//   - Many-to-many entre Course y Employee con datos adicionales (Comment)
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
 
-public partial class CourseEmployee
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa la inscripción de un empleado a un curso de capacitación.
+    /// </summary>
+    public class CourseEmployee : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al curso inscrito.
+        /// </summary>
+        public long CourseRefRecID { get; set; }
 
-    public int Id { get; set; }
+        /// <summary>
+        /// FK al empleado inscrito.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public long CourseRefRecId { get; set; }
+        /// <summary>
+        /// Comentario opcional sobre la inscripción (motivo, notas del área, etc.).
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string? Comment { get; set; }
+        /// <summary>
+        /// Curso al que pertenece la inscripción.
+        /// </summary>
+        public virtual Course CourseRefRec { get; set; } = null!;
 
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Course CourseRefRec { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+        /// <summary>
+        /// Empleado inscrito en el curso.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
+    }
 }

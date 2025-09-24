@@ -1,43 +1,61 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: ClassRoom.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Education/ClassRoom.cs
+// Descripción: Entidad que representa un aula disponible para impartir cursos.
+//   - Relacionada con CourseLocation y Course
+//   - Incluye herencia de AuditableCompanyEntity para cumplir ISO 27001
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class ClassRoom
+namespace RH365.Core.Domain.Entities
 {
-    public int RecId { get; set; }
+    /// <summary>
+    /// Representa un aula disponible dentro de una ubicación para impartir cursos.
+    /// </summary>
+    public class ClassRoom : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del aula.
+        /// </summary>
+        public string ClassRoomCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre descriptivo del aula.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string ClassRoomCode { get; set; } = null!;
+        /// <summary>
+        /// FK a la ubicación del curso donde se encuentra el aula.
+        /// </summary>
+        public long CourseLocationRefRecID { get; set; }
 
-    public string Name { get; set; } = null!;
+        /// <summary>
+        /// Cantidad máxima de estudiantes permitidos en el aula.
+        /// </summary>
+        public int MaxStudentQty { get; set; }
 
-    public long CourseLocationRefRecId { get; set; }
+        /// <summary>
+        /// Comentario adicional sobre el aula.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public int MaxStudentQty { get; set; }
+        /// <summary>
+        /// Hora de inicio de disponibilidad del aula.
+        /// </summary>
+        public TimeOnly AvailableTimeStart { get; set; }
 
-    public string? Comment { get; set; }
+        /// <summary>
+        /// Hora de fin de disponibilidad del aula.
+        /// </summary>
+        public TimeOnly AvailableTimeEnd { get; set; }
 
-    public TimeOnly AvailableTimeStart { get; set; }
-
-    public TimeOnly AvailableTimeEnd { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual CourseLocation CourseLocationRefRec { get; set; } = null!;
-
-    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+        // Propiedades de navegación
+        public virtual CourseLocation CourseLocationRefRec { get; set; } = null!;
+        public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+    }
 }

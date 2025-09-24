@@ -1,47 +1,80 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: MenusApp.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Security/MenusApp.cs
+// Descripción: Entidad que representa los menús de la aplicación.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite estructurar menús jerárquicos con acciones y privilegios
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class MenusApp
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un menú de la aplicación.
+    /// </summary>
+    public class MenusApp : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del menú.
+        /// </summary>
+        public string MenuCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre del menú.
+        /// </summary>
+        public string MenuName { get; set; } = null!;
 
-    public string MenuCode { get; set; } = null!;
+        /// <summary>
+        /// Descripción del menú.
+        /// </summary>
+        public string? Description { get; set; }
 
-    public string MenuName { get; set; } = null!;
+        /// <summary>
+        /// Acción o ruta asociada al menú.
+        /// </summary>
+        public string? Action { get; set; }
 
-    public string? Description { get; set; }
+        /// <summary>
+        /// Icono que representa visualmente al menú.
+        /// </summary>
+        public string Icon { get; set; } = null!;
 
-    public string? Action { get; set; }
+        /// <summary>
+        /// FK al menú padre (para jerarquía).
+        /// </summary>
+        public long? MenuFatherRefRecID { get; set; }
 
-    public string Icon { get; set; } = null!;
+        /// <summary>
+        /// Orden en que se mostrará el menú.
+        /// </summary>
+        public int Sort { get; set; }
 
-    public long? MenuFatherRefRecId { get; set; }
+        /// <summary>
+        /// Indica si el menú es visible.
+        /// </summary>
+        public bool IsViewMenu { get; set; }
 
-    public int Sort { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool IsViewMenu { get; set; }
+        /// <summary>
+        /// Submenús asociados a este menú.
+        /// </summary>
+        public virtual ICollection<MenusApp> InverseMenuFatherRefRec { get; set; } = new List<MenusApp>();
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Asignaciones de este menú a usuarios.
+        /// </summary>
+        public virtual ICollection<MenuAssignedToUser> MenuAssignedToUsers { get; set; } = new List<MenuAssignedToUser>();
 
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<MenusApp> InverseMenuFatherRefRec { get; set; } = new List<MenusApp>();
-
-    public virtual ICollection<MenuAssignedToUser> MenuAssignedToUsers { get; set; } = new List<MenuAssignedToUser>();
-
-    public virtual MenusApp? MenuFatherRefRec { get; set; }
+        /// <summary>
+        /// Menú padre (si aplica).
+        /// </summary>
+        public virtual MenusApp? MenuFatherRefRec { get; set; }
+    }
 }

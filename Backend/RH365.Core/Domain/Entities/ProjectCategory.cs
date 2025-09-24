@@ -1,39 +1,61 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: ProjectCategory.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Projects/ProjectCategory.cs
+// Descripción: Entidad que representa categorías de proyectos dentro del sistema.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Relaciona categorías con proyectos, préstamos e impuestos
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class ProjectCategory
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una categoría asociada a un proyecto.
+    /// </summary>
+    public class ProjectCategory : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Nombre de la categoría de proyecto.
+        /// </summary>
+        public string CategoryName { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Cuenta contable vinculada a la categoría.
+        /// </summary>
+        public string? LedgerAccount { get; set; }
 
-    public string CategoryName { get; set; } = null!;
+        /// <summary>
+        /// FK al proyecto relacionado.
+        /// </summary>
+        public long ProjectRefRecID { get; set; }
 
-    public string? LedgerAccount { get; set; }
+        /// <summary>
+        /// Estado de la categoría (activa/inactiva).
+        /// </summary>
+        public bool ProjectCategoryStatus { get; set; }
 
-    public long ProjectRefRecId { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool ProjectCategoryStatus { get; set; }
+        /// <summary>
+        /// Préstamos relacionados con esta categoría.
+        /// </summary>
+        public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Proyecto al que pertenece la categoría.
+        /// </summary>
+        public virtual Project ProjectRefRec { get; set; } = null!;
 
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();
-
-    public virtual Project ProjectRefRec { get; set; } = null!;
-
-    public virtual ICollection<Taxis> Taxes { get; set; } = new List<Taxis>();
+        /// <summary>
+        /// Impuestos asociados a esta categoría.
+        /// </summary>
+        public virtual ICollection<Taxis> Taxes { get; set; } = new List<Taxis>();
+    }
 }

@@ -89,7 +89,7 @@ namespace RH365.Core.Application.Common.Interfaces
         DbSet<EmployeeLoan> EmployeeLoans { get; }
         DbSet<EmployeeLoanHistory> EmployeeLoanHistories { get; }
         DbSet<EmployeePosition> EmployeePositions { get; }
-        DbSet<EmployeeTaxis> EmployeeTaxes { get; }
+        DbSet<EmployeeTax> EmployeeTaxes { get; }
         DbSet<EmployeeWorkCalendar> EmployeeWorkCalendars { get; }
         DbSet<EmployeeWorkControlCalendar> EmployeeWorkControlCalendars { get; }
         DbSet<EmployeesAddress> EmployeesAddresses { get; }

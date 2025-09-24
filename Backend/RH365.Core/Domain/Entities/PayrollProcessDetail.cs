@@ -1,61 +1,115 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: PayrollProcessDetail.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Payroll/PayrollProcessDetail.cs
+// Descripción: Detalle del proceso de nómina para cada empleado.
+//   - Cumple ISO 27001 heredando de AuditableCompanyEntity
+//   - Contiene totales de pago, impuestos, TSS y datos de transferencia
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 
-public partial class PayrollProcessDetail
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa el detalle del proceso de nómina aplicado a un empleado.
+    /// </summary>
+    public class PayrollProcessDetail : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al proceso de nómina correspondiente.
+        /// </summary>
+        public long PayrollProcessRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK al empleado procesado.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public long PayrollProcessRefRecId { get; set; }
+        /// <summary>
+        /// Total a pagar al empleado.
+        /// </summary>
+        public decimal TotalAmount { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Total de impuestos aplicados.
+        /// </summary>
+        public decimal TotalTaxAmount { get; set; }
 
-    public decimal TotalAmount { get; set; }
+        /// <summary>
+        /// Método de pago utilizado (transferencia, cheque, efectivo).
+        /// </summary>
+        public int PayMethod { get; set; }
 
-    public decimal TotalTaxAmount { get; set; }
+        /// <summary>
+        /// Número de cuenta bancaria utilizada.
+        /// </summary>
+        public string? BankAccount { get; set; }
 
-    public int PayMethod { get; set; }
+        /// <summary>
+        /// Nombre del banco asociado al pago.
+        /// </summary>
+        public string? BankName { get; set; }
 
-    public string? BankAccount { get; set; }
+        /// <summary>
+        /// Documento de referencia del pago (cheque, recibo).
+        /// </summary>
+        public string? Document { get; set; }
 
-    public string? BankName { get; set; }
+        /// <summary>
+        /// FK al departamento del empleado.
+        /// </summary>
+        public long? DepartmentRefRecID { get; set; }
 
-    public string? Document { get; set; }
+        /// <summary>
+        /// Nombre del departamento del empleado.
+        /// </summary>
+        public string? DepartmentName { get; set; }
 
-    public long? DepartmentRefRecId { get; set; }
+        /// <summary>
+        /// Estado del proceso de nómina para este registro.
+        /// </summary>
+        public int PayrollProcessStatus { get; set; }
 
-    public string? DepartmentName { get; set; }
+        /// <summary>
+        /// Nombre del empleado.
+        /// </summary>
+        public string? EmployeeName { get; set; }
 
-    public int PayrollProcessStatus { get; set; }
+        /// <summary>
+        /// Fecha de inicio de labores del empleado.
+        /// </summary>
+        public DateTime StartWorkDate { get; set; }
 
-    public string? EmployeeName { get; set; }
+        /// <summary>
+        /// Total de aportes a la TSS.
+        /// </summary>
+        public decimal TotalTssAmount { get; set; }
 
-    public DateTime StartWorkDate { get; set; }
+        /// <summary>
+        /// Total de aportes a la TSS más impuestos.
+        /// </summary>
+        public decimal TotalTssAndTaxAmount { get; set; }
 
-    public decimal TotalTssAmount { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public decimal TotalTssAndTaxAmount { get; set; }
+        /// <summary>
+        /// Departamento relacionado.
+        /// </summary>
+        public virtual Department? DepartmentRefRec { get; set; }
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Empleado al que corresponde el detalle.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
 
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Department? DepartmentRefRec { get; set; }
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    public virtual PayrollsProcess PayrollProcessRefRec { get; set; } = null!;
+        /// <summary>
+        /// Proceso de nómina relacionado.
+        /// </summary>
+        public virtual PayrollsProcess PayrollProcessRefRec { get; set; } = null!;
+    }
 }

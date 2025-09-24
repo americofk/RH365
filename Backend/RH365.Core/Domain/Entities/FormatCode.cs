@@ -1,31 +1,41 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: FormatCode.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/General/FormatCode.cs
+// Descripción: Entidad que representa los formatos de codificación disponibles.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Se utiliza para asociar formatos a usuarios y otros procesos del sistema
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class FormatCode
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un formato de codificación dentro del sistema.
+    /// </summary>
+    public class FormatCode : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del formato.
+        /// </summary>
+        public string FormatCode1 { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre descriptivo del formato.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string FormatCode1 { get; set; } = null!;
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string Name { get; set; } = null!;
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<User> Users { get; set; } = new List<User>();
+        /// <summary>
+        /// Colección de usuarios asociados a este formato.
+        /// </summary>
+        public virtual ICollection<User> Users { get; set; } = new List<User>();
+    }
 }

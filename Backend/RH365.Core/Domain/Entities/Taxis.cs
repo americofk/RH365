@@ -1,69 +1,135 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: Taxis.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Payroll/Taxis.cs
+// Descripción: Entidad que representa los impuestos configurados en el sistema.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Define reglas de cálculo, períodos, límites y relaciones con proyectos
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class Taxis
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un impuesto configurado en el sistema.
+    /// </summary>
+    public class Taxis : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del impuesto.
+        /// </summary>
+        public string TaxCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre del impuesto.
+        /// </summary>
+        public string? Name { get; set; }
 
-    public string TaxCode { get; set; } = null!;
+        /// <summary>
+        /// Cuenta contable asociada al impuesto.
+        /// </summary>
+        public string? LedgerAccount { get; set; }
 
-    public string? Name { get; set; }
+        /// <summary>
+        /// Fecha de inicio de vigencia del impuesto.
+        /// </summary>
+        public DateTime ValidFrom { get; set; }
 
-    public string? LedgerAccount { get; set; }
+        /// <summary>
+        /// Fecha de fin de vigencia del impuesto.
+        /// </summary>
+        public DateTime ValidTo { get; set; }
 
-    public DateTime ValidFrom { get; set; }
+        /// <summary>
+        /// FK a la moneda en la que se expresa el impuesto.
+        /// </summary>
+        public long CurrencyRefRecID { get; set; }
 
-    public DateTime ValidTo { get; set; }
+        /// <summary>
+        /// Factor multiplicador para el cálculo del impuesto.
+        /// </summary>
+        public decimal MultiplyAmount { get; set; }
 
-    public long CurrencyRefRecId { get; set; }
+        /// <summary>
+        /// Frecuencia de pago del impuesto.
+        /// </summary>
+        public int PayFrecuency { get; set; }
 
-    public decimal MultiplyAmount { get; set; }
+        /// <summary>
+        /// Descripción del impuesto.
+        /// </summary>
+        public string? Description { get; set; }
 
-    public int PayFrecuency { get; set; }
+        /// <summary>
+        /// Período límite aplicable al impuesto.
+        /// </summary>
+        public string? LimitPeriod { get; set; }
 
-    public string? Description { get; set; }
+        /// <summary>
+        /// Monto límite del impuesto.
+        /// </summary>
+        public decimal LimitAmount { get; set; }
 
-    public string? LimitPeriod { get; set; }
+        /// <summary>
+        /// Índice base para cálculo.
+        /// </summary>
+        public int IndexBase { get; set; }
 
-    public decimal LimitAmount { get; set; }
+        /// <summary>
+        /// FK al proyecto relacionado (opcional).
+        /// </summary>
+        public long? ProjectRefRecID { get; set; }
 
-    public int IndexBase { get; set; }
+        /// <summary>
+        /// FK a la categoría de proyecto relacionada (opcional).
+        /// </summary>
+        public long? ProjectCategoryRefRecID { get; set; }
 
-    public long? ProjectRefRecId { get; set; }
+        /// <summary>
+        /// FK al departamento relacionado (opcional).
+        /// </summary>
+        public long? DepartmentRefRecID { get; set; }
 
-    public long? ProjectCategoryRefRecId { get; set; }
+        /// <summary>
+        /// Estado del impuesto (activo/inactivo).
+        /// </summary>
+        public bool TaxStatus { get; set; }
 
-    public long? DepartmentRefRecId { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool TaxStatus { get; set; }
+        /// <summary>
+        /// Moneda en la que se expresa el impuesto.
+        /// </summary>
+        public virtual Currency CurrencyRefRec { get; set; } = null!;
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Departamento al que se asocia el impuesto.
+        /// </summary>
+        public virtual Department? DepartmentRefRec { get; set; }
 
-    public string DataareaId { get; set; } = null!;
+        /// <summary>
+        /// Relación con impuestos aplicados a empleados.
+        /// </summary>
+        public virtual ICollection<EmployeeTax> EmployeeTaxes { get; set; } = new List<EmployeeTax>();
 
-    public string CreatedBy { get; set; } = null!;
+        /// <summary>
+        /// Categoría de proyecto vinculada.
+        /// </summary>
+        public virtual ProjectCategory? ProjectCategoryRefRec { get; set; }
 
-    public DateTime CreatedOn { get; set; }
+        /// <summary>
+        /// Proyecto vinculado al impuesto.
+        /// </summary>
+        public virtual Project? ProjectRefRec { get; set; }
 
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Currency CurrencyRefRec { get; set; } = null!;
-
-    public virtual Department? DepartmentRefRec { get; set; }
-
-    public virtual ICollection<EmployeeTaxis> EmployeeTaxes { get; set; } = new List<EmployeeTaxis>();
-
-    public virtual ProjectCategory? ProjectCategoryRefRec { get; set; }
-
-    public virtual Project? ProjectRefRec { get; set; }
-
-    public virtual ICollection<TaxDetail> TaxDetails { get; set; } = new List<TaxDetail>();
+        /// <summary>
+        /// Detalles de cálculo del impuesto.
+        /// </summary>
+        public virtual ICollection<TaxDetail> TaxDetails { get; set; } = new List<TaxDetail>();
+    }
 }

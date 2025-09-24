@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\D365_API_Nomina.Core\RH365.Core.csproj" />
     <ProjectReference Include="..\RH365.Core\RH365.Core.csproj" />
   </ItemGroup>
 
@@ -15,13 +14,10 @@
     <Folder Include="External\DGII\" />
     <Folder Include="External\Banking\" />
     <Folder Include="External\TSS\" />
-    <Folder Include="Persistence\Context\" />
     <Folder Include="Persistence\Configurations\" />
     <Folder Include="Persistence\Interceptors\" />
     <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\Seeds\" />
-    <Folder Include="Service\" />
-    <Folder Include="TempScaffold\" />
   </ItemGroup>
 
   <ItemGroup>

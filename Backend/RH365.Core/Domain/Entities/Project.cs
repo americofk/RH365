@@ -1,39 +1,61 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: Project.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Projects/Project.cs
+// Descripción: Entidad que representa un proyecto dentro del sistema.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Contiene información de código, nombre, cuenta contable y estado
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class Project
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un proyecto registrado en el sistema.
+    /// </summary>
+    public class Project : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del proyecto.
+        /// </summary>
+        public string ProjectCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre del proyecto.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string ProjectCode { get; set; } = null!;
+        /// <summary>
+        /// Cuenta contable asociada al proyecto.
+        /// </summary>
+        public string? LedgerAccount { get; set; }
 
-    public string Name { get; set; } = null!;
+        /// <summary>
+        /// Estado del proyecto (activo/inactivo).
+        /// </summary>
+        public bool ProjectStatus { get; set; }
 
-    public string? LedgerAccount { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool ProjectStatus { get; set; }
+        /// <summary>
+        /// Préstamos vinculados al proyecto.
+        /// </summary>
+        public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Categorías de proyecto asociadas.
+        /// </summary>
+        public virtual ICollection<ProjectCategory> ProjectCategories { get; set; } = new List<ProjectCategory>();
 
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();
-
-    public virtual ICollection<ProjectCategory> ProjectCategories { get; set; } = new List<ProjectCategory>();
-
-    public virtual ICollection<Taxis> Taxes { get; set; } = new List<Taxis>();
+        /// <summary>
+        /// Impuestos relacionados al proyecto.
+        /// </summary>
+        public virtual ICollection<Taxis> Taxes { get; set; } = new List<Taxis>();
+    }
 }

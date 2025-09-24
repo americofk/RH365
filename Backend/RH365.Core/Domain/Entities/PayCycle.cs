@@ -1,47 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: PayCycle.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Payroll/PayCycle.cs
+// Descripción: Entidad que representa los ciclos de pago de una nómina.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite definir períodos de pago, montos y fechas asociadas
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 
-public partial class PayCycle
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un ciclo de pago dentro de una nómina.
+    /// </summary>
+    public class PayCycle : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Identificador interno del ciclo de pago.
+        /// </summary>
+        public int PayCycleId { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK a la nómina a la que pertenece este ciclo.
+        /// </summary>
+        public long PayrollRefRecID { get; set; }
 
-    public int PayCycleId { get; set; }
+        /// <summary>
+        /// Fecha de inicio del período de pago.
+        /// </summary>
+        public DateTime PeriodStartDate { get; set; }
 
-    public long PayrollRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de finalización del período de pago.
+        /// </summary>
+        public DateTime PeriodEndDate { get; set; }
 
-    public DateTime PeriodStartDate { get; set; }
+        /// <summary>
+        /// Fecha de pago predeterminada para el ciclo.
+        /// </summary>
+        public DateTime DefaultPayDate { get; set; }
 
-    public DateTime PeriodEndDate { get; set; }
+        /// <summary>
+        /// Fecha real en que se realiza el pago.
+        /// </summary>
+        public DateTime PayDate { get; set; }
 
-    public DateTime DefaultPayDate { get; set; }
+        /// <summary>
+        /// Monto total pagado en el período.
+        /// </summary>
+        public decimal AmountPaidPerPeriod { get; set; }
 
-    public DateTime PayDate { get; set; }
+        /// <summary>
+        /// Estado del ciclo de pago.
+        /// </summary>
+        public int StatusPeriod { get; set; }
 
-    public decimal AmountPaidPerPeriod { get; set; }
+        /// <summary>
+        /// Indica si el ciclo es considerado para impuestos.
+        /// </summary>
+        public bool IsForTax { get; set; }
 
-    public int StatusPeriod { get; set; }
+        /// <summary>
+        /// Indica si el ciclo es considerado para la TSS.
+        /// </summary>
+        public bool IsForTss { get; set; }
 
-    public bool IsForTax { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool IsForTss { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Payroll PayrollRefRec { get; set; } = null!;
+        /// <summary>
+        /// Nómina relacionada con el ciclo de pago.
+        /// </summary>
+        public virtual Payroll PayrollRefRec { get; set; } = null!;
+    }
 }

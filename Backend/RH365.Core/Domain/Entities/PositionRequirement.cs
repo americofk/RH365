@@ -1,33 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: PositionRequirement.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Organization/PositionRequirement.cs
+// Descripción: Entidad que representa los requisitos asociados a un puesto.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Define nombre y detalle del requisito vinculado a un puesto
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class PositionRequirement
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un requisito asociado a un puesto de trabajo.
+    /// </summary>
+    public class PositionRequirement : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Nombre del requisito.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Detalle o descripción del requisito.
+        /// </summary>
+        public string Detail { get; set; } = null!;
 
-    public string Name { get; set; } = null!;
+        /// <summary>
+        /// FK al puesto que requiere este requisito.
+        /// </summary>
+        public long PositionRefRecID { get; set; }
 
-    public string Detail { get; set; } = null!;
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public long PositionRefRecId { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Position PositionRefRec { get; set; } = null!;
+        /// <summary>
+        /// Puesto al que pertenece el requisito.
+        /// </summary>
+        public virtual Position PositionRefRec { get; set; } = null!;
+    }
 }

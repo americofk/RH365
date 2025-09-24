@@ -1,61 +1,116 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: Loan.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Finance/Loan.cs
+// Descripción: Entidad que representa los tipos de préstamos disponibles.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite configurar montos, períodos, frecuencia de pago y relación con proyectos
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class Loan
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un tipo de préstamo en el sistema.
+    /// </summary>
+    public class Loan : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del préstamo.
+        /// </summary>
+        public string LoanCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre descriptivo del préstamo.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string LoanCode { get; set; } = null!;
+        /// <summary>
+        /// Fecha de inicio de vigencia del préstamo.
+        /// </summary>
+        public DateTime ValidFrom { get; set; }
 
-    public string Name { get; set; } = null!;
+        /// <summary>
+        /// Fecha de finalización de vigencia del préstamo.
+        /// </summary>
+        public DateTime ValidTo { get; set; }
 
-    public DateTime ValidTo { get; set; }
+        /// <summary>
+        /// Monto multiplicador aplicado al préstamo.
+        /// </summary>
+        public decimal MultiplyAmount { get; set; }
 
-    public DateTime ValidFrom { get; set; }
+        /// <summary>
+        /// Cuenta contable asociada (si aplica).
+        /// </summary>
+        public string? LedgerAccount { get; set; }
 
-    public decimal MultiplyAmount { get; set; }
+        /// <summary>
+        /// Descripción adicional del préstamo.
+        /// </summary>
+        public string? Description { get; set; }
 
-    public string? LedgerAccount { get; set; }
+        /// <summary>
+        /// Frecuencia de pago del préstamo.
+        /// </summary>
+        public int PayFrecuency { get; set; }
 
-    public string? Description { get; set; }
+        /// <summary>
+        /// Índice base utilizado para el cálculo.
+        /// </summary>
+        public int IndexBase { get; set; }
 
-    public int PayFrecuency { get; set; }
+        /// <summary>
+        /// FK al departamento relacionado (si aplica).
+        /// </summary>
+        public long? DepartmentRefRecID { get; set; }
 
-    public int IndexBase { get; set; }
+        /// <summary>
+        /// FK a la categoría de proyecto relacionada (si aplica).
+        /// </summary>
+        public long? ProjCategoryRefRecID { get; set; }
 
-    public long? DepartmentRefRecId { get; set; }
+        /// <summary>
+        /// FK al proyecto relacionado (si aplica).
+        /// </summary>
+        public long? ProjectRefRecID { get; set; }
 
-    public long? ProjCategoryRefRecId { get; set; }
+        /// <summary>
+        /// Estado del préstamo (activo/inactivo).
+        /// </summary>
+        public bool LoanStatus { get; set; }
 
-    public long? ProjectRefRecId { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool LoanStatus { get; set; }
+        /// <summary>
+        /// Departamento relacionado con el préstamo.
+        /// </summary>
+        public virtual Department? DepartmentRefRec { get; set; }
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Historial de préstamos de empleados relacionados.
+        /// </summary>
+        public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
 
-    public string DataareaId { get; set; } = null!;
+        /// <summary>
+        /// Relación de préstamos otorgados a empleados.
+        /// </summary>
+        public virtual ICollection<EmployeeLoan> EmployeeLoans { get; set; } = new List<EmployeeLoan>();
 
-    public string CreatedBy { get; set; } = null!;
+        /// <summary>
+        /// Categoría de proyecto relacionada.
+        /// </summary>
+        public virtual ProjectCategory? ProjCategoryRefRec { get; set; }
 
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Department? DepartmentRefRec { get; set; }
-
-    public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
-
-    public virtual ICollection<EmployeeLoan> EmployeeLoans { get; set; } = new List<EmployeeLoan>();
-
-    public virtual ProjectCategory? ProjCategoryRefRec { get; set; }
-
-    public virtual Project? ProjectRefRec { get; set; }
+        /// <summary>
+        /// Proyecto relacionado.
+        /// </summary>
+        public virtual Project? ProjectRefRec { get; set; }
+    }
 }

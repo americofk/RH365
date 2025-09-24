@@ -1,57 +1,105 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: EmployeeDeductionCode.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/EmployeeDeductionCode.cs
+// Descripción: Relación que representa las deducciones aplicadas a un empleado.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite registrar deducciones periódicas, montos y parámetros de cálculo
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 
-public partial class EmployeeDeductionCode
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una deducción aplicada a un empleado dentro de la nómina.
+    /// </summary>
+    public class EmployeeDeductionCode : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al código de deducción.
+        /// </summary>
+        public long DeductionCodeRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK al empleado afectado por la deducción.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public long DeductionCodeRefRecId { get; set; }
+        /// <summary>
+        /// FK a la nómina en la que se aplica la deducción.
+        /// </summary>
+        public long PayrollRefRecID { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de inicio de aplicación de la deducción.
+        /// </summary>
+        public DateTime FromDate { get; set; }
 
-    public long PayrollRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de finalización de aplicación de la deducción.
+        /// </summary>
+        public DateTime ToDate { get; set; }
 
-    public DateTime FromDate { get; set; }
+        /// <summary>
+        /// Índice de deducción aplicado.
+        /// </summary>
+        public decimal IndexDeduction { get; set; }
 
-    public DateTime ToDate { get; set; }
+        /// <summary>
+        /// Porcentaje de deducción aplicado al empleado.
+        /// </summary>
+        public decimal PercentDeduction { get; set; }
 
-    public decimal IndexDeduction { get; set; }
+        /// <summary>
+        /// Porcentaje de contribución asociado.
+        /// </summary>
+        public decimal PercentContribution { get; set; }
 
-    public decimal PercentDeduction { get; set; }
+        /// <summary>
+        /// Comentario adicional sobre la deducción.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public decimal PercentContribution { get; set; }
+        /// <summary>
+        /// Monto fijo de la deducción.
+        /// </summary>
+        public decimal DeductionAmount { get; set; }
 
-    public string? Comment { get; set; }
+        /// <summary>
+        /// Frecuencia de pago en la que aplica la deducción.
+        /// </summary>
+        public int PayFrecuency { get; set; }
 
-    public decimal DeductionAmount { get; set; }
+        /// <summary>
+        /// Cantidad de períodos a pagar.
+        /// </summary>
+        public int QtyPeriodForPaid { get; set; }
 
-    public int PayFrecuency { get; set; }
+        /// <summary>
+        /// Período inicial de pago.
+        /// </summary>
+        public int StartPeriodForPaid { get; set; }
 
-    public int QtyPeriodForPaid { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public int StartPeriodForPaid { get; set; }
+        /// <summary>
+        /// Código de deducción relacionado.
+        /// </summary>
+        public virtual DeductionCode DeductionCodeRefRec { get; set; } = null!;
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Empleado relacionado.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
 
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual DeductionCode DeductionCodeRefRec { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    public virtual Payroll PayrollRefRec { get; set; } = null!;
+        /// <summary>
+        /// Nómina relacionada.
+        /// </summary>
+        public virtual Payroll PayrollRefRec { get; set; } = null!;
+    }
 }

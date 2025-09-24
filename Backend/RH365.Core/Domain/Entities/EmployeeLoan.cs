@@ -1,59 +1,111 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: EmployeeLoan.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/EmployeeLoan.cs
+// Descripción: Relación que representa los préstamos otorgados a empleados.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite registrar montos, cuotas, pagos y saldos pendientes
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class EmployeeLoan
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un préstamo asignado a un empleado.
+    /// </summary>
+    public class EmployeeLoan : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al préstamo otorgado.
+        /// </summary>
+        public long LoanRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK al empleado beneficiario del préstamo.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public long LoanRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de inicio de vigencia del préstamo.
+        /// </summary>
+        public DateTime ValidFrom { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de finalización de vigencia del préstamo.
+        /// </summary>
+        public DateTime ValidTo { get; set; }
 
-    public DateTime ValidTo { get; set; }
+        /// <summary>
+        /// Monto total del préstamo.
+        /// </summary>
+        public decimal LoanAmount { get; set; }
 
-    public DateTime ValidFrom { get; set; }
+        /// <summary>
+        /// Período en que inicia el pago.
+        /// </summary>
+        public int StartPeriodForPaid { get; set; }
 
-    public decimal LoanAmount { get; set; }
+        /// <summary>
+        /// Monto ya pagado del préstamo.
+        /// </summary>
+        public decimal PaidAmount { get; set; }
 
-    public int StartPeriodForPaid { get; set; }
+        /// <summary>
+        /// Monto pendiente de pago del préstamo.
+        /// </summary>
+        public decimal PendingAmount { get; set; }
 
-    public decimal PaidAmount { get; set; }
+        /// <summary>
+        /// FK a la nómina en la que se descuenta el préstamo.
+        /// </summary>
+        public long PayrollRefRecID { get; set; }
 
-    public decimal PendingAmount { get; set; }
+        /// <summary>
+        /// Cantidad total de cuotas definidas.
+        /// </summary>
+        public int TotalDues { get; set; }
 
-    public long PayrollRefRecId { get; set; }
+        /// <summary>
+        /// Cantidad de cuotas pendientes de pago.
+        /// </summary>
+        public int PendingDues { get; set; }
 
-    public int TotalDues { get; set; }
+        /// <summary>
+        /// Cantidad de períodos de pago definidos.
+        /// </summary>
+        public int QtyPeriodForPaid { get; set; }
 
-    public int PendingDues { get; set; }
+        /// <summary>
+        /// Monto asignado por cada cuota.
+        /// </summary>
+        public decimal AmountByDues { get; set; }
 
-    public int QtyPeriodForPaid { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public decimal AmountByDues { get; set; }
+        /// <summary>
+        /// Historial de pagos del préstamo.
+        /// </summary>
+        public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Empleado beneficiario del préstamo.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
 
-    public string DataareaId { get; set; } = null!;
+        /// <summary>
+        /// Préstamo relacionado.
+        /// </summary>
+        public virtual Loan LoanRefRec { get; set; } = null!;
 
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    public virtual Loan LoanRefRec { get; set; } = null!;
-
-    public virtual Payroll PayrollRefRec { get; set; } = null!;
+        /// <summary>
+        /// Nómina relacionada con los descuentos.
+        /// </summary>
+        public virtual Payroll PayrollRefRec { get; set; } = null!;
+    }
 }

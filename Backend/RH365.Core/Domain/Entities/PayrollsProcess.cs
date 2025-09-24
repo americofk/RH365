@@ -1,73 +1,145 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: PayrollsProcess.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Payroll/PayrollsProcess.cs
+// Descripción: Entidad que representa un proceso de nómina ejecutado en el sistema.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Contiene información de períodos, pagos, estado y relación con empleados
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class PayrollsProcess
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un proceso de nómina ejecutado en el sistema.
+    /// </summary>
+    public class PayrollsProcess : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del proceso de nómina.
+        /// </summary>
+        public string PayrollProcessCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK a la nómina asociada al proceso.
+        /// </summary>
+        public long? PayrollRefRecID { get; set; }
 
-    public string PayrollProcessCode { get; set; } = null!;
+        /// <summary>
+        /// Descripción del proceso de nómina.
+        /// </summary>
+        public string? Description { get; set; }
 
-    public long? PayrollRefRecId { get; set; }
+        /// <summary>
+        /// Fecha en la que se realiza el pago.
+        /// </summary>
+        public DateTime PaymentDate { get; set; }
 
-    public string? Description { get; set; }
+        /// <summary>
+        /// Cantidad de empleados incluidos en el proceso.
+        /// </summary>
+        public int EmployeeQuantity { get; set; }
 
-    public DateTime PaymentDate { get; set; }
+        /// <summary>
+        /// Proyecto asociado (opcional).
+        /// </summary>
+        public string? ProjId { get; set; }
 
-    public int EmployeeQuantity { get; set; }
+        /// <summary>
+        /// Categoría del proyecto asociada (opcional).
+        /// </summary>
+        public string? ProjCategoryId { get; set; }
 
-    public string? ProjId { get; set; }
+        /// <summary>
+        /// Fecha de inicio del período de nómina.
+        /// </summary>
+        public DateTime PeriodStartDate { get; set; }
 
-    public string? ProjCategoryId { get; set; }
+        /// <summary>
+        /// Fecha de fin del período de nómina.
+        /// </summary>
+        public DateTime PeriodEndDate { get; set; }
 
-    public DateTime PeriodStartDate { get; set; }
+        /// <summary>
+        /// Identificador del ciclo de pago.
+        /// </summary>
+        public int PayCycleId { get; set; }
 
-    public DateTime PeriodEndDate { get; set; }
+        /// <summary>
+        /// Cantidad de empleados incluidos para pago.
+        /// </summary>
+        public int EmployeeQuantityForPay { get; set; }
 
-    public int PayCycleId { get; set; }
+        /// <summary>
+        /// Estado del proceso de nómina.
+        /// </summary>
+        public int PayrollProcessStatus { get; set; }
 
-    public int EmployeeQuantityForPay { get; set; }
+        /// <summary>
+        /// Indica si el ciclo aplica impuestos.
+        /// </summary>
+        public bool IsPayCycleTax { get; set; }
 
-    public int PayrollProcessStatus { get; set; }
+        /// <summary>
+        /// Indica si el proceso fue usado para impuestos.
+        /// </summary>
+        public bool UsedForTax { get; set; }
 
-    public bool IsPayCycleTax { get; set; }
+        /// <summary>
+        /// Indica si aplica a la nómina de regalía.
+        /// </summary>
+        public bool IsRoyaltyPayroll { get; set; }
 
-    public bool UsedForTax { get; set; }
+        /// <summary>
+        /// Indica si el ciclo aplica TSS.
+        /// </summary>
+        public bool IsPayCycleTss { get; set; }
 
-    public bool IsRoyaltyPayroll { get; set; }
+        /// <summary>
+        /// Indica si el proceso fue usado para TSS.
+        /// </summary>
+        public bool UsedForTss { get; set; }
 
-    public bool IsPayCycleTss { get; set; }
+        /// <summary>
+        /// Indica si aplica a nómina por horas.
+        /// </summary>
+        public bool IsForHourPayroll { get; set; }
 
-    public bool UsedForTss { get; set; }
+        /// <summary>
+        /// Monto total a pagar en el proceso.
+        /// </summary>
+        public decimal TotalAmountToPay { get; set; }
 
-    public bool IsForHourPayroll { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public decimal TotalAmountToPay { get; set; }
+        /// <summary>
+        /// Códigos de percepciones asociados.
+        /// </summary>
+        public virtual ICollection<EmployeeEarningCode> EmployeeEarningCodes { get; set; } = new List<EmployeeEarningCode>();
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Historial de préstamos de empleados incluidos en el proceso.
+        /// </summary>
+        public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
 
-    public string DataareaId { get; set; } = null!;
+        /// <summary>
+        /// Acciones aplicadas a los empleados en el proceso.
+        /// </summary>
+        public virtual ICollection<PayrollProcessAction> PayrollProcessActions { get; set; } = new List<PayrollProcessAction>();
 
-    public string CreatedBy { get; set; } = null!;
+        /// <summary>
+        /// Detalles individuales por empleado en el proceso.
+        /// </summary>
+        public virtual ICollection<PayrollProcessDetail> PayrollProcessDetails { get; set; } = new List<PayrollProcessDetail>();
 
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<EmployeeEarningCode> EmployeeEarningCodes { get; set; } = new List<EmployeeEarningCode>();
-
-    public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
-
-    public virtual ICollection<PayrollProcessAction> PayrollProcessActions { get; set; } = new List<PayrollProcessAction>();
-
-    public virtual ICollection<PayrollProcessDetail> PayrollProcessDetails { get; set; } = new List<PayrollProcessDetail>();
-
-    public virtual Payroll? PayrollRefRec { get; set; }
+        /// <summary>
+        /// Nómina relacionada con el proceso.
+        /// </summary>
+        public virtual Payroll? PayrollRefRec { get; set; }
+    }
 }

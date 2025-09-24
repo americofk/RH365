@@ -1,39 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: EmployeeDocument.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/EmployeeDocument.cs
+// Descripción: Entidad que representa los documentos asociados a un empleado.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite almacenar documentos con control de vigencia y archivo adjunto
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class EmployeeDocument
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un documento asociado a un empleado.
+    /// </summary>
+    public class EmployeeDocument : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al empleado propietario del documento.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Tipo de documento (ejemplo: cédula, pasaporte).
+        /// </summary>
+        public int DocumentType { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Número del documento.
+        /// </summary>
+        public string DocumentNumber { get; set; } = null!;
 
-    public int DocumentType { get; set; }
+        /// <summary>
+        /// Fecha de vencimiento del documento.
+        /// </summary>
+        public DateTime DueDate { get; set; }
 
-    public string DocumentNumber { get; set; } = null!;
+        /// <summary>
+        /// Archivo adjunto en formato binario.
+        /// </summary>
+        public byte[]? FileAttach { get; set; }
 
-    public DateTime DueDate { get; set; }
+        /// <summary>
+        /// Indica si este documento es el principal.
+        /// </summary>
+        public bool IsPrincipal { get; set; }
 
-    public byte[]? FileAttach { get; set; }
+        /// <summary>
+        /// Comentario adicional sobre el documento.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public bool IsPrincipal { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string? Comment { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+        /// <summary>
+        /// Empleado asociado al documento.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
+    }
 }

@@ -1,29 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: Occupation.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/Occupation.cs
+// Descripción: Catálogo de ocupaciones disponibles en el sistema.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class Occupation
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una ocupación registrada en el sistema.
+    /// </summary>
+    public class Occupation : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único de la ocupación.
+        /// </summary>
+        public string OccupationCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
-
-    public string OccupationCode { get; set; } = null!;
-
-    public string? Description { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
+        /// <summary>
+        /// Descripción de la ocupación.
+        /// </summary>
+        public string? Description { get; set; }
+    }
 }

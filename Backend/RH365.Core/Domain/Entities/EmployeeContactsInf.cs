@@ -1,35 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: EmployeeContactsInf.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/EmployeeContactsInf.cs
+// Descripción: Entidad que representa la información de contacto de un empleado.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite registrar múltiples medios de contacto y definir uno principal
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class EmployeeContactsInf
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un medio de contacto de un empleado.
+    /// </summary>
+    public class EmployeeContactsInf : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al empleado propietario del contacto.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Tipo de contacto (ejemplo: teléfono, email).
+        /// </summary>
+        public int ContactType { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Valor del contacto (ejemplo: número o dirección de correo).
+        /// </summary>
+        public string ContactValue { get; set; } = null!;
 
-    public int ContactType { get; set; }
+        /// <summary>
+        /// Indica si este contacto es el principal del empleado.
+        /// </summary>
+        public bool IsPrincipal { get; set; }
 
-    public string ContactValue { get; set; } = null!;
+        /// <summary>
+        /// Comentario adicional sobre el contacto.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public bool IsPrincipal { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string? Comment { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+        /// <summary>
+        /// Empleado asociado a la información de contacto.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
+    }
 }

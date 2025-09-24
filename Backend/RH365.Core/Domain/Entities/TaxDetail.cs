@@ -1,39 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: TaxDetail.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Payroll/TaxDetail.cs
+// Descripción: Entidad que representa los detalles de cálculo de un impuesto.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Define escalas, porcentajes y montos aplicables a un impuesto
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 
-public partial class TaxDetail
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa los detalles de cálculo de un impuesto.
+    /// </summary>
+    public class TaxDetail : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al impuesto al que pertenece este detalle.
+        /// </summary>
+        public long TaxRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Monto anual mayor a partir del cual aplica la escala.
+        /// </summary>
+        public decimal AnnualAmountHigher { get; set; }
 
-    public long TaxRefRecId { get; set; }
+        /// <summary>
+        /// Monto anual máximo que no debe ser excedido en la escala.
+        /// </summary>
+        public decimal AnnualAmountNotExceed { get; set; }
 
-    public decimal AnnualAmountHigher { get; set; }
+        /// <summary>
+        /// Porcentaje aplicable de impuesto.
+        /// </summary>
+        public decimal Percent { get; set; }
 
-    public decimal AnnualAmountNotExceed { get; set; }
+        /// <summary>
+        /// Monto fijo a aplicar en la escala.
+        /// </summary>
+        public decimal FixedAmount { get; set; }
 
-    public decimal Percent { get; set; }
+        /// <summary>
+        /// Escala aplicable al cálculo.
+        /// </summary>
+        public decimal ApplicableScale { get; set; }
 
-    public decimal FixedAmount { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public decimal ApplicableScale { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Taxis TaxRefRec { get; set; } = null!;
+        /// <summary>
+        /// Impuesto al que pertenece el detalle.
+        /// </summary>
+        public virtual Taxis TaxRefRec { get; set; } = null!;
+    }
 }

@@ -1,39 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: MenuAssignedToUser.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Security/MenuAssignedToUser.cs
+// Descripción: Relación que representa la asignación de menús a usuarios.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite definir privilegios de visualización, edición y eliminación
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 
-public partial class MenuAssignedToUser
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa la asignación de un menú a un usuario con privilegios definidos.
+    /// </summary>
+    public class MenuAssignedToUser : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al usuario asignado.
+        /// </summary>
+        public long UserRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK al menú asignado.
+        /// </summary>
+        public long MenuRefRecID { get; set; }
 
-    public long UserRefRecId { get; set; }
+        /// <summary>
+        /// Indica si el usuario tiene privilegio de visualización.
+        /// </summary>
+        public bool PrivilegeView { get; set; }
 
-    public long MenuRefRecId { get; set; }
+        /// <summary>
+        /// Indica si el usuario tiene privilegio de edición.
+        /// </summary>
+        public bool PrivilegeEdit { get; set; }
 
-    public bool PrivilegeView { get; set; }
+        /// <summary>
+        /// Indica si el usuario tiene privilegio de eliminación.
+        /// </summary>
+        public bool PrivilegeDelete { get; set; }
 
-    public bool PrivilegeEdit { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool PrivilegeDelete { get; set; }
+        /// <summary>
+        /// Menú asignado al usuario.
+        /// </summary>
+        public virtual MenusApp MenuRefRec { get; set; } = null!;
 
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual MenusApp MenuRefRec { get; set; } = null!;
-
-    public virtual User UserRefRec { get; set; } = null!;
+        /// <summary>
+        /// Usuario asignado al menú.
+        /// </summary>
+        public virtual User UserRefRec { get; set; } = null!;
+    }
 }

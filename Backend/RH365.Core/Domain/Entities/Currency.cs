@@ -1,35 +1,35 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: Currency.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/General/Currency.cs
+// Descripción: Entidad que representa las monedas soportadas en el sistema.
+//   - Asociada a empresas, nóminas e impuestos
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class Currency
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una moneda utilizada en el sistema.
+    /// </summary>
+    public class Currency : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único de la moneda (ejemplo: "DOP", "USD").
+        /// </summary>
+        public string CurrencyCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre de la moneda.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string CurrencyCode { get; set; } = null!;
-
-    public string Name { get; set; } = null!;
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<Company> Companies { get; set; } = new List<Company>();
-
-    public virtual ICollection<Payroll> Payrolls { get; set; } = new List<Payroll>();
-
-    public virtual ICollection<Taxis> Taxes { get; set; } = new List<Taxis>();
+        public virtual ICollection<Company> Companies { get; set; } = new List<Company>();
+        public virtual ICollection<Payroll> Payrolls { get; set; } = new List<Payroll>();
+        public virtual ICollection<Taxis> Taxes { get; set; } = new List<Taxis>();
+    }
 }

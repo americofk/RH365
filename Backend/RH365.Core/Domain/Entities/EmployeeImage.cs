@@ -1,35 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: EmployeeImage.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/EmployeeImage.cs
+// Descripción: Entidad que representa las imágenes o fotografías de un empleado.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite almacenar múltiples imágenes y marcar una como principal
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class EmployeeImage
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una imagen asociada a un empleado.
+    /// </summary>
+    public class EmployeeImage : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al empleado propietario de la imagen.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Archivo binario de la imagen.
+        /// </summary>
+        public byte[]? Image { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Extensión del archivo (ejemplo: .jpg, .png).
+        /// </summary>
+        public string Extension { get; set; } = null!;
 
-    public byte[]? Image { get; set; }
+        /// <summary>
+        /// Indica si la imagen es la principal del empleado.
+        /// </summary>
+        public bool IsPrincipal { get; set; }
 
-    public string Extension { get; set; } = null!;
+        /// <summary>
+        /// Comentario adicional sobre la imagen.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public bool IsPrincipal { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string? Comment { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+        /// <summary>
+        /// Empleado asociado a la imagen.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
+    }
 }

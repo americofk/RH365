@@ -1,67 +1,130 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: EmployeeEarningCode.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/EmployeeEarningCode.cs
+// Descripción: Relación que representa las percepciones asignadas a un empleado.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite registrar valores fijos, horas extras, periodicidad y reglas de cálculo
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 
-public partial class EmployeeEarningCode
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una percepción (earning) asignada a un empleado dentro de la nómina.
+    /// </summary>
+    public class EmployeeEarningCode : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al código de percepción.
+        /// </summary>
+        public long EarningCodeRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK al empleado que recibe la percepción.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public long EarningCodeRefRecId { get; set; }
+        /// <summary>
+        /// FK a la nómina donde se aplica la percepción.
+        /// </summary>
+        public long PayrollRefRecID { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// FK al proceso de nómina (si aplica).
+        /// </summary>
+        public long? PayrollProcessRefRecID { get; set; }
 
-    public long PayrollRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de inicio de aplicación.
+        /// </summary>
+        public DateTime FromDate { get; set; }
 
-    public long? PayrollProcessRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de finalización de aplicación.
+        /// </summary>
+        public DateTime ToDate { get; set; }
 
-    public DateTime FromDate { get; set; }
+        /// <summary>
+        /// Índice de cálculo de la percepción.
+        /// </summary>
+        public decimal IndexEarning { get; set; }
 
-    public DateTime ToDate { get; set; }
+        /// <summary>
+        /// Cantidad de unidades (ejemplo: horas).
+        /// </summary>
+        public int Quantity { get; set; }
 
-    public decimal IndexEarning { get; set; }
+        /// <summary>
+        /// Comentario adicional sobre la percepción.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public int Quantity { get; set; }
+        /// <summary>
+        /// Cantidad de períodos de pago.
+        /// </summary>
+        public int QtyPeriodForPaid { get; set; }
 
-    public string? Comment { get; set; }
+        /// <summary>
+        /// Período inicial de pago.
+        /// </summary>
+        public int StartPeriodForPaid { get; set; }
 
-    public int QtyPeriodForPaid { get; set; }
+        /// <summary>
+        /// Índice de percepción mensual.
+        /// </summary>
+        public decimal IndexEarningMonthly { get; set; }
 
-    public int StartPeriodForPaid { get; set; }
+        /// <summary>
+        /// Frecuencia de pago.
+        /// </summary>
+        public int PayFrecuency { get; set; }
 
-    public decimal IndexEarningMonthly { get; set; }
+        /// <summary>
+        /// Índice de percepción diaria.
+        /// </summary>
+        public decimal IndexEarningDiary { get; set; }
 
-    public int PayFrecuency { get; set; }
+        /// <summary>
+        /// Indica si se usa para reportes a la DGT.
+        /// </summary>
+        public bool IsUseDgt { get; set; }
 
-    public decimal IndexEarningDiary { get; set; }
+        /// <summary>
+        /// Índice de percepción por hora.
+        /// </summary>
+        public decimal IndexEarningHour { get; set; }
 
-    public bool IsUseDgt { get; set; }
+        /// <summary>
+        /// Indica si se utiliza cálculo por hora.
+        /// </summary>
+        public bool IsUseCalcHour { get; set; }
 
-    public decimal IndexEarningHour { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool IsUseCalcHour { get; set; }
+        /// <summary>
+        /// Código de percepción relacionado.
+        /// </summary>
+        public virtual EarningCode EarningCodeRefRec { get; set; } = null!;
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Empleado relacionado.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
 
-    public string DataareaId { get; set; } = null!;
+        /// <summary>
+        /// Proceso de nómina relacionado.
+        /// </summary>
+        public virtual PayrollsProcess? PayrollProcessRefRec { get; set; }
 
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual EarningCode EarningCodeRefRec { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    public virtual PayrollsProcess? PayrollProcessRefRec { get; set; }
-
-    public virtual Payroll PayrollRefRec { get; set; } = null!;
+        /// <summary>
+        /// Nómina relacionada.
+        /// </summary>
+        public virtual Payroll PayrollRefRec { get; set; } = null!;
+    }
 }

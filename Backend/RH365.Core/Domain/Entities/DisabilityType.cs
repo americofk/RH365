@@ -1,29 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: DisabilityType.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/DisabilityType.cs
+// Descripción: Catálogo de tipos de discapacidad para empleados.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
 
-public partial class DisabilityType
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un tipo de discapacidad dentro del sistema.
+    /// </summary>
+    public class DisabilityType : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único del tipo de discapacidad.
+        /// </summary>
+        public string DisabilityTypeCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
-
-    public string DisabilityTypeCode { get; set; } = null!;
-
-    public string? Description { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
+        /// <summary>
+        /// Descripción del tipo de discapacidad.
+        /// </summary>
+        public string? Description { get; set; }
+    }
 }

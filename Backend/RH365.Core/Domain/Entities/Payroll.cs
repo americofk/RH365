@@ -1,65 +1,127 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: Payroll.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Payroll/Payroll.cs
+// Descripción: Entidad que representa una nómina de la organización.
+//   - Hereda de AuditableCompanyEntity para cumplir ISO 27001
+//   - Define la frecuencia, vigencia, divisa y características de la nómina
+//   - Relacionada con empleados, deducciones, ingresos, préstamos y ciclos de pago
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class Payroll
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una nómina dentro de la organización.
+    /// </summary>
+    public class Payroll : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único de la nómina.
+        /// </summary>
+        public string PayrollCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre descriptivo de la nómina.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string PayrollCode { get; set; } = null!;
+        /// <summary>
+        /// Frecuencia de pago de la nómina.
+        /// </summary>
+        public int PayFrecuency { get; set; }
 
-    public string Name { get; set; } = null!;
+        /// <summary>
+        /// Fecha desde la cual es válida la nómina.
+        /// </summary>
+        public DateTime ValidFrom { get; set; }
 
-    public int PayFrecuency { get; set; }
+        /// <summary>
+        /// Fecha hasta la cual es válida la nómina.
+        /// </summary>
+        public DateTime ValidTo { get; set; }
 
-    public DateTime ValidFrom { get; set; }
+        /// <summary>
+        /// Descripción adicional de la nómina.
+        /// </summary>
+        public string? Description { get; set; }
 
-    public DateTime ValidTo { get; set; }
+        /// <summary>
+        /// Indica si la nómina es de regalía.
+        /// </summary>
+        public bool IsRoyaltyPayroll { get; set; }
 
-    public string? Description { get; set; }
+        /// <summary>
+        /// Indica si la nómina es por horas trabajadas.
+        /// </summary>
+        public bool IsForHourPayroll { get; set; }
 
-    public bool IsRoyaltyPayroll { get; set; }
+        /// <summary>
+        /// Secuencia bancaria para pagos asociados.
+        /// </summary>
+        public int BankSecuence { get; set; }
 
-    public bool IsForHourPayroll { get; set; }
+        /// <summary>
+        /// FK a la divisa en la que se gestiona la nómina.
+        /// </summary>
+        public long CurrencyRefRecID { get; set; }
 
-    public int BankSecuence { get; set; }
+        /// <summary>
+        /// Estado de la nómina (activa o inactiva).
+        /// </summary>
+        public bool PayrollStatus { get; set; }
 
-    public long CurrencyRefRecId { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool PayrollStatus { get; set; }
+        /// <summary>
+        /// Divisa asociada a la nómina.
+        /// </summary>
+        public virtual Currency CurrencyRefRec { get; set; } = null!;
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Deducciones asociadas a empleados dentro de esta nómina.
+        /// </summary>
+        public virtual ICollection<EmployeeDeductionCode> EmployeeDeductionCodes { get; set; } = new List<EmployeeDeductionCode>();
 
-    public string DataareaId { get; set; } = null!;
+        /// <summary>
+        /// Códigos de ingresos asignados a empleados en esta nómina.
+        /// </summary>
+        public virtual ICollection<EmployeeEarningCode> EmployeeEarningCodes { get; set; } = new List<EmployeeEarningCode>();
 
-    public string CreatedBy { get; set; } = null!;
+        /// <summary>
+        /// Horas extras registradas en esta nómina.
+        /// </summary>
+        public virtual ICollection<EmployeeExtraHour> EmployeeExtraHours { get; set; } = new List<EmployeeExtraHour>();
 
-    public DateTime CreatedOn { get; set; }
+        /// <summary>
+        /// Historial de préstamos de empleados asociados a esta nómina.
+        /// </summary>
+        public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
 
-    public string? ModifiedBy { get; set; }
+        /// <summary>
+        /// Préstamos de empleados gestionados en esta nómina.
+        /// </summary>
+        public virtual ICollection<EmployeeLoan> EmployeeLoans { get; set; } = new List<EmployeeLoan>();
 
-    public DateTime? ModifiedOn { get; set; }
+        /// <summary>
+        /// Impuestos aplicados a empleados en esta nómina.
+        /// </summary>
+        public virtual ICollection<EmployeeTax> EmployeeTaxes { get; set; } = new List<EmployeeTax>();
 
-    public byte[] RowVersion { get; set; } = null!;
+        /// <summary>
+        /// Ciclos de pago relacionados con la nómina.
+        /// </summary>
+        public virtual ICollection<PayCycle> PayCycles { get; set; } = new List<PayCycle>();
 
-    public virtual Currency CurrencyRefRec { get; set; } = null!;
-
-    public virtual ICollection<EmployeeDeductionCode> EmployeeDeductionCodes { get; set; } = new List<EmployeeDeductionCode>();
-
-    public virtual ICollection<EmployeeEarningCode> EmployeeEarningCodes { get; set; } = new List<EmployeeEarningCode>();
-
-    public virtual ICollection<EmployeeExtraHour> EmployeeExtraHours { get; set; } = new List<EmployeeExtraHour>();
-
-    public virtual ICollection<EmployeeLoanHistory> EmployeeLoanHistories { get; set; } = new List<EmployeeLoanHistory>();
-
-    public virtual ICollection<EmployeeLoan> EmployeeLoans { get; set; } = new List<EmployeeLoan>();
-
-    public virtual ICollection<EmployeeTaxis> EmployeeTaxes { get; set; } = new List<EmployeeTaxis>();
-
-    public virtual ICollection<PayCycle> PayCycles { get; set; } = new List<PayCycle>();
-
-    public virtual ICollection<PayrollsProcess> PayrollsProcesses { get; set; } = new List<PayrollsProcess>();
+        /// <summary>
+        /// Procesos de nómina asociados.
+        /// </summary>
+        public virtual ICollection<PayrollsProcess> PayrollsProcesses { get; set; } = new List<PayrollsProcess>();
+    }
 }

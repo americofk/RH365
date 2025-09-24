@@ -1,31 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: CourseInstructor.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Training/CourseInstructor.cs
+// Descripción: Relación que representa a los instructores asignados a cursos de capacitación.
+//   - Hereda de AuditableCompanyEntity para cumplir ISO 27001
+//   - Permite asociar uno o varios instructores a un curso
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
 
-public partial class CourseInstructor
+namespace RH365.Core.Domain.Entities
 {
-    public long CourseRefRecId { get; set; }
+    /// <summary>
+    /// Representa un instructor asignado a un curso de capacitación.
+    /// </summary>
+    public class CourseInstructor : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al curso impartido.
+        /// </summary>
+        public long CourseRefRecID { get; set; }
 
-    public string InstructorName { get; set; } = null!;
+        /// <summary>
+        /// Nombre del instructor asignado al curso.
+        /// </summary>
+        public string InstructorName { get; set; } = null!;
 
-    public string? Comment { get; set; }
+        /// <summary>
+        /// Comentario adicional sobre el instructor o su participación en el curso.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public string? Observations { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public string Id { get; set; } = null!;
-
-    public virtual Course CourseRefRec { get; set; } = null!;
+        /// <summary>
+        /// Curso al que se asigna el instructor.
+        /// </summary>
+        public virtual Course CourseRefRec { get; set; } = null!;
+    }
 }

@@ -1,39 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: EmployeeBankAccount.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Employees/EmployeeBankAccount.cs
+// Descripción: Entidad que representa las cuentas bancarias de un empleado.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite registrar múltiples cuentas, identificando la principal
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class EmployeeBankAccount
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una cuenta bancaria asociada a un empleado.
+    /// </summary>
+    public class EmployeeBankAccount : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al empleado dueño de la cuenta.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre del banco donde está registrada la cuenta.
+        /// </summary>
+        public string BankName { get; set; } = null!;
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Tipo de cuenta (ejemplo: ahorro, corriente).
+        /// </summary>
+        public int AccountType { get; set; }
 
-    public string BankName { get; set; } = null!;
+        /// <summary>
+        /// Número de cuenta bancaria.
+        /// </summary>
+        public string AccountNum { get; set; } = null!;
 
-    public int AccountType { get; set; }
+        /// <summary>
+        /// Moneda de la cuenta (ejemplo: DOP, USD).
+        /// </summary>
+        public string? Currency { get; set; }
 
-    public string AccountNum { get; set; } = null!;
+        /// <summary>
+        /// Indica si esta cuenta es la principal del empleado.
+        /// </summary>
+        public bool IsPrincipal { get; set; }
 
-    public string? Currency { get; set; }
+        /// <summary>
+        /// Comentario adicional sobre la cuenta bancaria.
+        /// </summary>
+        public string? Comment { get; set; }
 
-    public bool IsPrincipal { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string? Comment { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
+        /// <summary>
+        /// Empleado asociado a la cuenta bancaria.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
+    }
 }

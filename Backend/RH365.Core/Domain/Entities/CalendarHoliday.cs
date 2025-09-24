@@ -1,29 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: CalendarHoliday.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Calendar/CalendarHoliday.cs
+// Descripción: Entidad que representa los días festivos definidos en el calendario.
+//   - Incluye herencia de AuditableCompanyEntity para cumplir con estándares ISO 27001
+//   - Permite gestionar feriados nacionales/empresariales en el sistema multiempresa
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class CalendarHoliday
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un día festivo dentro del calendario de la empresa.
+    /// </summary>
+    public class CalendarHoliday : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Fecha del día festivo.
+        /// </summary>
+        public DateTime CalendarDate { get; set; }
 
-    public int Id { get; set; }
-
-    public DateTime CalendarDate { get; set; }
-
-    public string Description { get; set; } = null!;
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
+        /// <summary>
+        /// Descripción del día festivo (ej. "Día de la Independencia").
+        /// </summary>
+        public string Description { get; set; } = null!;
+    }
 }

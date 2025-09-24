@@ -1,33 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: UserImage.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Security/UserImage.cs
+// Descripción: Entidad que representa las imágenes de perfil de los usuarios.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Permite almacenar fotos de usuario y su extensión de archivo
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using System;
 
-public partial class UserImage
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa la imagen de perfil de un usuario.
+    /// </summary>
+    public class UserImage : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al usuario al que pertenece la imagen.
+        /// </summary>
+        public long UserRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Imagen del usuario en formato binario.
+        /// </summary>
+        public byte[]? Image { get; set; }
 
-    public long UserRefRecId { get; set; }
+        /// <summary>
+        /// Extensión del archivo de imagen (ej. jpg, png).
+        /// </summary>
+        public string Extension { get; set; } = null!;
 
-    public byte[]? Image { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string Extension { get; set; } = null!;
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual User UserRefRec { get; set; } = null!;
+        /// <summary>
+        /// Usuario propietario de la imagen.
+        /// </summary>
+        public virtual User UserRefRec { get; set; } = null!;
+    }
 }

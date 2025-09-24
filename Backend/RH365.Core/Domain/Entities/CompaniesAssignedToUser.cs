@@ -1,35 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: CompaniesAssignedToUser.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Organization/CompaniesAssignedToUser.cs
+// Descripción: Entidad que representa la relación de asignación de usuarios a empresas.
+//   - Permite definir el acceso multiempresa de cada usuario
+//   - Incluye herencia de AuditableCompanyEntity para cumplir ISO 27001
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
 
-public partial class CompaniesAssignedToUser
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa la asignación de un usuario a una empresa dentro del sistema multiempresa.
+    /// </summary>
+    public class CompaniesAssignedToUser : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK a la empresa asignada.
+        /// </summary>
+        public long CompanyRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK al usuario asignado.
+        /// </summary>
+        public long UserRefRecID { get; set; }
 
-    public long CompanyRefRecId { get; set; }
+        /// <summary>
+        /// Indica si la asignación está activa o inactiva.
+        /// </summary>
+        public bool IsActive { get; set; }
 
-    public long UserRefRecId { get; set; }
-
-    public bool IsActive { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Company CompanyRefRec { get; set; } = null!;
-
-    public virtual User UserRefRec { get; set; } = null!;
+        // Propiedades de navegación
+        public virtual Company CompanyRefRec { get; set; } = null!;
+        public virtual User UserRefRec { get; set; } = null!;
+    }
 }

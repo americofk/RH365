@@ -1,45 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: PayrollProcessAction.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Payroll/PayrollProcessAction.cs
+// Descripción: Entidad que representa una acción aplicada a un empleado durante
+//              el procesamiento de la nómina (bonos, descuentos, ajustes).
+//   - Cumple ISO 27001 heredando de AuditableCompanyEntity
+//   - Define tipo de acción, monto, y reglas de aplicación de impuestos/TSS
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 
-public partial class PayrollProcessAction
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una acción aplicada a un empleado durante el proceso de nómina.
+    /// </summary>
+    public class PayrollProcessAction : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al proceso de nómina donde se ejecuta la acción.
+        /// </summary>
+        public long PayrollProcessRefRecID { get; set; }
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// FK al empleado al que se aplica la acción.
+        /// </summary>
+        public long EmployeeRefRecID { get; set; }
 
-    public long PayrollProcessRefRecId { get; set; }
+        /// <summary>
+        /// Tipo de acción (ej. bono, deducción, ajuste).
+        /// </summary>
+        public int PayrollActionType { get; set; }
 
-    public long EmployeeRefRecId { get; set; }
+        /// <summary>
+        /// Nombre de la acción aplicada.
+        /// </summary>
+        public string ActionName { get; set; } = null!;
 
-    public int PayrollActionType { get; set; }
+        /// <summary>
+        /// Monto monetario de la acción.
+        /// </summary>
+        public decimal ActionAmount { get; set; }
 
-    public string ActionName { get; set; } = null!;
+        /// <summary>
+        /// Indica si la acción aplica impuestos.
+        /// </summary>
+        public bool ApplyTax { get; set; }
 
-    public decimal ActionAmount { get; set; }
+        /// <summary>
+        /// Indica si la acción aplica aportes a la TSS.
+        /// </summary>
+        public bool ApplyTss { get; set; }
 
-    public bool ApplyTax { get; set; }
+        /// <summary>
+        /// Indica si la acción aplica a la nómina de regalía.
+        /// </summary>
+        public bool ApplyRoyaltyPayroll { get; set; }
 
-    public bool ApplyTss { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool ApplyRoyaltyPayroll { get; set; }
+        /// <summary>
+        /// Empleado al que se aplica la acción.
+        /// </summary>
+        public virtual Employee EmployeeRefRec { get; set; } = null!;
 
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual Employee EmployeeRefRec { get; set; } = null!;
-
-    public virtual PayrollsProcess PayrollProcessRefRec { get; set; } = null!;
+        /// <summary>
+        /// Proceso de nómina al que pertenece la acción.
+        /// </summary>
+        public virtual PayrollsProcess PayrollProcessRefRec { get; set; } = null!;
+    }
 }

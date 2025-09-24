@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\D365_Nomina2026\RH365.WebAPI.csproj" />
     <ProjectReference Include="..\RH365.WebAPI\RH365.WebAPI.csproj" />
   </ItemGroup>
 

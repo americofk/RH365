@@ -1,55 +1,101 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: User.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Security/User.cs
+// Descripción: Entidad que representa a los usuarios del sistema.
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - Contiene credenciales, datos de seguridad y relaciones con empresas
+// ============================================================================
+
+using RH365.Core.Domain.Common;
+using RH365.Infrastructure.TempScaffold;
+using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class User
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa un usuario registrado en el sistema.
+    /// </summary>
+    public class User : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Alias único del usuario.
+        /// </summary>
+        public string Alias { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Correo electrónico del usuario.
+        /// </summary>
+        public string Email { get; set; } = null!;
 
-    public string Alias { get; set; } = null!;
+        /// <summary>
+        /// Hash de la contraseña para autenticación.
+        /// </summary>
+        public string PasswordHash { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
+        /// <summary>
+        /// Nombre completo del usuario.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string PasswordHash { get; set; } = null!;
+        /// <summary>
+        /// FK al formato preferido del usuario.
+        /// </summary>
+        public long? FormatCodeRefRecID { get; set; }
 
-    public string Name { get; set; } = null!;
+        /// <summary>
+        /// Nivel de privilegios (Elevación de permisos).
+        /// </summary>
+        public int ElevationType { get; set; }
 
-    public long? FormatCodeRefRecId { get; set; }
+        /// <summary>
+        /// FK a la empresa predeterminada del usuario.
+        /// </summary>
+        public long? CompanyDefaultRefRecID { get; set; }
 
-    public int ElevationType { get; set; }
+        /// <summary>
+        /// Contraseña temporal (si se asigna).
+        /// </summary>
+        public string? TemporaryPassword { get; set; }
 
-    public long? CompanyDefaultRefRecId { get; set; }
+        /// <summary>
+        /// Fecha de asignación de la contraseña temporal.
+        /// </summary>
+        public DateTime? DateTemporaryPassword { get; set; }
 
-    public string? TemporaryPassword { get; set; }
+        /// <summary>
+        /// Indica si el usuario está activo.
+        /// </summary>
+        public bool IsActive { get; set; }
 
-    public DateTime? DateTemporaryPassword { get; set; }
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public bool IsActive { get; set; }
+        /// <summary>
+        /// Empresas asignadas al usuario.
+        /// </summary>
+        public virtual ICollection<CompaniesAssignedToUser> CompaniesAssignedToUsers { get; set; } = new List<CompaniesAssignedToUser>();
 
-    public string? Observations { get; set; }
+        /// <summary>
+        /// Empresa predeterminada asociada.
+        /// </summary>
+        public virtual Company? CompanyDefaultRefRec { get; set; }
 
-    public string DataareaId { get; set; } = null!;
+        /// <summary>
+        /// Formato de usuario configurado.
+        /// </summary>
+        public virtual FormatCode? FormatCodeRefRec { get; set; }
 
-    public string CreatedBy { get; set; } = null!;
+        /// <summary>
+        /// Menús asignados al usuario.
+        /// </summary>
+        public virtual ICollection<MenuAssignedToUser> MenuAssignedToUsers { get; set; } = new List<MenuAssignedToUser>();
 
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<CompaniesAssignedToUser> CompaniesAssignedToUsers { get; set; } = new List<CompaniesAssignedToUser>();
-
-    public virtual Company? CompanyDefaultRefRec { get; set; }
-
-    public virtual FormatCode? FormatCodeRefRec { get; set; }
-
-    public virtual ICollection<MenuAssignedToUser> MenuAssignedToUsers { get; set; } = new List<MenuAssignedToUser>();
-
-    public virtual ICollection<UserImage> UserImages { get; set; } = new List<UserImage>();
+        /// <summary>
+        /// Imágenes asociadas al usuario.
+        /// </summary>
+        public virtual ICollection<UserImage> UserImages { get; set; } = new List<UserImage>();
+    }
 }

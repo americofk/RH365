@@ -1,33 +1,45 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: CourseLocation.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Training/CourseLocation.cs
+// Descripción: Entidad que representa las ubicaciones físicas o virtuales 
+//              donde se imparten cursos de capacitación.
+//   - Relacionada con ClassRoom
+//   - Hereda de AuditableCompanyEntity para cumplir ISO 27001
+// ============================================================================
+
+using RH365.Core.Domain.Common;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
-
-public partial class CourseLocation
+namespace RH365.Core.Domain.Entities
 {
-    public long RecId { get; set; }
+    /// <summary>
+    /// Representa una ubicación (física o virtual) donde se imparten cursos.
+    /// </summary>
+    public class CourseLocation : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// Código único de la ubicación.
+        /// </summary>
+        public string CourseLocationCode { get; set; } = null!;
 
-    public string Id { get; set; } = null!;
+        /// <summary>
+        /// Nombre descriptivo de la ubicación.
+        /// </summary>
+        public string Name { get; set; } = null!;
 
-    public string CourseLocationCode { get; set; } = null!;
+        /// <summary>
+        /// Descripción adicional de la ubicación.
+        /// </summary>
+        public string? Description { get; set; }
 
-    public string Name { get; set; } = null!;
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
 
-    public string? Description { get; set; }
-
-    public string? Observations { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
-
-    public virtual ICollection<ClassRoom> ClassRooms { get; set; } = new List<ClassRoom>();
+        /// <summary>
+        /// Colección de aulas asociadas a la ubicación.
+        /// </summary>
+        public virtual ICollection<ClassRoom> ClassRooms { get; set; } = new List<ClassRoom>();
+    }
 }

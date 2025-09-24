@@ -1,31 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ============================================================================
+// Archivo: CoursePosition.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Entities/Training/CoursePosition.cs
+// Descripción: Relación que asocia cursos con posiciones de trabajo específicas.
+//   - Many-to-many entre Course y Position
+//   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+// ============================================================================
 
-namespace RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Common;
 
-public partial class CoursePosition
+namespace RH365.Core.Domain.Entities
 {
-    public string Id { get; set; } = null!;
+    /// <summary>
+    /// Representa la relación entre un curso y una posición de trabajo.
+    /// </summary>
+    public class CoursePosition : AuditableCompanyEntity
+    {
+        /// <summary>
+        /// FK al curso asociado.
+        /// </summary>
+        public long CourseRefRecID { get; set; }
 
-    public long RecId { get; set; }
+        /// <summary>
+        /// FK a la posición de trabajo asociada.
+        /// </summary>
+        public long PositionRefRecID { get; set; }
 
-    public string CourseId { get; set; } = null!;
-
-    public string PositionId { get; set; } = null!;
-
-    public string? Comment { get; set; }
-
-    public string CreatedBy { get; set; } = null!;
-
-    public DateTime CreatedOn { get; set; }
-
-    public string? ModifiedBy { get; set; }
-
-    public DateTime? ModifiedOn { get; set; }
-
-    public string DataareaId { get; set; } = null!;
-
-    public string? Observations { get; set; }
-
-    public byte[] RowVersion { get; set; } = null!;
+        /// <summary>
+        /// Comentario adicional sobre la relación curso–posición.
+        /// </summary>
+        public string? Comment { get; set; }
+    }
 }
