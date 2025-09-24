@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\D365_API_Nomina.Core\RH365.Core.csproj" />
+    <ProjectReference Include="..\RH365.Core\RH365.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

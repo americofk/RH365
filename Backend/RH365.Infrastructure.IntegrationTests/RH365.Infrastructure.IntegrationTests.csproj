@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\D365_API_Nomina.Infrastructure\RH365.Infrastructure.csproj" />
+    <ProjectReference Include="..\RH365.Infrastructure\RH365.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
