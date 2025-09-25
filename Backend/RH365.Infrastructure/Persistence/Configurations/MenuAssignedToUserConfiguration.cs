@@ -25,12 +25,12 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("MenuAssignedToUser");
 
             // Configuración de propiedades
-            builder.Property(e => e.MenuRefRec).HasColumnName("MenuRefRec");
+            //builder.Property(e => e.MenuRefRec).HasColumnName("MenuRefRec");
             builder.Property(e => e.MenuRefRecID).HasColumnName("MenuRefRecID");
             builder.Property(e => e.PrivilegeDelete).HasColumnName("PrivilegeDelete");
             builder.Property(e => e.PrivilegeEdit).HasColumnName("PrivilegeEdit");
             builder.Property(e => e.PrivilegeView).HasColumnName("PrivilegeView");
-            builder.Property(e => e.UserRefRec).HasColumnName("UserRefRec");
+            //builder.Property(e => e.UserRefRec).HasColumnName("UserRefRec");
             builder.Property(e => e.UserRefRecID).HasColumnName("UserRefRecID");
 
             //// Configuración de relaciones

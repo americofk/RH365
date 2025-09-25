@@ -25,14 +25,14 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("EmployeeTax");
 
             // Configuración de propiedades
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
-            builder.Property(e => e.TaxRefRec).HasColumnName("TaxRefRec");
+            //builder.Property(e => e.TaxRefRec).HasColumnName("TaxRefRec");
             builder.Property(e => e.TaxRefRecID).HasColumnName("TaxRefRecID");
-            builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
+            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
+            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.EmployeeRefRec)

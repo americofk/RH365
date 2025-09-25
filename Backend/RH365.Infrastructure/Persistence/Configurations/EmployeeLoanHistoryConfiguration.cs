@@ -26,22 +26,22 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.AmountByDues).HasPrecision(18, 4).HasColumnName("AmountByDues");
-            builder.Property(e => e.EmployeeLoanRefRec).HasColumnName("EmployeeLoanRefRec");
+            //builder.Property(e => e.EmployeeLoanRefRec).HasColumnName("EmployeeLoanRefRec");
             builder.Property(e => e.EmployeeLoanRefRecID).HasColumnName("EmployeeLoanRefRecID");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.LoanAmount).HasPrecision(18, 4).HasColumnName("LoanAmount");
-            builder.Property(e => e.LoanRefRec).HasColumnName("LoanRefRec");
+            //builder.Property(e => e.LoanRefRec).HasColumnName("LoanRefRec");
             builder.Property(e => e.LoanRefRecID).HasColumnName("LoanRefRecID");
             builder.Property(e => e.PaidAmount).HasPrecision(18, 4).HasColumnName("PaidAmount");
-            builder.Property(e => e.PayrollProcessRefRec).HasColumnName("PayrollProcessRefRec");
+            //builder.Property(e => e.PayrollProcessRefRec).HasColumnName("PayrollProcessRefRec");
             builder.Property(e => e.PayrollProcessRefRecID).HasColumnName("PayrollProcessRefRecID");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
             builder.Property(e => e.PendingAmount).HasPrecision(18, 4).HasColumnName("PendingAmount");
             builder.Property(e => e.PendingDues).HasColumnName("PendingDues");
-            builder.Property(e => e.PeriodEndDate).HasColumnType("datetime2").HasColumnName("PeriodEndDate");
-            builder.Property(e => e.PeriodStartDate).HasColumnType("datetime2").HasColumnName("PeriodStartDate");
+            builder.Property(e => e.PeriodEndDate).HasColumnType("date").HasColumnName("PeriodEndDate");
+            builder.Property(e => e.PeriodStartDate).HasColumnType("date").HasColumnName("PeriodStartDate");
             builder.Property(e => e.TotalDues).HasColumnName("TotalDues");
 
             //// Configuración de relaciones

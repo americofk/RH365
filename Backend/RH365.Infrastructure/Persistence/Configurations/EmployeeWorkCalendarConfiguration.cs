@@ -27,9 +27,9 @@ namespace RH365.Infrastructure.Persistence.Configurations
             // Configuración de propiedades
             builder.Property(e => e.BreakWorkFrom).HasColumnType("time").HasColumnName("BreakWorkFrom");
             builder.Property(e => e.BreakWorkTo).HasColumnType("time").HasColumnName("BreakWorkTo");
-            builder.Property(e => e.CalendarDate).HasColumnType("datetime2").HasColumnName("CalendarDate");
+            builder.Property(e => e.CalendarDate).HasColumnType("date").HasColumnName("CalendarDate");
             builder.Property(e => e.CalendarDay).HasMaxLength(255).HasColumnName("CalendarDay");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.PayrollProcessRefRecID).HasColumnName("PayrollProcessRefRecID");
             builder.Property(e => e.StatusWorkControl).HasColumnName("StatusWorkControl");

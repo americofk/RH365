@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using RH365.Core.Application.Common.Interfaces;
 using RH365.Core.Domain.Common;
 using RH365.Core.Domain.Entities;
-using RH365.Infrastructure.TempScaffold;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;

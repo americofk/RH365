@@ -9,7 +9,7 @@
 // ============================================================================
 
 using RH365.Core.Domain.Common;
-using RH365.Infrastructure.TempScaffold;
+using RH365.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
 

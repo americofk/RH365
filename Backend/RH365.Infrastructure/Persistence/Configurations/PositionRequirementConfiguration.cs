@@ -27,7 +27,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             // Configuración de propiedades
             builder.Property(e => e.Detail).HasMaxLength(255).HasColumnName("Detail");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
-            builder.Property(e => e.PositionRefRec).HasColumnName("PositionRefRec");
+            //builder.Property(e => e.PositionRefRec).HasColumnName("PositionRefRec");
             builder.Property(e => e.PositionRefRecID).HasColumnName("PositionRefRecID");
 
             //// Configuración de relaciones

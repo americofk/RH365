@@ -28,7 +28,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
             builder.Property(e => e.ContactType).HasColumnName("ContactType");
             builder.Property(e => e.ContactValue).HasMaxLength(255).HasColumnName("ContactValue");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.IsPrincipal).HasColumnName("IsPrincipal");
 

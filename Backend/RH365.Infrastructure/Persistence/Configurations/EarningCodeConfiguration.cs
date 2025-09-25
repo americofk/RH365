@@ -25,7 +25,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("EarningCode");
 
             // Configuración de propiedades
-            builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
+            //builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
             builder.Property(e => e.DepartmentRefRecID).HasColumnName("DepartmentRefRecID");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
             builder.Property(e => e.EarningCode1).HasMaxLength(50).HasColumnName("EarningCode1");
@@ -41,8 +41,8 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.MultiplyAmount).HasPrecision(18, 4).HasColumnName("MultiplyAmount");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
             builder.Property(e => e.ProjId).HasMaxLength(255).HasColumnName("ProjId");
-            builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
+            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
+            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
             builder.Property(e => e.WorkFrom).HasColumnType("time").HasColumnName("WorkFrom");
             builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");
 

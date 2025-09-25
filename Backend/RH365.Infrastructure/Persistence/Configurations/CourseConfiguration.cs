@@ -30,10 +30,10 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CourseCode).IsRequired().HasMaxLength(50).HasColumnName("CourseCode");
             builder.Property(e => e.CourseParentId).HasMaxLength(255).HasColumnName("CourseParentId");
             builder.Property(e => e.CourseStatus).HasColumnName("CourseStatus");
-            builder.Property(e => e.CourseTypeRefRec).HasColumnName("CourseTypeRefRec");
+            //builder.Property(e => e.CourseTypeRefRec).HasColumnName("CourseTypeRefRec");
             builder.Property(e => e.CourseTypeRefRecID).HasColumnName("CourseTypeRefRecID");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.EndDate).HasColumnType("datetime2").HasColumnName("EndDate");
+            builder.Property(e => e.EndDate).HasColumnType("date").HasColumnName("EndDate");
             builder.Property(e => e.InternalExternal).HasColumnName("InternalExternal");
             builder.Property(e => e.IsMatrixTraining).HasColumnName("IsMatrixTraining");
             builder.Property(e => e.MaxStudents).HasColumnName("MaxStudents");
@@ -42,7 +42,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Objetives).HasMaxLength(255).HasColumnName("Objetives");
             builder.Property(e => e.Periodicity).HasColumnName("Periodicity");
             builder.Property(e => e.QtySessions).HasColumnName("QtySessions");
-            builder.Property(e => e.StartDate).HasColumnType("datetime2").HasColumnName("StartDate");
+            builder.Property(e => e.StartDate).HasColumnType("date").HasColumnName("StartDate");
             builder.Property(e => e.Topics).HasMaxLength(255).HasColumnName("Topics");
             builder.Property(e => e.UrlDocuments).HasMaxLength(255).HasColumnName("UrlDocuments");
 

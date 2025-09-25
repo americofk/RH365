@@ -30,7 +30,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Icon).HasMaxLength(255).HasColumnName("Icon");
             builder.Property(e => e.IsViewMenu).HasColumnName("IsViewMenu");
             builder.Property(e => e.MenuCode).IsRequired().HasMaxLength(50).HasColumnName("MenuCode");
-            builder.Property(e => e.MenuFatherRefRec).HasColumnName("MenuFatherRefRec");
+            //builder.Property(e => e.MenuFatherRefRec).HasColumnName("MenuFatherRefRec");
             builder.Property(e => e.MenuFatherRefRecID).HasColumnName("MenuFatherRefRecID");
             builder.Property(e => e.MenuName).IsRequired().HasMaxLength(255).HasColumnName("MenuName");
             builder.Property(e => e.Sort).HasColumnName("Sort");

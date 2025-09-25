@@ -26,7 +26,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            builder.Property(e => e.CourseRefRec).HasColumnName("CourseRefRec");
+            //builder.Property(e => e.CourseRefRec).HasColumnName("CourseRefRec");
             builder.Property(e => e.CourseRefRecID).HasColumnName("CourseRefRecID");
             builder.Property(e => e.InstructorName).IsRequired().HasMaxLength(255).HasColumnName("InstructorName");
 

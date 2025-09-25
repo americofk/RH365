@@ -26,7 +26,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.BankSecuence).HasColumnName("BankSecuence");
-            builder.Property(e => e.CurrencyRefRec).HasColumnName("CurrencyRefRec");
+            //builder.Property(e => e.CurrencyRefRec).HasColumnName("CurrencyRefRec");
             builder.Property(e => e.CurrencyRefRecID).HasColumnName("CurrencyRefRecID");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
             builder.Property(e => e.IsForHourPayroll).HasColumnName("IsForHourPayroll");
@@ -35,8 +35,8 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PayFrecuency).HasColumnName("PayFrecuency");
             builder.Property(e => e.PayrollCode).IsRequired().HasMaxLength(50).HasColumnName("PayrollCode");
             builder.Property(e => e.PayrollStatus).HasColumnName("PayrollStatus");
-            builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
+            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
+            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.CurrencyRefRec)

@@ -22,15 +22,15 @@ namespace RH365.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Employee> builder)
         {
             // Mapeo a tabla
-            builder.ToTable("Employee");
+            builder.ToTable("Employees");
 
             // Configuración de propiedades
-            builder.Property(e => e.AdmissionDate).HasColumnType("datetime2").HasColumnName("AdmissionDate");
+            builder.Property(e => e.AdmissionDate).HasColumnType("date").HasColumnName("AdmissionDate");
             builder.Property(e => e.Afp).HasMaxLength(255).HasColumnName("Afp");
             builder.Property(e => e.Age).HasColumnName("Age");
             builder.Property(e => e.ApplyForOvertime).HasColumnName("ApplyForOvertime");
             builder.Property(e => e.Ars).HasMaxLength(255).HasColumnName("Ars");
-            builder.Property(e => e.BirthDate).HasColumnType("datetime2").HasColumnName("BirthDate");
+            builder.Property(e => e.BirthDate).HasColumnType("date").HasColumnName("BirthDate");
             builder.Property(e => e.BreakWorkFrom).HasColumnType("time").HasColumnName("BreakWorkFrom");
             builder.Property(e => e.BreakWorkTo).HasColumnType("time").HasColumnName("BreakWorkTo");
             builder.Property(e => e.CountryRecId).HasColumnName("CountryRecId");
@@ -41,7 +41,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.EmployeeCode).IsRequired().HasMaxLength(50).HasColumnName("EmployeeCode");
             builder.Property(e => e.EmployeeStatus).HasColumnName("EmployeeStatus");
             builder.Property(e => e.EmployeeType).HasColumnName("EmployeeType");
-            builder.Property(e => e.EndWorkDate).HasColumnType("datetime2").HasColumnName("EndWorkDate");
+            builder.Property(e => e.EndWorkDate).HasColumnType("date").HasColumnName("EndWorkDate");
             builder.Property(e => e.Gender).HasColumnName("Gender");
             builder.Property(e => e.HasDisability).HasColumnName("HasDisability");
             builder.Property(e => e.HomeOffice).HasColumnName("HomeOffice");
@@ -56,7 +56,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.OwnCar).HasColumnName("OwnCar");
             builder.Property(e => e.PayMethod).HasColumnName("PayMethod");
             builder.Property(e => e.PersonalTreatment).HasMaxLength(255).HasColumnName("PersonalTreatment");
-            builder.Property(e => e.StartWorkDate).HasColumnType("datetime2").HasColumnName("StartWorkDate");
+            builder.Property(e => e.StartWorkDate).HasColumnType("date").HasColumnName("StartWorkDate");
             builder.Property(e => e.WorkFrom).HasColumnType("time").HasColumnName("WorkFrom");
             builder.Property(e => e.WorkStatus).HasColumnName("WorkStatus");
             builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");

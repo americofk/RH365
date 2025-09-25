@@ -26,11 +26,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            builder.Property(e => e.EarningCodeRefRec).HasColumnName("EarningCodeRefRec");
+            //builder.Property(e => e.EarningCodeRefRec).HasColumnName("EarningCodeRefRec");
             builder.Property(e => e.EarningCodeRefRecID).HasColumnName("EarningCodeRefRecID");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.FromDate).HasColumnType("time").HasColumnName("FromDate");
+            builder.Property(e => e.FromDate).HasColumnType("date").HasColumnName("FromDate");
             builder.Property(e => e.IndexEarning).HasPrecision(18, 4).HasColumnName("IndexEarning");
             builder.Property(e => e.IndexEarningDiary).HasPrecision(18, 4).HasColumnName("IndexEarningDiary");
             builder.Property(e => e.IndexEarningHour).HasPrecision(18, 4).HasColumnName("IndexEarningHour");
@@ -38,14 +38,14 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.IsUseCalcHour).HasColumnName("IsUseCalcHour");
             builder.Property(e => e.IsUseDgt).HasColumnName("IsUseDgt");
             builder.Property(e => e.PayFrecuency).HasColumnName("PayFrecuency");
-            builder.Property(e => e.PayrollProcessRefRec).HasColumnName("PayrollProcessRefRec");
+            //builder.Property(e => e.PayrollProcessRefRec).HasColumnName("PayrollProcessRefRec");
             builder.Property(e => e.PayrollProcessRefRecID).HasColumnName("PayrollProcessRefRecID");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
             builder.Property(e => e.QtyPeriodForPaid).HasColumnName("QtyPeriodForPaid");
             builder.Property(e => e.Quantity).HasColumnName("Quantity");
             builder.Property(e => e.StartPeriodForPaid).HasColumnName("StartPeriodForPaid");
-            builder.Property(e => e.ToDate).HasColumnType("time").HasColumnName("ToDate");
+            builder.Property(e => e.ToDate).HasColumnType("date").HasColumnName("ToDate");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.EarningCodeRefRec)

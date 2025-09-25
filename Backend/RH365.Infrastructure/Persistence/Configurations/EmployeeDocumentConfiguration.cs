@@ -28,8 +28,8 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
             builder.Property(e => e.DocumentNumber).HasMaxLength(255).HasColumnName("DocumentNumber");
             builder.Property(e => e.DocumentType).HasColumnName("DocumentType");
-            builder.Property(e => e.DueDate).HasColumnType("datetime2").HasColumnName("DueDate");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            builder.Property(e => e.DueDate).HasColumnType("date").HasColumnName("DueDate");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.FileAttach).HasColumnType("varbinary(max)").HasColumnName("FileAttach");
             builder.Property(e => e.IsPrincipal).HasColumnName("IsPrincipal");

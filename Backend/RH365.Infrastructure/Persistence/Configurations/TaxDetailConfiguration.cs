@@ -30,7 +30,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ApplicableScale).HasPrecision(18, 2).HasColumnName("ApplicableScale");
             builder.Property(e => e.FixedAmount).HasPrecision(18, 4).HasColumnName("FixedAmount");
             builder.Property(e => e.Percent).HasPrecision(5, 2).HasColumnName("Percent");
-            builder.Property(e => e.TaxRefRec).HasColumnName("TaxRefRec");
+            //builder.Property(e => e.TaxRefRec).HasColumnName("TaxRefRec");
             builder.Property(e => e.TaxRefRecID).HasColumnName("TaxRefRecID");
 
             //// Configuración de relaciones

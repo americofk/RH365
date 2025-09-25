@@ -25,27 +25,55 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("EmployeeWorkControlCalendar");
 
             // Configuración de propiedades
-            builder.Property(e => e.BreakWorkFrom).HasColumnType("time").HasColumnName("BreakWorkFrom");
-            builder.Property(e => e.BreakWorkTo).HasColumnType("time").HasColumnName("BreakWorkTo");
-            builder.Property(e => e.CalendarDate).HasColumnType("datetime2").HasColumnName("CalendarDate");
-            builder.Property(e => e.CalendarDay).HasMaxLength(255).HasColumnName("CalendarDay");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
-            builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.PayrollProcessRefRecID).HasColumnName("PayrollProcessRefRecID");
-            builder.Property(e => e.StatusWorkControl).HasColumnName("StatusWorkControl");
-            builder.Property(e => e.TotalHour).HasPrecision(18, 2).HasColumnName("TotalHour");
-            builder.Property(e => e.WorkFrom).HasColumnType("time").HasColumnName("WorkFrom");
-            builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");
+            builder.Property(e => e.BreakWorkFrom)
+                .HasColumnType("time")
+                .HasColumnName("BreakWorkFrom");
 
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.EmployeeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            builder.Property(e => e.BreakWorkTo)
+                .HasColumnType("time")
+                .HasColumnName("BreakWorkTo");
+
+            builder.Property(e => e.CalendarDate)
+                .HasColumnType("datetime2")
+                .HasColumnName("CalendarDate");
+
+            builder.Property(e => e.CalendarDay)
+                .HasMaxLength(255)
+                .HasColumnName("CalendarDay");
+
+            builder.Property(e => e.EmployeeRefRecID)
+                .HasColumnName("EmployeeRefRecID");
+
+            builder.Property(e => e.PayrollProcessRefRecID)
+                .HasColumnName("PayrollProcessRefRecID");
+
+            builder.Property(e => e.StatusWorkControl)
+                .HasColumnName("StatusWorkControl");
+
+            builder.Property(e => e.TotalHour)
+                .HasPrecision(18, 2)
+                .HasColumnName("TotalHour");
+
+            builder.Property(e => e.WorkFrom)
+                .HasColumnType("time")
+                .HasColumnName("WorkFrom");
+
+            builder.Property(e => e.WorkTo)
+                .HasColumnType("time")
+                .HasColumnName("WorkTo");
+
+            // Configuración de relaciones
+            builder.HasOne(e => e.EmployeeRefRec)
+                .WithMany(emp => emp.EmployeeWorkControlCalendars)
+                .HasForeignKey(e => e.EmployeeRefRecID)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Índices
             builder.HasIndex(e => e.EmployeeRefRecID)
                 .HasDatabaseName("IX_EmployeeWorkControlCalendar_EmployeeRefRecID");
+
+            builder.HasIndex(e => e.CalendarDate)
+                .HasDatabaseName("IX_EmployeeWorkControlCalendar_CalendarDate");
         }
     }
 }

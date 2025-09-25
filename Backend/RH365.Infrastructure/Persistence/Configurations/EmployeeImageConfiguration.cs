@@ -26,7 +26,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.Extension).HasMaxLength(255).HasColumnName("Extension");
             builder.Property(e => e.Image).HasColumnType("varbinary(max)").HasColumnName("Image");

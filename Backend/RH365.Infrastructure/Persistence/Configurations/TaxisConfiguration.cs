@@ -25,9 +25,9 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("Taxis");
 
             // Configuración de propiedades
-            builder.Property(e => e.CurrencyRefRec).HasColumnName("CurrencyRefRec");
+            //builder.Property(e => e.CurrencyRefRec).HasColumnName("CurrencyRefRec");
             builder.Property(e => e.CurrencyRefRecID).HasColumnName("CurrencyRefRecID");
-            builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
+            //builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
             builder.Property(e => e.DepartmentRefRecID).HasColumnName("DepartmentRefRecID");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
             builder.Property(e => e.IndexBase).HasColumnName("IndexBase");
@@ -37,14 +37,14 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.MultiplyAmount).HasPrecision(18, 4).HasColumnName("MultiplyAmount");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
             builder.Property(e => e.PayFrecuency).HasColumnName("PayFrecuency");
-            builder.Property(e => e.ProjectCategoryRefRec).HasColumnName("ProjectCategoryRefRec");
+            //builder.Property(e => e.ProjectCategoryRefRec).HasColumnName("ProjectCategoryRefRec");
             builder.Property(e => e.ProjectCategoryRefRecID).HasColumnName("ProjectCategoryRefRecID");
-            builder.Property(e => e.ProjectRefRec).HasColumnName("ProjectRefRec");
+            //builder.Property(e => e.ProjectRefRec).HasColumnName("ProjectRefRec");
             builder.Property(e => e.ProjectRefRecID).HasColumnName("ProjectRefRecID");
             builder.Property(e => e.TaxCode).IsRequired().HasMaxLength(50).HasColumnName("TaxCode");
             builder.Property(e => e.TaxStatus).HasColumnName("TaxStatus");
-            builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
+            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
+            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.CurrencyRefRec)

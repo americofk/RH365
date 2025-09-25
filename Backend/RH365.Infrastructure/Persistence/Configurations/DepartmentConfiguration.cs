@@ -28,10 +28,10 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.DepartmentCode).IsRequired().HasMaxLength(50).HasColumnName("DepartmentCode");
             builder.Property(e => e.DepartmentStatus).HasColumnName("DepartmentStatus");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.EndDate).HasColumnType("datetime2").HasColumnName("EndDate");
+            builder.Property(e => e.EndDate).HasColumnType("date").HasColumnName("EndDate");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
             builder.Property(e => e.QtyWorkers).HasColumnName("QtyWorkers");
-            builder.Property(e => e.StartDate).HasColumnType("datetime2").HasColumnName("StartDate");
+            builder.Property(e => e.StartDate).HasColumnType("date").HasColumnName("StartDate");
 
             //// Configuración de relaciones
             //builder.HasMany(e => e.EarningCodes)

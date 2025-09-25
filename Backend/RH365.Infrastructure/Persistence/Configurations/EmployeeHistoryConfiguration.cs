@@ -27,7 +27,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             // Configuración de propiedades
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
             builder.Property(e => e.EmployeeHistoryCode).IsRequired().HasMaxLength(50).HasColumnName("EmployeeHistoryCode");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.IsUseDgt).HasColumnName("IsUseDgt");
             builder.Property(e => e.RegisterDate).HasColumnType("datetime2").HasColumnName("RegisterDate");

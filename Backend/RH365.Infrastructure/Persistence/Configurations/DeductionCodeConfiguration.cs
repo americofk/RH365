@@ -48,8 +48,8 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PayrollAction).HasColumnName("PayrollAction");
             builder.Property(e => e.ProjCategory).HasMaxLength(255).HasColumnName("ProjCategory");
             builder.Property(e => e.ProjId).HasMaxLength(255).HasColumnName("ProjId");
-            builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
+            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
+            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
 
             //// Configuración de relaciones
             //builder.HasMany(e => e.EmployeeDeductionCodes)

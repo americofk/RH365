@@ -22,16 +22,16 @@ namespace RH365.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             // Mapeo a tabla
-            builder.ToTable("User");
+            builder.ToTable("Users");
 
             // Configuración de propiedades
             builder.Property(e => e.Alias).HasMaxLength(255).HasColumnName("Alias");
-            builder.Property(e => e.CompanyDefaultRefRec).HasColumnName("CompanyDefaultRefRec");
+            //builder.Property(e => e.CompanyDefaultRefRec).HasColumnName("CompanyDefaultRefRec");
             builder.Property(e => e.CompanyDefaultRefRecID).HasColumnName("CompanyDefaultRefRecID");
-            builder.Property(e => e.DateTemporaryPassword).HasColumnType("datetime2").HasColumnName("DateTemporaryPassword");
+            builder.Property(e => e.DateTemporaryPassword).HasColumnType("date").HasColumnName("DateTemporaryPassword");
             builder.Property(e => e.ElevationType).HasColumnName("ElevationType");
             builder.Property(e => e.Email).HasMaxLength(255).HasColumnName("Email");
-            builder.Property(e => e.FormatCodeRefRec).HasColumnName("FormatCodeRefRec");
+            //builder.Property(e => e.FormatCodeRefRec).HasColumnName("FormatCodeRefRec");
             builder.Property(e => e.FormatCodeRefRecID).HasColumnName("FormatCodeRefRecID");
             builder.Property(e => e.IsActive).HasColumnName("IsActive");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");

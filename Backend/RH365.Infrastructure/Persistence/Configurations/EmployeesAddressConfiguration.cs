@@ -27,9 +27,9 @@ namespace RH365.Infrastructure.Persistence.Configurations
             // Configuración de propiedades
             builder.Property(e => e.City).HasMaxLength(255).HasColumnName("City");
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            builder.Property(e => e.CountryRefRec).HasColumnName("CountryRefRec");
+            //builder.Property(e => e.CountryRefRec).HasColumnName("CountryRefRec");
             builder.Property(e => e.CountryRefRecID).HasColumnName("CountryRefRecID");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.Home).HasMaxLength(255).HasColumnName("Home");
             builder.Property(e => e.IsPrincipal).HasColumnName("IsPrincipal");

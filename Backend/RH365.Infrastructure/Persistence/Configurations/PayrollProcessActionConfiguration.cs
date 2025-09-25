@@ -30,10 +30,10 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.ApplyRoyaltyPayroll).HasColumnName("ApplyRoyaltyPayroll");
             builder.Property(e => e.ApplyTax).HasColumnName("ApplyTax");
             builder.Property(e => e.ApplyTss).HasColumnName("ApplyTss");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.PayrollActionType).HasColumnName("PayrollActionType");
-            builder.Property(e => e.PayrollProcessRefRec).HasColumnName("PayrollProcessRefRec");
+            //builder.Property(e => e.PayrollProcessRefRec).HasColumnName("PayrollProcessRefRec");
             builder.Property(e => e.PayrollProcessRefRecID).HasColumnName("PayrollProcessRefRecID");
 
             //// Configuración de relaciones

@@ -26,15 +26,15 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.AmountPaidPerPeriod).HasPrecision(18, 4).HasColumnName("AmountPaidPerPeriod");
-            builder.Property(e => e.DefaultPayDate).HasColumnType("datetime2").HasColumnName("DefaultPayDate");
+            builder.Property(e => e.DefaultPayDate).HasColumnType("date").HasColumnName("DefaultPayDate");
             builder.Property(e => e.IsForTax).HasColumnName("IsForTax");
             builder.Property(e => e.IsForTss).HasColumnName("IsForTss");
             builder.Property(e => e.PayCycleId).HasColumnName("PayCycleId");
-            builder.Property(e => e.PayDate).HasColumnType("datetime2").HasColumnName("PayDate");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            builder.Property(e => e.PayDate).HasColumnType("date").HasColumnName("PayDate");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
-            builder.Property(e => e.PeriodEndDate).HasColumnType("datetime2").HasColumnName("PeriodEndDate");
-            builder.Property(e => e.PeriodStartDate).HasColumnType("datetime2").HasColumnName("PeriodStartDate");
+            builder.Property(e => e.PeriodEndDate).HasColumnType("date").HasColumnName("PeriodEndDate");
+            builder.Property(e => e.PeriodStartDate).HasColumnType("date").HasColumnName("PeriodStartDate");
             builder.Property(e => e.StatusPeriod).HasColumnName("StatusPeriod");
 
             //// Configuración de relaciones

@@ -25,7 +25,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("CalendarHoliday");
 
             // Configuración de propiedades
-            builder.Property(e => e.CalendarDate).HasColumnType("datetime2").HasColumnName("CalendarDate");
+            builder.Property(e => e.CalendarDate).HasColumnType("date").HasColumnName("CalendarDate");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
 
             // Índices

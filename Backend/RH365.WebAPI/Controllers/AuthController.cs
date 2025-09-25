@@ -12,13 +12,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Generators;
 using RH365.Core.Application.Common.Interfaces;
 using RH365.Core.Domain.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace RH365.WebAPI.Controllers
@@ -82,8 +80,16 @@ namespace RH365.WebAPI.Controllers
                     return Unauthorized("Credenciales inválidas");
                 }
 
+                // Logs de diagnóstico para verificación de contraseña
+                _logger.LogInformation("Intentando verificar contraseña para usuario {Email}", user.Email);
+                _logger.LogInformation("Hash en BD: {Hash}", user.PasswordHash);
+                _logger.LogInformation("Longitud del hash: {Length}", user.PasswordHash?.Length ?? 0);
+
                 // Verificar contraseña
-                if (!VerifyPassword(request.Password, user.PasswordHash))
+                var passwordVerified = VerifyPassword(request.Password, user.PasswordHash);
+                _logger.LogInformation("Resultado de verificación: {Result}", passwordVerified);
+
+                if (!passwordVerified)
                 {
                     _logger.LogWarning("Intento de login fallido: contraseña incorrecta para {Email}", request.EmailOrAlias);
                     return Unauthorized("Credenciales inválidas");
@@ -268,6 +274,25 @@ namespace RH365.WebAPI.Controllers
 
         #region Métodos privados
 
+
+
+        //metodo para generar el hash
+        [HttpGet("test-hash")]
+        [AllowAnonymous]
+        public IActionResult TestHash()
+        {
+            var testPassword = "Admin123!";
+            var hash = BCrypt.Net.BCrypt.HashPassword(testPassword);
+            var verify = BCrypt.Net.BCrypt.Verify(testPassword, hash);
+
+            return Ok(new
+            {
+                Password = testPassword,
+                GeneratedHash = hash,
+                HashLength = hash.Length,
+                VerificationResult = verify
+            });
+        }
         /// <summary>
         /// Genera un token JWT para el usuario autenticado.
         /// </summary>
@@ -311,14 +336,28 @@ namespace RH365.WebAPI.Controllers
         /// <summary>
         /// Verifica una contraseña contra su hash.
         /// </summary>
-        private static bool VerifyPassword(string password, string hash)
+        private bool VerifyPassword(string password, string hash)
         {
             try
             {
-                return BCrypt.Net.BCrypt.Verify(password, hash);
+                // Log adicional para diagnóstico
+                _logger.LogDebug("Verificando contraseña. Longitud password: {PwdLen}, Longitud hash: {HashLen}",
+                    password?.Length ?? 0, hash?.Length ?? 0);
+
+                if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(hash))
+                {
+                    _logger.LogWarning("Password o hash vacío/nulo");
+                    return false;
+                }
+
+                var result = BCrypt.Net.BCrypt.Verify(password, hash);
+                _logger.LogDebug("BCrypt.Verify resultado: {Result}", result);
+
+                return result;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al verificar contraseña con BCrypt");
                 return false;
             }
         }

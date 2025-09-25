@@ -25,19 +25,19 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("Position");
 
             // Configuración de propiedades
-            builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
+            //builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
             builder.Property(e => e.DepartmentRefRecID).HasColumnName("DepartmentRefRecID");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.EndDate).HasColumnType("datetime2").HasColumnName("EndDate");
+            builder.Property(e => e.EndDate).HasColumnType("date").HasColumnName("EndDate");
             builder.Property(e => e.IsVacant).HasColumnName("IsVacant");
-            builder.Property(e => e.JobRefRec).HasColumnName("JobRefRec");
+            //builder.Property(e => e.JobRefRec).HasColumnName("JobRefRec");
             builder.Property(e => e.JobRefRecID).HasColumnName("JobRefRecID");
-            builder.Property(e => e.NotifyPositionRefRec).HasColumnName("NotifyPositionRefRec");
+            //builder.Property(e => e.NotifyPositionRefRec).HasColumnName("NotifyPositionRefRec");
             builder.Property(e => e.NotifyPositionRefRecID).HasColumnName("NotifyPositionRefRecID");
             builder.Property(e => e.PositionCode).IsRequired().HasMaxLength(50).HasColumnName("PositionCode");
             builder.Property(e => e.PositionName).IsRequired().HasMaxLength(255).HasColumnName("PositionName");
             builder.Property(e => e.PositionStatus).HasColumnName("PositionStatus");
-            builder.Property(e => e.StartDate).HasColumnType("datetime2").HasColumnName("StartDate");
+            builder.Property(e => e.StartDate).HasColumnType("date").HasColumnName("StartDate");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.DepartmentRefRec)

@@ -27,12 +27,12 @@ namespace RH365.Infrastructure.Persistence.Configurations
             // Configuración de propiedades
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
             builder.Property(e => e.EmployeePositionStatus).HasColumnName("EmployeePositionStatus");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.FromDate).HasColumnType("time").HasColumnName("FromDate");
-            builder.Property(e => e.PositionRefRec).HasColumnName("PositionRefRec");
+            builder.Property(e => e.FromDate).HasColumnType("date").HasColumnName("FromDate");
+            //builder.Property(e => e.PositionRefRec).HasColumnName("PositionRefRec");
             builder.Property(e => e.PositionRefRecID).HasColumnName("PositionRefRecID");
-            builder.Property(e => e.ToDate).HasColumnType("time").HasColumnName("ToDate");
+            builder.Property(e => e.ToDate).HasColumnType("date").HasColumnName("ToDate");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.EmployeeRefRec)

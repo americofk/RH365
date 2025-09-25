@@ -33,13 +33,13 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.IsPayCycleTss).HasColumnName("IsPayCycleTss");
             builder.Property(e => e.IsRoyaltyPayroll).HasColumnName("IsRoyaltyPayroll");
             builder.Property(e => e.PayCycleId).HasColumnName("PayCycleId");
-            builder.Property(e => e.PaymentDate).HasColumnType("datetime2").HasColumnName("PaymentDate");
+            builder.Property(e => e.PaymentDate).HasColumnType("date").HasColumnName("PaymentDate");
             builder.Property(e => e.PayrollProcessCode).IsRequired().HasMaxLength(50).HasColumnName("PayrollProcessCode");
             builder.Property(e => e.PayrollProcessStatus).HasColumnName("PayrollProcessStatus");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
-            builder.Property(e => e.PeriodEndDate).HasColumnType("datetime2").HasColumnName("PeriodEndDate");
-            builder.Property(e => e.PeriodStartDate).HasColumnType("datetime2").HasColumnName("PeriodStartDate");
+            builder.Property(e => e.PeriodEndDate).HasColumnType("date").HasColumnName("PeriodEndDate");
+            builder.Property(e => e.PeriodStartDate).HasColumnType("date").HasColumnName("PeriodStartDate");
             builder.Property(e => e.ProjCategoryId).HasMaxLength(255).HasColumnName("ProjCategoryId");
             builder.Property(e => e.ProjId).HasMaxLength(255).HasColumnName("ProjId");
             builder.Property(e => e.TotalAmountToPay).HasPrecision(18, 4).HasColumnName("TotalAmountToPay");

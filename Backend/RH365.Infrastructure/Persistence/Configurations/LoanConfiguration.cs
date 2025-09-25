@@ -25,7 +25,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.ToTable("Loan");
 
             // Configuración de propiedades
-            builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
+            //builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
             builder.Property(e => e.DepartmentRefRecID).HasColumnName("DepartmentRefRecID");
             builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
             builder.Property(e => e.IndexBase).HasColumnName("IndexBase");
@@ -35,12 +35,12 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.MultiplyAmount).HasPrecision(18, 4).HasColumnName("MultiplyAmount");
             builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
             builder.Property(e => e.PayFrecuency).HasColumnName("PayFrecuency");
-            builder.Property(e => e.ProjCategoryRefRec).HasColumnName("ProjCategoryRefRec");
+            //builder.Property(e => e.ProjCategoryRefRec).HasColumnName("ProjCategoryRefRec");
             builder.Property(e => e.ProjCategoryRefRecID).HasColumnName("ProjCategoryRefRecID");
-            builder.Property(e => e.ProjectRefRec).HasColumnName("ProjectRefRec");
+            //builder.Property(e => e.ProjectRefRec).HasColumnName("ProjectRefRec");
             builder.Property(e => e.ProjectRefRecID).HasColumnName("ProjectRefRecID");
-            builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
+            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
+            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.DepartmentRefRec)

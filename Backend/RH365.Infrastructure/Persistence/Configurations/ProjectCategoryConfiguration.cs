@@ -28,7 +28,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CategoryName).IsRequired().HasMaxLength(255).HasColumnName("CategoryName");
             builder.Property(e => e.LedgerAccount).HasMaxLength(255).HasColumnName("LedgerAccount");
             builder.Property(e => e.ProjectCategoryStatus).HasColumnName("ProjectCategoryStatus");
-            builder.Property(e => e.ProjectRefRec).HasColumnName("ProjectRefRec");
+            //builder.Property(e => e.ProjectRefRec).HasColumnName("ProjectRefRec");
             builder.Property(e => e.ProjectRefRecID).HasColumnName("ProjectRefRecID");
 
             //// Configuración de relaciones

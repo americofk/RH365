@@ -26,21 +26,21 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.AmountByDues).HasPrecision(18, 4).HasColumnName("AmountByDues");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.LoanAmount).HasPrecision(18, 4).HasColumnName("LoanAmount");
-            builder.Property(e => e.LoanRefRec).HasColumnName("LoanRefRec");
+            //builder.Property(e => e.LoanRefRec).HasColumnName("LoanRefRec");
             builder.Property(e => e.LoanRefRecID).HasColumnName("LoanRefRecID");
             builder.Property(e => e.PaidAmount).HasPrecision(18, 4).HasColumnName("PaidAmount");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
             builder.Property(e => e.PendingAmount).HasPrecision(18, 4).HasColumnName("PendingAmount");
             builder.Property(e => e.PendingDues).HasColumnName("PendingDues");
             builder.Property(e => e.QtyPeriodForPaid).HasColumnName("QtyPeriodForPaid");
             builder.Property(e => e.StartPeriodForPaid).HasColumnName("StartPeriodForPaid");
             builder.Property(e => e.TotalDues).HasColumnName("TotalDues");
-            builder.Property(e => e.ValidFrom).HasColumnType("time").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("time").HasColumnName("ValidTo");
+            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
+            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
 
             //// Configuración de relaciones
             //builder.HasMany(e => e.EmployeeLoanHistories)

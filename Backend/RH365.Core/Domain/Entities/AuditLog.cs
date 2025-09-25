@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RH365.Infrastructure.TempScaffold;
+namespace RH365.Core.Domain.Entities;
 
 public partial class AuditLog
 {

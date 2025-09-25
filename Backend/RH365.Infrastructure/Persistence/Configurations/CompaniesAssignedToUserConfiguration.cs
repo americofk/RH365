@@ -22,13 +22,13 @@ namespace RH365.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<CompaniesAssignedToUser> builder)
         {
             // Mapeo a tabla
-            builder.ToTable("CompaniesAssignedToUser");
+            builder.ToTable("CompaniesAssignedToUsers");
 
             // Configuración de propiedades
-            builder.Property(e => e.CompanyRefRec).HasColumnName("CompanyRefRec");
+            //builder.Property(e => e.CompanyRefRec).HasColumnName("CompanyRefRec");
             builder.Property(e => e.CompanyRefRecID).HasColumnName("CompanyRefRecID");
             builder.Property(e => e.IsActive).HasColumnName("IsActive");
-            builder.Property(e => e.UserRefRec).HasColumnName("UserRefRec");
+            //builder.Property(e => e.UserRefRec).HasColumnName("UserRefRec");
             builder.Property(e => e.UserRefRecID).HasColumnName("UserRefRecID");
 
            //// Configuración de relaciones

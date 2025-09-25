@@ -27,20 +27,20 @@ namespace RH365.Infrastructure.Persistence.Configurations
             // Configuración de propiedades
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
             builder.Property(e => e.DeductionAmount).HasPrecision(18, 4).HasColumnName("DeductionAmount");
-            builder.Property(e => e.DeductionCodeRefRec).HasColumnName("DeductionCodeRefRec");
+            //builder.Property(e => e.DeductionCodeRefRec).HasColumnName("DeductionCodeRefRec");
             builder.Property(e => e.DeductionCodeRefRecID).HasColumnName("DeductionCodeRefRecID");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.FromDate).HasColumnType("time").HasColumnName("FromDate");
+            builder.Property(e => e.FromDate).HasColumnType("date").HasColumnName("FromDate");
             builder.Property(e => e.IndexDeduction).HasPrecision(18, 4).HasColumnName("IndexDeduction");
             builder.Property(e => e.PayFrecuency).HasColumnName("PayFrecuency");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
             builder.Property(e => e.PercentContribution).HasPrecision(5, 2).HasColumnName("PercentContribution");
             builder.Property(e => e.PercentDeduction).HasPrecision(5, 2).HasColumnName("PercentDeduction");
             builder.Property(e => e.QtyPeriodForPaid).HasColumnName("QtyPeriodForPaid");
             builder.Property(e => e.StartPeriodForPaid).HasColumnName("StartPeriodForPaid");
-            builder.Property(e => e.ToDate).HasColumnType("time").HasColumnName("ToDate");
+            builder.Property(e => e.ToDate).HasColumnType("date").HasColumnName("ToDate");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.DeductionCodeRefRec)

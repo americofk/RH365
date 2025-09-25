@@ -26,20 +26,20 @@ namespace RH365.Infrastructure.Persistence.Configurations
 
             // Configuración de propiedades
             builder.Property(e => e.Amount).HasPrecision(18, 4).HasColumnName("Amount");
-            builder.Property(e => e.CalcPayrollDate).HasColumnType("datetime2").HasColumnName("CalcPayrollDate");
+            builder.Property(e => e.CalcPayrollDate).HasColumnType("date").HasColumnName("CalcPayrollDate");
             builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            builder.Property(e => e.EarningCodeRefRec).HasColumnName("EarningCodeRefRec");
+            //builder.Property(e => e.EarningCodeRefRec).HasColumnName("EarningCodeRefRec");
             builder.Property(e => e.EarningCodeRefRecID).HasColumnName("EarningCodeRefRecID");
-            builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
+            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
             builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
             builder.Property(e => e.EndHour).HasColumnType("time").HasColumnName("EndHour");
             builder.Property(e => e.Indice).HasPrecision(18, 2).HasColumnName("Indice");
-            builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
+            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
             builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
             builder.Property(e => e.Quantity).HasPrecision(18, 2).HasColumnName("Quantity");
             builder.Property(e => e.StartHour).HasColumnType("time").HasColumnName("StartHour");
             builder.Property(e => e.StatusExtraHour).HasColumnName("StatusExtraHour");
-            builder.Property(e => e.WorkedDay).HasColumnType("datetime2").HasColumnName("WorkedDay");
+            builder.Property(e => e.WorkedDay).HasColumnType("date").HasColumnName("WorkedDay");
 
             //// Configuración de relaciones
             //builder.HasOne(e => e.EarningCodeRefRec)
