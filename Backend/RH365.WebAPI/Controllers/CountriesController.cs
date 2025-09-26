@@ -2,10 +2,16 @@
 // Archivo: CountriesController.cs
 // Proyecto: RH365.WebAPI
 // Ruta: RH365.WebAPI/Controllers/CountriesController.cs
-// Descripción: Controlador REST para gestión de países.
-//   - CRUD completo: GET, GET ALL, POST, PUT, DELETE
-//   - Paginación para listados
-//   - Validación de modelos
+// Descripción: Controlador REST para gestión de países (CRUD completo).
+//   - Endpoints: GET (paginado), GET/{id}, POST, PUT/{id}, DELETE/{id}
+//   - Búsqueda case-insensitive con EF.Functions.Like
+//   - Paginación con límites y metadatos
+//   - Validación de modelos (DataAnnotations) y respuestas tipadas
+//   - Lecturas con AsNoTracking para rendimiento
+// Notas:
+//   - La seguridad por multiempresa se aplica vía QueryFilters del DbContext.
+//   - Este controlador asume que IApplicationDbContext expone DbSet<Country>,
+//     DbSet<Company> y DbSet<EmployeeAddress> (o equivalentes).
 // ============================================================================
 
 using System.ComponentModel.DataAnnotations;
@@ -22,6 +28,7 @@ namespace RH365.WebAPI.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     [Authorize]
     public class CountriesController : ControllerBase
     {
@@ -42,42 +49,45 @@ namespace RH365.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Obtiene todos los países con paginación.
+        /// Obtiene todos los países con paginación y búsqueda opcional.
         /// </summary>
-        /// <param name="pageNumber">Número de página (por defecto 1).</param>
-        /// <param name="pageSize">Tamaño de página (por defecto 10, máximo 100).</param>
-        /// <param name="search">Término de búsqueda para filtrar por nombre o código.</param>
+        /// <param name="pageNumber">Número de página (>=1).</param>
+        /// <param name="pageSize">Tamaño de página (1..100).</param>
+        /// <param name="search">Texto a buscar en Name, CountryCode o NationalityName.</param>
+        /// <param name="ct">Cancellation token.</param>
         /// <returns>Lista paginada de países.</returns>
-        [HttpGet]
+        [HttpGet(Name = "GetCountries")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<PagedResult<CountryDto>>> GetCountries(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
-            [FromQuery] string? search = null)
+            [FromQuery] string? search = null,
+            CancellationToken ct = default)
         {
             try
             {
-                // Validar parámetros de paginación
+                // Validar límites seguros de paginación
                 pageNumber = Math.Max(1, pageNumber);
-                pageSize = Math.Min(Math.Max(1, pageSize), 100);
+                pageSize = Math.Clamp(pageSize, 1, 100);
 
-                var query = _context.Countries.AsQueryable();
+                // Query base (sin tracking para lecturas)
+                IQueryable<Country> query = _context.Countries.AsNoTracking();
 
-                // Aplicar filtro de búsqueda si se proporciona
+                // Filtro de búsqueda (case-insensitive usando EF.Functions.Like)
                 if (!string.IsNullOrWhiteSpace(search))
                 {
-                    var searchTerm = search.Trim().ToLower();
+                    string pattern = $"%{search.Trim()}%";
                     query = query.Where(c =>
-                        c.Name.ToLower().Contains(searchTerm) ||
-                        c.CountryCode.ToLower().Contains(searchTerm) ||
-                        (c.NationalityName != null && c.NationalityName.ToLower().Contains(searchTerm)));
+                        EF.Functions.Like(c.Name, pattern) ||
+                        EF.Functions.Like(c.CountryCode, pattern) ||
+                        (c.NationalityName != null && EF.Functions.Like(c.NationalityName, pattern)));
                 }
 
-                // Contar total de registros
-                var totalCount = await query.CountAsync();
+                // Total de filas y página solicitada
+                int totalCount = await query.CountAsync(ct);
+                int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-                // Aplicar paginación y obtener datos
                 var countries = await query
                     .OrderBy(c => c.Name)
                     .Skip((pageNumber - 1) * pageSize)
@@ -94,7 +104,7 @@ namespace RH365.WebAPI.Controllers
                         ModifiedBy = c.ModifiedBy,
                         ModifiedOn = c.ModifiedOn
                     })
-                    .ToListAsync();
+                    .ToListAsync(ct);
 
                 var result = new PagedResult<CountryDto>
                 {
@@ -102,7 +112,7 @@ namespace RH365.WebAPI.Controllers
                     TotalCount = totalCount,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                    TotalPages = totalPages
                 };
 
                 return Ok(result);
@@ -110,24 +120,26 @@ namespace RH365.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener países");
-                return StatusCode(500, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
             }
         }
 
         /// <summary>
-        /// Obtiene un país específico por ID.
+        /// Obtiene un país específico por RecID.
         /// </summary>
-        /// <param name="id">ID del país.</param>
+        /// <param name="id">RecID del país.</param>
+        /// <param name="ct">Cancellation token.</param>
         /// <returns>País solicitado.</returns>
-        [HttpGet("{id}")]
+        [HttpGet("{id:long}", Name = "GetCountryById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<CountryDto>> GetCountry(long id)
+        public async Task<ActionResult<CountryDto>> GetCountry([FromRoute] long id, CancellationToken ct = default)
         {
             try
             {
                 var country = await _context.Countries
+                    .AsNoTracking()
                     .Where(c => c.RecID == id)
                     .Select(c => new CountryDto
                     {
@@ -141,19 +153,17 @@ namespace RH365.WebAPI.Controllers
                         ModifiedBy = c.ModifiedBy,
                         ModifiedOn = c.ModifiedOn
                     })
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(ct);
 
                 if (country == null)
-                {
-                    return NotFound($"País con ID {id} no encontrado");
-                }
+                    return NotFound($"País con ID {id} no encontrado.");
 
                 return Ok(country);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener país con ID {CountryId}", id);
-                return StatusCode(500, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
             }
         }
 
@@ -161,29 +171,29 @@ namespace RH365.WebAPI.Controllers
         /// Crea un nuevo país.
         /// </summary>
         /// <param name="request">Datos del país a crear.</param>
+        /// <param name="ct">Cancellation token.</param>
         /// <returns>País creado.</returns>
-        [HttpPost]
+        [HttpPost(Name = "CreateCountry")]
+        [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<CountryDto>> CreateCountry([FromBody] CreateCountryRequest request)
+        public async Task<ActionResult<CountryDto>> CreateCountry(
+            [FromBody] CreateCountryRequest request,
+            CancellationToken ct = default)
         {
             try
             {
                 if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                    return ValidationProblem(ModelState);
 
-                // Verificar si ya existe un país con el mismo código
-                var existingCountry = await _context.Countries
-                    .AnyAsync(c => c.CountryCode.ToLower() == request.CountryCode.ToLower());
+                // Evitar duplicados por CountryCode (case-insensitive)
+                bool exists = await _context.Countries
+                    .AnyAsync(c => c.CountryCode.ToLower() == request.CountryCode.Trim().ToLower(), ct);
 
-                if (existingCountry)
-                {
-                    return Conflict($"Ya existe un país con el código '{request.CountryCode}'");
-                }
+                if (exists)
+                    return Conflict($"Ya existe un país con el código '{request.CountryCode}'.");
 
                 var country = new Country
                 {
@@ -194,9 +204,9 @@ namespace RH365.WebAPI.Controllers
                 };
 
                 _context.Countries.Add(country);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
-                var countryDto = new CountryDto
+                var dto = new CountryDto
                 {
                     RecID = country.RecID,
                     CountryCode = country.CountryCode,
@@ -209,52 +219,51 @@ namespace RH365.WebAPI.Controllers
                     ModifiedOn = country.ModifiedOn
                 };
 
-                return CreatedAtAction(nameof(GetCountry), new { id = country.RecID }, countryDto);
+                return CreatedAtRoute("GetCountryById", new { id = dto.RecID }, dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear país");
-                return StatusCode(500, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
             }
         }
 
         /// <summary>
         /// Actualiza un país existente.
         /// </summary>
-        /// <param name="id">ID del país a actualizar.</param>
+        /// <param name="id">RecID del país a actualizar.</param>
         /// <param name="request">Datos actualizados del país.</param>
+        /// <param name="ct">Cancellation token.</param>
         /// <returns>País actualizado.</returns>
-        [HttpPut("{id}")]
+        [HttpPut("{id:long}", Name = "UpdateCountry")]
+        [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<CountryDto>> UpdateCountry(long id, [FromBody] UpdateCountryRequest request)
+        public async Task<ActionResult<CountryDto>> UpdateCountry(
+            [FromRoute] long id,
+            [FromBody] UpdateCountryRequest request,
+            CancellationToken ct = default)
         {
             try
             {
                 if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                    return ValidationProblem(ModelState);
 
-                var country = await _context.Countries.FindAsync(id);
+                var country = await _context.Countries.FindAsync(new object?[] { id }, ct);
                 if (country == null)
-                {
-                    return NotFound($"País con ID {id} no encontrado");
-                }
+                    return NotFound($"País con ID {id} no encontrado.");
 
-                // Verificar si el nuevo código ya existe en otro país
+                // Verificar duplicado de código en otra fila
                 if (!string.Equals(country.CountryCode, request.CountryCode, StringComparison.OrdinalIgnoreCase))
                 {
-                    var existingCountry = await _context.Countries
-                        .AnyAsync(c => c.RecID != id && c.CountryCode.ToLower() == request.CountryCode.ToLower());
-
-                    if (existingCountry)
-                    {
-                        return Conflict($"Ya existe otro país con el código '{request.CountryCode}'");
-                    }
+                    bool codeInUse = await _context.Countries
+                        .AnyAsync(c => c.RecID != id &&
+                                       c.CountryCode.ToLower() == request.CountryCode.Trim().ToLower(), ct);
+                    if (codeInUse)
+                        return Conflict($"Ya existe otro país con el código '{request.CountryCode}'.");
                 }
 
                 // Actualizar propiedades
@@ -263,9 +272,9 @@ namespace RH365.WebAPI.Controllers
                 country.NationalityCode = request.NationalityCode?.Trim().ToUpper();
                 country.NationalityName = request.NationalityName?.Trim();
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
-                var countryDto = new CountryDto
+                var dto = new CountryDto
                 {
                     RecID = country.RecID,
                     CountryCode = country.CountryCode,
@@ -278,53 +287,55 @@ namespace RH365.WebAPI.Controllers
                     ModifiedOn = country.ModifiedOn
                 };
 
-                return Ok(countryDto);
+                return Ok(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar país con ID {CountryId}", id);
-                return StatusCode(500, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
             }
         }
 
         /// <summary>
-        /// Elimina un país.
+        /// Elimina un país por RecID.
         /// </summary>
-        /// <param name="id">ID del país a eliminar.</param>
-        /// <returns>Resultado de la operación.</returns>
-        [HttpDelete("{id}")]
+        /// <param name="id">RecID del país a eliminar.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>204 No Content si se elimina correctamente.</returns>
+        [HttpDelete("{id:long}", Name = "DeleteCountry")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> DeleteCountry(long id)
+        public async Task<IActionResult> DeleteCountry([FromRoute] long id, CancellationToken ct = default)
         {
             try
             {
-                var country = await _context.Countries.FindAsync(id);
+                var country = await _context.Countries.FindAsync(new object?[] { id }, ct);
                 if (country == null)
-                {
-                    return NotFound($"País con ID {id} no encontrado");
-                }
+                    return NotFound($"País con ID {id} no encontrado.");
 
-                // Verificar si hay registros dependientes
-                var hasCompanies = await _context.Companies.AnyAsync(c => c.CountryRefRecID == id);
-                var hasAddresses = await _context.EmployeesAddresses.AnyAsync(a => a.CountryRefRecID == id);
+                // Validación de integridad referencial (relaciones conocidas)
+                bool hasCompanies = await _context.Companies
+                    .AsNoTracking()
+                    .AnyAsync(c => c.CountryRefRecID == id, ct);
+
+                bool hasAddresses = await _context.EmployeesAddresses
+                    .AsNoTracking()
+                    .AnyAsync(a => a.CountryRefRecID == id, ct);
 
                 if (hasCompanies || hasAddresses)
-                {
-                    return Conflict("No se puede eliminar el país porque tiene registros relacionados");
-                }
+                    return Conflict("No se puede eliminar el país porque tiene registros relacionados.");
 
                 _context.Countries.Remove(country);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 return NoContent();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar país con ID {CountryId}", id);
-                return StatusCode(500, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
             }
         }
     }
@@ -336,14 +347,31 @@ namespace RH365.WebAPI.Controllers
     /// </summary>
     public class CountryDto
     {
+        /// <summary>Identificador global (RecID) del país.</summary>
         public long RecID { get; set; }
+
+        /// <summary>Código de país (ej. 'DO', 'US').</summary>
         public string CountryCode { get; set; } = null!;
+
+        /// <summary>Nombre del país.</summary>
         public string Name { get; set; } = null!;
+
+        /// <summary>Código de nacionalidad (opcional).</summary>
         public string? NationalityCode { get; set; }
+
+        /// <summary>Nombre de nacionalidad (opcional).</summary>
         public string? NationalityName { get; set; }
+
+        /// <summary>Usuario que creó el registro.</summary>
         public string CreatedBy { get; set; } = null!;
+
+        /// <summary>Fecha y hora de creación.</summary>
         public DateTime CreatedOn { get; set; }
+
+        /// <summary>Usuario que modificó por última vez.</summary>
         public string? ModifiedBy { get; set; }
+
+        /// <summary>Fecha y hora de última modificación.</summary>
         public DateTime? ModifiedOn { get; set; }
     }
 
@@ -352,17 +380,19 @@ namespace RH365.WebAPI.Controllers
     /// </summary>
     public class CreateCountryRequest
     {
-        [Required]
-        [StringLength(10, MinimumLength = 2)]
+        /// <summary>Código de país (2 a 10 caracteres).</summary>
+        [Required, StringLength(10, MinimumLength = 2)]
         public string CountryCode { get; set; } = null!;
 
-        [Required]
-        [StringLength(255, MinimumLength = 2)]
+        /// <summary>Nombre del país (2 a 255 caracteres).</summary>
+        [Required, StringLength(255, MinimumLength = 2)]
         public string Name { get; set; } = null!;
 
+        /// <summary>Código de nacionalidad (opcional, máx. 10).</summary>
         [StringLength(10)]
         public string? NationalityCode { get; set; }
 
+        /// <summary>Nombre de nacionalidad (opcional, máx. 255).</summary>
         [StringLength(255)]
         public string? NationalityName { get; set; }
     }
@@ -372,32 +402,47 @@ namespace RH365.WebAPI.Controllers
     /// </summary>
     public class UpdateCountryRequest
     {
-        [Required]
-        [StringLength(10, MinimumLength = 2)]
+        /// <summary>Código de país (2 a 10 caracteres).</summary>
+        [Required, StringLength(10, MinimumLength = 2)]
         public string CountryCode { get; set; } = null!;
 
-        [Required]
-        [StringLength(255, MinimumLength = 2)]
+        /// <summary>Nombre del país (2 a 255 caracteres).</summary>
+        [Required, StringLength(255, MinimumLength = 2)]
         public string Name { get; set; } = null!;
 
+        /// <summary>Código de nacionalidad (opcional, máx. 10).</summary>
         [StringLength(10)]
         public string? NationalityCode { get; set; }
 
+        /// <summary>Nombre de nacionalidad (opcional, máx. 255).</summary>
         [StringLength(255)]
         public string? NationalityName { get; set; }
     }
 
     /// <summary>
-    /// DTO para resultados paginados.
+    /// DTO contenedor para resultados paginados.
     /// </summary>
     public class PagedResult<T>
     {
+        /// <summary>Datos de la página actual.</summary>
         public List<T> Data { get; set; } = new();
+
+        /// <summary>Total de filas encontradas (sin paginar).</summary>
         public int TotalCount { get; set; }
+
+        /// <summary>Número de página actual (>=1).</summary>
         public int PageNumber { get; set; }
+
+        /// <summary>Tamaño de página.</summary>
         public int PageSize { get; set; }
+
+        /// <summary>Total de páginas.</summary>
         public int TotalPages { get; set; }
+
+        /// <summary>Indica si hay página siguiente.</summary>
         public bool HasNextPage => PageNumber < TotalPages;
+
+        /// <summary>Indica si hay página previa.</summary>
         public bool HasPreviousPage => PageNumber > 1;
     }
 
