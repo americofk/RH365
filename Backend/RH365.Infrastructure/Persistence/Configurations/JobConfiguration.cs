@@ -1,45 +1,50 @@
 // ============================================================================
 // Archivo: JobConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Organization/JobConfiguration.cs
-// Descripción: Configuración Entity Framework para Job.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: Infrastructure/Persistence/Configurations/JobConfiguration.cs
+// Descripción: Configuración EF Core para Job.
+//   - Tabla: dbo.Jobs
+//   - RecID usa secuencia global dbo.RecId
+//   - ID legible generado por secuencia dbo.JobsId
+//   - Índice único por DataareaID + JobCode
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad Job.
-    /// </summary>
-    public class JobConfiguration : IEntityTypeConfiguration<Job>
+    public sealed class JobConfiguration : IEntityTypeConfiguration<Job>
     {
         public void Configure(EntityTypeBuilder<Job> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("Job");
+            builder.ToTable("Jobs", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.JobCode).IsRequired().HasMaxLength(50).HasColumnName("JobCode");
-            builder.Property(e => e.JobStatus).HasColumnName("JobStatus");
-            builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
+            builder.Property(j => j.JobCode)
+                   .HasMaxLength(10)
+                   .IsRequired();
 
-            //// Configuración de relaciones
-            //builder.HasMany(e => e.Positions)
-            //    .WithOne(d => d.JobRefRec)
-            //    .HasForeignKey(d => d.JobRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            builder.Property(j => j.Name)
+                   .HasMaxLength(255)
+                   .IsRequired();
 
-            // Índices
-            builder.HasIndex(e => new { e.JobCode, e.DataareaID })
-                .HasDatabaseName("IX_Job_JobCode_DataareaID")
-                .IsUnique();
+            builder.Property(j => j.Description)
+                   .HasMaxLength(500);
+
+            builder.Property(j => j.JobStatus)
+                   .IsRequired()
+                   .HasDefaultValue(true);
+
+            // ID legible (ej. JOB-00000001)
+            builder.Property<string>("ID")
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd()
+                   .HasDefaultValueSql("('JOB-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.JobsId AS VARCHAR(8)), 8))");
+
+            // Índice único por empresa + código
+            builder.HasIndex(j => new { j.DataareaID, j.JobCode })
+                   .IsUnique()
+                   .HasDatabaseName("UX_Jobs_Dataarea_JobCode");
         }
     }
 }

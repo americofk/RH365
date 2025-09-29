@@ -2,10 +2,10 @@
 // Archivo: CountryConfiguration.cs
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Persistence/Configurations/CountryConfiguration.cs
-// Descripción: Configuración EF Core para la entidad Country.
-//   - Mapea a la tabla física [dbo].[Countries] (no "Country").
-//   - Define longitudes, required y un índice único por (DataareaID, CountryCode).
-// Notas: La PK, auditoría y DataareaID se heredan de AuditableCompanyEntityConfiguration.
+// Descripción: Configuración EF Core para Countries.
+//   - Tabla: [dbo].[Countries]
+//   - ID (string) generado por DEFAULT usando secuencia dbo.CountriesId
+//   - Índice único por (DataareaID, CountryCode)
 // ============================================================================
 
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +18,9 @@ namespace RH365.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Country> builder)
         {
-            // Tabla física correcta
-            builder.ToTable("Countries", schema: "dbo");
+            builder.ToTable("Countries", "dbo");
 
-            // Clave primaria y auditoría se configuran en la base (AuditableCompanyEntityConfiguration).
-            // Aquí definimos propiedades específicas del agregado.
+            // --- Propiedades ---
             builder.Property(p => p.CountryCode)
                    .HasMaxLength(10)
                    .IsRequired();
@@ -37,7 +35,14 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Property(p => p.NationalityName)
                    .HasMaxLength(255);
 
-            // Índice único por empresa + código de país
+            // --- ID legible generado en BD ---
+            // Requiere: secuencia dbo.CountriesId (INT) existente
+            builder.Property(p => p.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd() // EF espera que lo genere la BD
+                   .HasDefaultValueSql("('CTRY-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.CountriesId AS VARCHAR(8)), 8))");
+
+            // --- Índices/Únicos ---
             builder.HasIndex(p => new { p.DataareaID, p.CountryCode })
                    .IsUnique()
                    .HasDatabaseName("UX_Countries_Dataarea_CountryCode");
