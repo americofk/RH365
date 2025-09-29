@@ -20,7 +20,7 @@ namespace RH365.Core.Application.DTOs.Position
         public long DepartmentRefRecID { get; set; }
         public long JobRefRecID { get; set; }
         public long? NotifyPositionRefRecID { get; set; }
-        public bool PositionStatus { get; set; }
+        public bool PositionStatus { get; set; } = true;
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? Description { get; set; }

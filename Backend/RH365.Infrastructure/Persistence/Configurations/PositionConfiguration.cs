@@ -4,23 +4,20 @@
 // Ruta: RH365.Infrastructure/Persistence/Configurations/Organization/PositionConfiguration.cs
 // Descripción: Configuración Entity Framework para la entidad Position.
 // ============================================================================
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations.Organization
 {
-    public class PositionConfiguration : IEntityTypeConfiguration<Position>
+    public sealed class PositionConfiguration : IEntityTypeConfiguration<Position>
     {
         public void Configure(EntityTypeBuilder<Position> builder)
         {
-            // Tabla
-            builder.ToTable("Positions");
-
-            // PK
+            builder.ToTable("Positions", "dbo");
             builder.HasKey(e => e.RecID);
 
-            // Propiedades
             builder.Property(e => e.PositionCode)
                 .IsRequired()
                 .HasMaxLength(10);
@@ -31,6 +28,24 @@ namespace RH365.Infrastructure.Persistence.Configurations.Organization
 
             builder.Property(e => e.Description)
                 .HasMaxLength(500);
+
+            // Defaults importantes
+            builder.Property(e => e.IsVacant)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            builder.Property(e => e.PositionStatus)
+                .IsRequired()
+                .HasDefaultValue(true);   // ✅ Fix aquí
+
+            builder.Property(e => e.StartDate)
+                .IsRequired();
+
+            // ID legible
+            builder.Property<string>("ID")
+                .HasMaxLength(50)
+                .HasDefaultValueSql("('POS-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.PositionsId AS VARCHAR(8)), 8))")
+                .ValueGeneratedOnAdd();
 
             // Relaciones
             builder.HasOne(e => e.DepartmentRefRec)
@@ -48,10 +63,9 @@ namespace RH365.Infrastructure.Persistence.Configurations.Organization
                 .HasForeignKey(e => e.NotifyPositionRefRecID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Índices
             builder.HasIndex(e => new { e.PositionCode, e.DataareaID })
-                .HasDatabaseName("IX_Positions_PositionCode_DataareaID")
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName("UX_Positions_PositionCode_DataareaID");
         }
     }
 }
