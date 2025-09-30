@@ -2,10 +2,12 @@
 // Archivo: CountryConfiguration.cs
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Persistence/Configurations/CountryConfiguration.cs
-// Descripción: Configuración EF Core para Countries.
+// Descripción: Configuración EF Core para Country.
 //   - Tabla: [dbo].[Countries]
-//   - ID (string) generado por DEFAULT usando secuencia dbo.CountriesId
-//   - Índice único por (DataareaID, CountryCode)
+//   - RecID: NEXT VALUE FOR dbo.RecId (DEFAULT en BD)
+//   - ID legible: 'CNTY-'+RIGHT(...,8) (DEFAULT en BD)  ← ajusta si usas otro prefijo
+//   - IMPORTANTE: Se ignoran posibles navegaciones a EmployeesAddress para
+//                 evitar que EF cree FKs sombra tipo CountryRecID{n}.
 // ============================================================================
 
 using Microsoft.EntityFrameworkCore;
@@ -14,38 +16,44 @@ using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    public class CountryConfiguration : IEntityTypeConfiguration<Country>
+    public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
     {
         public void Configure(EntityTypeBuilder<Country> builder)
         {
+            // Tabla
             builder.ToTable("Countries", "dbo");
 
-            // --- Propiedades ---
-            builder.Property(p => p.CountryCode)
+            // Campos básicos (ajusta longitudes según tu modelo real)
+            builder.Property<string>("ID")
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd(); // DEFAULT en BD
+
+            builder.Property(p => p.DataareaID)
                    .HasMaxLength(10)
                    .IsRequired();
 
-            builder.Property(p => p.Name)
-                   .HasMaxLength(255)
-                   .IsRequired();
+            builder.Property(p => p.CreatedBy).HasMaxLength(50);
+            builder.Property(p => p.ModifiedBy).HasMaxLength(50);
+            builder.Property(p => p.Observations).HasMaxLength(500);
 
-            builder.Property(p => p.NationalityCode)
-                   .HasMaxLength(10);
+            // ---------------------------
+            // 🔒 Corte del problema:
+            // Anulamos cualquier navegación/convención desde Country → EmployeesAddress
+            // que estuviera provocando la creación de FKs sombra CountryRecID{n}.
+            // Si estas propiedades no existen, Ignore() es inocuo.
+            // ---------------------------
+            builder.Ignore("EmployeesAddress");
+            builder.Ignore("EmployeesAddresses");
+            builder.Ignore("EmployeeAddresses");
+            builder.Ignore("EmployeeAddress");
 
-            builder.Property(p => p.NationalityName)
-                   .HasMaxLength(255);
-
-            // --- ID legible generado en BD ---
-            // Requiere: secuencia dbo.CountriesId (INT) existente
-            builder.Property(p => p.ID)
-                   .HasMaxLength(50)
-                   .ValueGeneratedOnAdd() // EF espera que lo genere la BD
-                   .HasDefaultValueSql("('CTRY-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.CountriesId AS VARCHAR(8)), 8))");
-
-            // --- Índices/Únicos ---
-            builder.HasIndex(p => new { p.DataareaID, p.CountryCode })
-                   .IsUnique()
-                   .HasDatabaseName("UX_Countries_Dataarea_CountryCode");
+            // No definimos relaciones aquí. La relación válida queda definida
+            // exclusivamente desde EmployeesAddressConfiguration así:
+            //    HasOne(p => p.CountryRefRec)
+            //      .WithMany()                      // sin navegación inversa
+            //      .HasForeignKey(p => p.CountryRefRecID)
+            //      .OnDelete(DeleteBehavior.Restrict)
+            //      .HasConstraintName("FK_EmployeesAddress_Countries");
         }
     }
 }

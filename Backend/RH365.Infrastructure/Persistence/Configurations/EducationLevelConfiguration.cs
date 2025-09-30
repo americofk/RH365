@@ -1,37 +1,43 @@
 // ============================================================================
 // Archivo: EducationLevelConfiguration.cs
-// Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Employee/EducationLevelConfiguration.cs
-// Descripción: Configuración Entity Framework para EducationLevel.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Capa: RH365.Infrastructure
+// Ruta: Infrastructure/Persistence/Configurations/EducationLevelConfiguration.cs
+// Descripción: Configuración EF Core para EducationLevels.
+//   - Tabla: [dbo].[EducationLevels]
+//   - PK real: RecID (secuencia global dbo.RecId).
+//   - ID legible (sombra): 'EDUL-' + RIGHT(...,8) con secuencia dbo.EducationLevelsId (DEFAULT).
+//   - Índice único: (DataareaID, EducationLevelCode).
+//   - Longitudes y nullability alineadas a la entidad.
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad EducationLevel.
-    /// </summary>
-    public class EducationLevelConfiguration : IEntityTypeConfiguration<EducationLevel>
+    public sealed class EducationLevelConfiguration : IEntityTypeConfiguration<EducationLevel>
     {
         public void Configure(EntityTypeBuilder<EducationLevel> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EducationLevel");
+            builder.ToTable("EducationLevels", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.EducationLevelCode).IsRequired().HasMaxLength(50).HasColumnName("EducationLevelCode");
+            builder.Property(p => p.EducationLevelCode)
+                   .HasMaxLength(20)
+                   .IsRequired();
 
-            // Índices
-            builder.HasIndex(e => new { e.EducationLevelCode, e.DataareaID })
-                .HasDatabaseName("IX_EducationLevel_EducationLevelCode_DataareaID")
-                .IsUnique();
+            builder.Property(p => p.Description)
+                   .HasMaxLength(255);
+
+            // ID legible (propiedad sombra) generado por BD
+            builder.Property<string>("ID")
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd()
+                   .HasDefaultValueSql("('EDU-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.EducationLevelsId AS VARCHAR(8)), 8))");
+
+            // Único por empresa + código
+            builder.HasIndex(p => new { p.DataareaID, p.EducationLevelCode })
+                   .IsUnique()
+                   .HasDatabaseName("UX_EducationLevels_Dataarea_Code");
         }
     }
 }

@@ -1,11 +1,14 @@
 // ============================================================================
 // Archivo: EmployeeConfiguration.cs
-// Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Employee/EmployeeConfiguration.cs
-// Descripción: Configuración Entity Framework para Employee.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Capa: RH365.Infrastructure
+// Ruta: Infrastructure/Persistence/Configurations/EmployeeConfiguration.cs
+// Descripción: Configuración EF Core para la entidad Employee.
+//   - Tabla: [dbo].[Employees]
+//   - PK real: RecID (secuencia global dbo.RecId; se configura en ApplicationDbContext).
+//   - ID legible (string): 'EMP-'+RIGHT(...,8) con secuencia dbo.EmployeesId (DEFAULT).
+//   - Índice único: (DataareaID, EmployeeCode).
+//   - Defaults y validaciones: EmployeeStatus = 1; flags bool a 0; checks de fechas/horas.
+//   - Tipos y longitudes según buenas prácticas (ISO 27001).
 // ============================================================================
 
 using Microsoft.EntityFrameworkCore;
@@ -15,134 +18,138 @@ using RH365.Core.Domain.Entities;
 namespace RH365.Infrastructure.Persistence.Configurations
 {
     /// <summary>
-    /// Configuración Entity Framework para la entidad Employee.
+    /// Configuración de mapeo para Employees.
     /// </summary>
-    public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
+    public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     {
         public void Configure(EntityTypeBuilder<Employee> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("Employees");
+            // Tabla y esquema
+            builder.ToTable("Employees", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.AdmissionDate).HasColumnType("date").HasColumnName("AdmissionDate");
-            builder.Property(e => e.Afp).HasMaxLength(255).HasColumnName("Afp");
-            builder.Property(e => e.Age).HasColumnName("Age");
-            builder.Property(e => e.ApplyForOvertime).HasColumnName("ApplyForOvertime");
-            builder.Property(e => e.Ars).HasMaxLength(255).HasColumnName("Ars");
-            builder.Property(e => e.BirthDate).HasColumnType("date").HasColumnName("BirthDate");
-            builder.Property(e => e.BreakWorkFrom).HasColumnType("time").HasColumnName("BreakWorkFrom");
-            builder.Property(e => e.BreakWorkTo).HasColumnType("time").HasColumnName("BreakWorkTo");
-            builder.Property(e => e.CountryRecId).HasColumnName("CountryRecId");
-            builder.Property(e => e.DependentsNumbers).HasColumnName("DependentsNumbers");
-            builder.Property(e => e.DisabilityTypeRecId).HasColumnName("DisabilityTypeRecId");
-            builder.Property(e => e.EducationLevelRecId).HasColumnName("EducationLevelRecId");
-            builder.Property(e => e.EmployeeAction).HasColumnName("EmployeeAction");
-            builder.Property(e => e.EmployeeCode).IsRequired().HasMaxLength(50).HasColumnName("EmployeeCode");
-            builder.Property(e => e.EmployeeStatus).HasColumnName("EmployeeStatus");
-            builder.Property(e => e.EmployeeType).HasColumnName("EmployeeType");
-            builder.Property(e => e.EndWorkDate).HasColumnType("date").HasColumnName("EndWorkDate");
-            builder.Property(e => e.Gender).HasColumnName("Gender");
-            builder.Property(e => e.HasDisability).HasColumnName("HasDisability");
-            builder.Property(e => e.HomeOffice).HasColumnName("HomeOffice");
-            builder.Property(e => e.IsFixedWorkCalendar).HasColumnName("IsFixedWorkCalendar");
-            builder.Property(e => e.LastName).IsRequired().HasMaxLength(255).HasColumnName("LastName");
-            builder.Property(e => e.LocationRecId).HasColumnName("LocationRecId");
-            builder.Property(e => e.MaritalStatus).HasColumnName("MaritalStatus");
-            builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
-            builder.Property(e => e.Nationality).HasMaxLength(255).HasColumnName("Nationality");
-            builder.Property(e => e.Nss).HasMaxLength(255).HasColumnName("Nss");
-            builder.Property(e => e.OccupationRecId).HasColumnName("OccupationRecId");
-            builder.Property(e => e.OwnCar).HasColumnName("OwnCar");
-            builder.Property(e => e.PayMethod).HasColumnName("PayMethod");
-            builder.Property(e => e.PersonalTreatment).HasMaxLength(255).HasColumnName("PersonalTreatment");
-            builder.Property(e => e.StartWorkDate).HasColumnType("date").HasColumnName("StartWorkDate");
-            builder.Property(e => e.WorkFrom).HasColumnType("time").HasColumnName("WorkFrom");
-            builder.Property(e => e.WorkStatus).HasColumnName("WorkStatus");
-            builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");
+            // ---------------------------
+            // Propiedades obligatorias
+            // ---------------------------
+            builder.Property(e => e.EmployeeCode)
+                   .HasMaxLength(20)
+                   .IsRequired();
 
-            //// Configuración de relaciones
-            //builder.HasMany(e => e.CourseEmployees)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeBankAccounts)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeContactsInfs)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeDeductionCodes)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeDepartments)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeDocuments)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeEarningCodes)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeExtraHours)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeHistories)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeImages)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeLoanHistories)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeLoans)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeePositions)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeTaxes)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeWorkCalendars)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeWorkControlCalendars)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeesAddresses)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.PayrollProcessActions)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.PayrollProcessDetails)
-            //    .WithOne(d => d.EmployeeRefRec)
-            //    .HasForeignKey(d => d.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            builder.Property(e => e.Name)
+                   .HasMaxLength(150)
+                   .IsRequired();
 
-            // Índices
-            builder.HasIndex(e => new { e.EmployeeCode, e.DataareaID })
-                .HasDatabaseName("IX_Employee_EmployeeCode_DataareaID")
-                .IsUnique();
+            builder.Property(e => e.LastName)
+                   .HasMaxLength(150)
+                   .IsRequired();
+
+            builder.Property(e => e.Nss)
+                   .HasMaxLength(50)
+                   .IsRequired();
+
+            builder.Property(e => e.Ars)
+                   .HasMaxLength(80)
+                   .IsRequired();
+
+            builder.Property(e => e.Afp)
+                   .HasMaxLength(80)
+                   .IsRequired();
+
+            builder.Property(e => e.Nationality)
+                   .HasMaxLength(80);
+
+            builder.Property(e => e.PersonalTreatment)
+                   .HasMaxLength(30);
+
+            // Fechas y horas
+            builder.Property(e => e.BirthDate)
+                   .HasColumnType("datetime2")
+                   .IsRequired();
+
+            builder.Property(e => e.AdmissionDate)
+                   .HasColumnType("datetime2")
+                   .IsRequired();
+
+            builder.Property(e => e.StartWorkDate)
+                   .HasColumnType("datetime2")
+                   .IsRequired();
+
+            builder.Property(e => e.EndWorkDate)
+                   .HasColumnType("datetime2");
+
+            // Horarios (TimeOnly → SQL 'time')
+            builder.Property(e => e.WorkFrom).HasColumnType("time");
+            builder.Property(e => e.WorkTo).HasColumnType("time");
+            builder.Property(e => e.BreakWorkFrom).HasColumnType("time");
+            builder.Property(e => e.BreakWorkTo).HasColumnType("time");
+
+            // Enums como int (por claridad explícita)
+            builder.Property(e => e.Gender).HasConversion<int>();
+            builder.Property(e => e.MaritalStatus).HasConversion<int>();
+            builder.Property(e => e.EmployeeType).HasConversion<int>();
+            builder.Property(e => e.PayMethod).HasConversion<int>();
+            builder.Property(e => e.WorkStatus).HasConversion<int>();
+            builder.Property(e => e.EmployeeAction).HasConversion<int>();
+
+            // Banderas booleanas con DEFAULT 0
+            builder.Property(e => e.HomeOffice).HasDefaultValue(false).IsRequired();
+            builder.Property(e => e.OwnCar).HasDefaultValue(false).IsRequired();
+            builder.Property(e => e.HasDisability).HasDefaultValue(false).IsRequired();
+            builder.Property(e => e.ApplyForOvertime).HasDefaultValue(false).IsRequired();
+            builder.Property(e => e.IsFixedWorkCalendar).HasDefaultValue(false).IsRequired();
+
+            // Estado del empleado: NOT NULL + DEFAULT 1 (activo)
+            builder.Property(e => e.EmployeeStatus)
+                   .HasDefaultValue(true)
+                   .IsRequired();
+
+            // Age y DependentsNumbers no negativos
+            builder.Property(e => e.Age).IsRequired();
+            builder.Property(e => e.DependentsNumbers).IsRequired();
+
+            // ---------------------------
+            // Sombra: ID legible (string)
+            // ---------------------------
+            // Generado por BD con secuencia propia dbo.EmployeesId (8 dígitos, padding con ceros)
+            builder.Property<string>("ID")
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd()
+                   .HasDefaultValueSql("('EMP-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.EmployeesId AS VARCHAR(8)), 8))");
+
+            // ---------------------------
+            // Índices y unicidad
+            // ---------------------------
+            builder.HasIndex(e => new { e.DataareaID, e.EmployeeCode })
+                   .IsUnique()
+                   .HasDatabaseName("UX_Employees_Dataarea_EmployeeCode");
+
+            builder.HasIndex(e => e.CountryRecId).HasDatabaseName("IX_Employees_CountryRecId");
+            builder.HasIndex(e => e.DisabilityTypeRecId).HasDatabaseName("IX_Employees_DisabilityType");
+            builder.HasIndex(e => e.EducationLevelRecId).HasDatabaseName("IX_Employees_EducationLevel");
+            builder.HasIndex(e => e.OccupationRecId).HasDatabaseName("IX_Employees_Occupation");
+            builder.HasIndex(e => e.LocationRecId).HasDatabaseName("IX_Employees_Location");
+
+            // ---------------------------
+            // Check constraints (consistencia)
+            // ---------------------------
+            builder.ToTable(t =>
+            {
+                // Edad y dependientes >= 0
+                t.HasCheckConstraint("CK_Employees_Age_NonNegative", "[Age] >= 0");
+                t.HasCheckConstraint("CK_Employees_Dependents_NonNegative", "[DependentsNumbers] >= 0");
+
+                // EndWorkDate debe ser >= StartWorkDate (cuando no es NULL)
+                t.HasCheckConstraint("CK_Employees_EndWorkDate", "[EndWorkDate] IS NULL OR [EndWorkDate] >= [StartWorkDate]");
+
+                // Horas válidas (cuando están informadas)
+                t.HasCheckConstraint("CK_Employees_WorkHours",
+                    "([WorkFrom] IS NULL OR [WorkTo] IS NULL OR [WorkFrom] < [WorkTo])");
+
+                t.HasCheckConstraint("CK_Employees_BreakHours",
+                    "([BreakWorkFrom] IS NULL OR [BreakWorkTo] IS NULL OR [BreakWorkFrom] < [BreakWorkTo])");
+            });
+
+            // Nota: Las FKs están modeladas como RecID (long) en la entidad; si agregas
+            // navegaciones futuras (Country, DisabilityType, etc.) define aquí .HasOne().HasForeignKey().
         }
     }
 }
