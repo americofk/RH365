@@ -2,28 +2,28 @@
 // Archivo: LoansController.cs
 // Proyecto: RH365.WebAPI
 // Ruta: RH365.WebAPI/Controllers/LoansController.cs
-// Descripción: CRUD de tipos de préstamos (dbo.Loan) con paginación y filtros.
-//   - Cumple estándares del proyecto (ISO 27001, auditoría heredada).
-//   - Único por (DataareaID, LoanCode).
-//   - Devuelve ID legible (propiedad sombra en BD: LOAN-00000001).
+// Descripción:
+//   - Controlador API para Loan (CRUD completo)
+//   - Compatible con tus DTOs actuales:
+//       • CreateLoanRequest  -> NO trae Observations ni flags *Set
+//       • UpdateLoanRequest  -> NO trae Observations ni flags *Set
+//   - No usa EF.Property<> ni DbContext.Entry (IApplicationDbContext no lo expone)
+//   - ID legible lo genera la BD por DEFAULT; auditoría en SaveChanges()
 // ============================================================================
 
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Authorization;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RH365.Core.Application.Common.Interfaces;
-using RH365.Core.Application.Common.Models;
-using RH365.Core.Application.Features.DTOs.Loan;
 using RH365.Core.Domain.Entities;
+using RH365.Core.Application.Features.DTOs.Loan;
 
 namespace RH365.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    [Authorize]
-    public sealed class LoansController : ControllerBase
+    [Produces(MediaTypeNames.Application.Json)]
+    public class LoansController : ControllerBase
     {
         private readonly IApplicationDbContext _context;
         private readonly ILogger<LoansController> _logger;
@@ -34,159 +34,110 @@ namespace RH365.WebAPI.Controllers
             _logger = logger;
         }
 
-        // ---------------------------------------------------------------------
-        // GET: api/Loans?pageNumber=1&pageSize=10&search=...&status=true&from=...&to=...
-        // ---------------------------------------------------------------------
-        [HttpGet(Name = "GetLoans")]
-        public async Task<ActionResult<PagedResult<LoanDto>>> Get(
-            [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1,
-            [FromQuery, Range(1, 100)] int pageSize = 10,
-            [FromQuery] string? search = null,
-            [FromQuery] bool? status = null,
-            [FromQuery] DateTime? from = null,
-            [FromQuery] DateTime? to = null,
-            [FromQuery] long? departmentRefRecID = null,
-            [FromQuery] long? projCategoryRefRecID = null,
-            [FromQuery] long? projectRefRecID = null,
-            CancellationToken ct = default)
+        // --------------------------------------------------------------------
+        // GET: api/Loans?skip=0&take=50
+        // --------------------------------------------------------------------
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<LoanDto>>> GetAll([FromQuery] int skip = 0, [FromQuery] int take = 50, CancellationToken ct = default)
         {
-            try
-            {
-                IQueryable<Loan> query = _context.Loans.AsNoTracking();
+            take = take <= 0 ? 50 : Math.Min(take, 200);
 
-                // Filtros básicos
-                if (!string.IsNullOrWhiteSpace(search))
+            var items = await _context.Loans
+                .AsNoTracking()
+                .OrderByDescending(x => x.RecID)
+                .Skip(skip)
+                .Take(take)
+                .Select(x => new LoanDto
                 {
-                    string p = $"%{search.Trim()}%";
-                    query = query.Where(x =>
-                        EF.Functions.Like(x.LoanCode, p) ||
-                        EF.Functions.Like(x.Name, p) ||
-                        EF.Functions.Like(x.Description ?? string.Empty, p) ||
-                        EF.Functions.Like(x.LedgerAccount ?? string.Empty, p));
-                }
+                    // Identificadores
+                    RecID = x.RecID,
+                    ID = x.ID,
 
-                if (status.HasValue)
-                    query = query.Where(x => x.LoanStatus == status.Value);
+                    // Datos
+                    LoanCode = x.LoanCode,
+                    Name = x.Name,
+                    ValidFrom = x.ValidFrom,
+                    ValidTo = x.ValidTo,
+                    MultiplyAmount = x.MultiplyAmount,
+                    LedgerAccount = x.LedgerAccount,
+                    Description = x.Description,
+                    PayFrecuency = x.PayFrecuency,
+                    IndexBase = x.IndexBase,
 
-                if (from.HasValue)
-                    query = query.Where(x => x.ValidTo >= from.Value);
+                    // Relaciones
+                    DepartmentRefRecID = x.DepartmentRefRecID,
+                    ProjCategoryRefRecID = x.ProjCategoryRefRecID,
+                    ProjectRefRecID = x.ProjectRefRecID,
 
-                if (to.HasValue)
-                    query = query.Where(x => x.ValidFrom <= to.Value);
+                    // Estado
+                    LoanStatus = x.LoanStatus,
 
-                if (departmentRefRecID.HasValue)
-                    query = query.Where(x => x.DepartmentRefRecID == departmentRefRecID.Value);
+                    // Auditoría
+                    DataareaID = x.DataareaID,
+                    CreatedBy = x.CreatedBy,
+                    CreatedOn = x.CreatedOn,
+                    ModifiedBy = x.ModifiedBy,
+                    ModifiedOn = x.ModifiedOn,
+                    RowVersion = x.RowVersion
+                })
+                .ToListAsync(ct);
 
-                if (projCategoryRefRecID.HasValue)
-                    query = query.Where(x => x.ProjCategoryRefRecID == projCategoryRefRecID.Value);
-
-                if (projectRefRecID.HasValue)
-                    query = query.Where(x => x.ProjectRefRecID == projectRefRecID.Value);
-
-                int total = await query.CountAsync(ct);
-                int totalPages = (int)Math.Ceiling(total / (double)pageSize);
-
-                var data = await query
-                    .OrderBy(x => x.LoanCode).ThenBy(x => x.Name)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(x => new LoanDto
-                    {
-                        RecID = x.RecID,
-                        ID = EF.Property<string>(x, "ID"), // Propiedad sombra generada en BD
-                        LoanCode = x.LoanCode,
-                        Name = x.Name,
-                        ValidFrom = x.ValidFrom,
-                        ValidTo = x.ValidTo,
-                        MultiplyAmount = x.MultiplyAmount,
-                        LedgerAccount = x.LedgerAccount,
-                        Description = x.Description,
-                        PayFrecuency = x.PayFrecuency,
-                        IndexBase = x.IndexBase,
-                        DepartmentRefRecID = x.DepartmentRefRecID,
-                        ProjCategoryRefRecID = x.ProjCategoryRefRecID,
-                        ProjectRefRecID = x.ProjectRefRecID,
-                        LoanStatus = x.LoanStatus,
-                        DataareaID = x.DataareaID,
-                        CreatedBy = x.CreatedBy,
-                        CreatedOn = x.CreatedOn,
-                        ModifiedBy = x.ModifiedBy,
-                        ModifiedOn = x.ModifiedOn,
-                        RowVersion = x.RowVersion
-                    })
-                    .ToListAsync(ct);
-
-                return Ok(new PagedResult<LoanDto>
-                {
-                    Data = data,
-                    TotalCount = total,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalPages = totalPages
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al listar Loan");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
-            }
+            return Ok(items);
         }
 
-        // ---------------------------------------------------------------------
-        // GET: api/Loans/{id}
-        // ---------------------------------------------------------------------
-        [HttpGet("{id:long}", Name = "GetLoanById")]
-        public async Task<ActionResult<LoanDto>> GetById([FromRoute] long id, CancellationToken ct = default)
+        // --------------------------------------------------------------------
+        // GET: api/Loans/{recId:long}
+        // --------------------------------------------------------------------
+        [HttpGet("{recId:long}")]
+        public async Task<ActionResult<LoanDto>> GetByRecId(long recId, CancellationToken ct = default)
         {
-            try
-            {
-                var dto = await _context.Loans.AsNoTracking()
-                    .Where(x => x.RecID == id)
-                    .Select(x => new LoanDto
-                    {
-                        RecID = x.RecID,
-                        ID = EF.Property<string>(x, "ID"),
-                        LoanCode = x.LoanCode,
-                        Name = x.Name,
-                        ValidFrom = x.ValidFrom,
-                        ValidTo = x.ValidTo,
-                        MultiplyAmount = x.MultiplyAmount,
-                        LedgerAccount = x.LedgerAccount,
-                        Description = x.Description,
-                        PayFrecuency = x.PayFrecuency,
-                        IndexBase = x.IndexBase,
-                        DepartmentRefRecID = x.DepartmentRefRecID,
-                        ProjCategoryRefRecID = x.ProjCategoryRefRecID,
-                        ProjectRefRecID = x.ProjectRefRecID,
-                        LoanStatus = x.LoanStatus,
-                        DataareaID = x.DataareaID,
-                        CreatedBy = x.CreatedBy,
-                        CreatedOn = x.CreatedOn,
-                        ModifiedBy = x.ModifiedBy,
-                        ModifiedOn = x.ModifiedOn,
-                        RowVersion = x.RowVersion
-                    })
-                    .FirstOrDefaultAsync(ct);
+            var x = await _context.Loans.AsNoTracking().FirstOrDefaultAsync(e => e.RecID == recId, ct);
+            if (x == null) return NotFound();
 
-                if (dto == null) return NotFound($"Loan con RecID {id} no encontrado.");
-                return Ok(dto);
-            }
-            catch (Exception ex)
+            var dto = new LoanDto
             {
-                _logger.LogError(ex, "Error al obtener Loan {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
-            }
+                RecID = x.RecID,
+                ID = x.ID,
+                LoanCode = x.LoanCode,
+                Name = x.Name,
+                ValidFrom = x.ValidFrom,
+                ValidTo = x.ValidTo,
+                MultiplyAmount = x.MultiplyAmount,
+                LedgerAccount = x.LedgerAccount,
+                Description = x.Description,
+                PayFrecuency = x.PayFrecuency,
+                IndexBase = x.IndexBase,
+                DepartmentRefRecID = x.DepartmentRefRecID,
+                ProjCategoryRefRecID = x.ProjCategoryRefRecID,
+                ProjectRefRecID = x.ProjectRefRecID,
+                LoanStatus = x.LoanStatus,
+                DataareaID = x.DataareaID,
+                CreatedBy = x.CreatedBy,
+                CreatedOn = x.CreatedOn,
+                ModifiedBy = x.ModifiedBy,
+                ModifiedOn = x.ModifiedOn,
+                RowVersion = x.RowVersion
+            };
+
+            return Ok(dto);
         }
 
-        // ---------------------------------------------------------------------
+        // --------------------------------------------------------------------
         // POST: api/Loans
-        // ---------------------------------------------------------------------
-        [HttpPost(Name = "CreateLoan")]
+        //   • CreateLoanRequest NO trae Observations ni flags *Set -> no se usan
+        //   • LoanStatus: si no te lo mandan, usamos true (DEFAULT BD ya está en 1)
+        // --------------------------------------------------------------------
+        [HttpPost]
         public async Task<ActionResult<LoanDto>> Create([FromBody] CreateLoanRequest request, CancellationToken ct = default)
         {
             try
             {
-                if (!ModelState.IsValid) return ValidationProblem(ModelState);
+                if (string.IsNullOrWhiteSpace(request.LoanCode))
+                    return BadRequest("LoanCode es obligatorio.");
+                if (string.IsNullOrWhiteSpace(request.Name))
+                    return BadRequest("Name es obligatorio.");
+                if (request.ValidTo < request.ValidFrom)
+                    return BadRequest("ValidTo no puede ser menor que ValidFrom.");
 
                 var entity = new Loan
                 {
@@ -199,19 +150,23 @@ namespace RH365.WebAPI.Controllers
                     Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
                     PayFrecuency = request.PayFrecuency,
                     IndexBase = request.IndexBase,
+
                     DepartmentRefRecID = request.DepartmentRefRecID,
                     ProjCategoryRefRecID = request.ProjCategoryRefRecID,
                     ProjectRefRecID = request.ProjectRefRecID,
+
+                    // Si tu CreateLoanRequest tiene bool no-nullable, esto respeta lo que venga;
+                    // si lo hicieras nullable en el futuro, puedes usar ?? true.
                     LoanStatus = request.LoanStatus
                 };
 
-                _context.Loans.Add(entity);
+                await _context.Loans.AddAsync(entity, ct);
                 await _context.SaveChangesAsync(ct);
 
                 var dto = new LoanDto
                 {
                     RecID = entity.RecID,
-                    ID = EF.Property<string>(entity, "ID"),
+                    ID = entity.ID,
                     LoanCode = entity.LoanCode,
                     Name = entity.Name,
                     ValidFrom = entity.ValidFrom,
@@ -233,45 +188,54 @@ namespace RH365.WebAPI.Controllers
                     RowVersion = entity.RowVersion
                 };
 
-                return CreatedAtRoute("GetLoanById", new { id = dto.RecID }, dto);
-            }
-            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("UX_Loan_Dataarea_LoanCode") == true)
-            {
-                _logger.LogWarning(ex, "Conflicto por índice único (DataareaID, LoanCode).");
-                return Conflict("Ya existe un Loan con el mismo LoanCode en esta empresa.");
+                return CreatedAtAction(nameof(GetByRecId), new { recId = entity.RecID }, dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear Loan");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al crear Loan.");
             }
         }
 
-        // ---------------------------------------------------------------------
-        // PUT: api/Loans/{id}
-        // ---------------------------------------------------------------------
-        [HttpPut("{id:long}", Name = "UpdateLoan")]
-        public async Task<ActionResult<LoanDto>> Update([FromRoute] long id, [FromBody] UpdateLoanRequest request, CancellationToken ct = default)
+        // --------------------------------------------------------------------
+        // PUT: api/Loans/{recId:long}
+        //   • UpdateLoanRequest tampoco trae flags *Set ni Observations
+        //   • Al ser tipos no-nullable, aquí actualizamos directamente con lo que recibimos
+        // --------------------------------------------------------------------
+        [HttpPut("{recId:long}")]
+        public async Task<ActionResult<LoanDto>> Update(long recId, [FromBody] UpdateLoanRequest request, CancellationToken ct = default)
         {
             try
             {
-                if (!ModelState.IsValid) return ValidationProblem(ModelState);
+                var entity = await _context.Loans.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
 
-                var entity = await _context.Loans.FindAsync(new object?[] { id }, ct);
-                if (entity == null) return NotFound($"Loan con RecID {id} no encontrado.");
+                // Asignaciones directas (coherentes con tu DTO actual)
+                if (!string.IsNullOrWhiteSpace(request.LoanCode))
+                    entity.LoanCode = request.LoanCode.Trim();
 
-                entity.LoanCode = request.LoanCode.Trim();
-                entity.Name = request.Name.Trim();
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                    entity.Name = request.Name.Trim();
+
                 entity.ValidFrom = request.ValidFrom;
                 entity.ValidTo = request.ValidTo;
                 entity.MultiplyAmount = request.MultiplyAmount;
-                entity.LedgerAccount = string.IsNullOrWhiteSpace(request.LedgerAccount) ? null : request.LedgerAccount.Trim();
-                entity.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+
+                entity.LedgerAccount = string.IsNullOrWhiteSpace(request.LedgerAccount)
+                    ? null
+                    : request.LedgerAccount.Trim();
+
+                entity.Description = string.IsNullOrWhiteSpace(request.Description)
+                    ? null
+                    : request.Description!.Trim();
+
                 entity.PayFrecuency = request.PayFrecuency;
                 entity.IndexBase = request.IndexBase;
+
                 entity.DepartmentRefRecID = request.DepartmentRefRecID;
                 entity.ProjCategoryRefRecID = request.ProjCategoryRefRecID;
                 entity.ProjectRefRecID = request.ProjectRefRecID;
+
                 entity.LoanStatus = request.LoanStatus;
 
                 await _context.SaveChangesAsync(ct);
@@ -279,7 +243,7 @@ namespace RH365.WebAPI.Controllers
                 var dto = new LoanDto
                 {
                     RecID = entity.RecID,
-                    ID = EF.Property<string>(entity, "ID"),
+                    ID = entity.ID,
                     LoanCode = entity.LoanCode,
                     Name = entity.Name,
                     ValidFrom = entity.ValidFrom,
@@ -303,37 +267,38 @@ namespace RH365.WebAPI.Controllers
 
                 return Ok(dto);
             }
-            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("UX_Loan_Dataarea_LoanCode") == true)
+            catch (DbUpdateConcurrencyException ex)
             {
-                _logger.LogWarning(ex, "Conflicto por índice único (DataareaID, LoanCode).");
-                return Conflict("Ya existe un Loan con el mismo LoanCode en esta empresa.");
+                _logger.LogError(ex, "Concurrencia al actualizar Loan {RecID}", recId);
+                return Conflict("Conflicto de concurrencia al actualizar Loan.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar Loan {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                _logger.LogError(ex, "Error al actualizar Loan {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al actualizar Loan.");
             }
         }
 
-        // ---------------------------------------------------------------------
-        // DELETE: api/Loans/{id}
-        // ---------------------------------------------------------------------
-        [HttpDelete("{id:long}", Name = "DeleteLoan")]
-        public async Task<IActionResult> Delete([FromRoute] long id, CancellationToken ct = default)
+        // --------------------------------------------------------------------
+        // DELETE: api/Loans/{recId:long}
+        // --------------------------------------------------------------------
+        [HttpDelete("{recId:long}")]
+        public async Task<IActionResult> Delete(long recId, CancellationToken ct = default)
         {
             try
             {
-                var entity = await _context.Loans.FindAsync(new object?[] { id }, ct);
-                if (entity == null) return NotFound($"Loan con RecID {id} no encontrado.");
+                var entity = await _context.Loans.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
 
                 _context.Loans.Remove(entity);
                 await _context.SaveChangesAsync(ct);
+
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar Loan {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                _logger.LogError(ex, "Error al eliminar Loan {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al eliminar Loan.");
             }
         }
     }
