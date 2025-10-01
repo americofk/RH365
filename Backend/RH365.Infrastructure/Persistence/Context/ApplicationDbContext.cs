@@ -7,6 +7,7 @@
 //   - Auditoría ISO 27001 + multiempresa (DataareaID)
 //   - RecID generado por secuencia global dbo.RecId
 //   - ID (string) generado por DEFAULT en BD (no se envía en INSERT)
+//   - Red de seguridad: elimina FKs/props sombra conflictivas (DepartmentRecID*, ProjectCategoryRecID*)
 // ============================================================================
 
 using System.Linq.Expressions;
@@ -32,7 +33,7 @@ namespace RH365.Infrastructure.Persistence.Context
             _dateTime = dateTime;
         }
 
-        #region DbSets (recortado por brevedad: mantén todos los que ya tienes)
+        #region DbSets
         public virtual DbSet<AuditLog> AuditLogs { get; set; }
         public virtual DbSet<CalendarHoliday> CalendarHolidays { get; set; }
         public virtual DbSet<ClassRoom> ClassRooms { get; set; }
@@ -55,7 +56,6 @@ namespace RH365.Infrastructure.Persistence.Context
 
         public virtual DbSet<Country> Countries { get; set; }
         public virtual DbSet<Province> Provinces { get; set; }
-
         public virtual DbSet<Currency> Currencies { get; set; }
 
         public virtual DbSet<DeductionCode> DeductionCodes { get; set; }
@@ -65,6 +65,7 @@ namespace RH365.Infrastructure.Persistence.Context
         public virtual DbSet<PayrollProcessAction> PayrollProcessActions { get; set; }
         public virtual DbSet<PayrollProcessDetail> PayrollProcessDetails { get; set; }
         public virtual DbSet<PayrollsProcess> PayrollsProcesses { get; set; }
+
         public virtual DbSet<Loan> Loans { get; set; }
         public virtual DbSet<Taxis> Taxes { get; set; }
         public virtual DbSet<TaxDetail> TaxDetails { get; set; }
@@ -112,9 +113,7 @@ namespace RH365.Infrastructure.Persistence.Context
         }
 
         /// <summary>
-        /// Auditoría y preparación de valores:
-        /// - En ADD: fija Created*, DataareaID y fuerza ID=null para usar DEFAULT de BD.
-        /// - En MODIFY: fija Modified* y bloquea cambios a Created* y DataareaID/ID.
+        /// Auditoría y preparación de valores.
         /// </summary>
         private void ApplyAuditInformation()
         {
@@ -134,7 +133,7 @@ namespace RH365.Infrastructure.Persistence.Context
                     if (entity is AuditableCompanyEntity companyEntity)
                         companyEntity.DataareaID = _currentUserService?.CompanyId ?? "DAT";
 
-                    // No enviar ID: deja que el DEFAULT de la BD lo genere (prefijo + secuencia)
+                    // No enviar ID: usar DEFAULT de BD (prefijo + secuencia)
                     var idProp = entry.Property(nameof(entity.ID));
                     if (idProp != null)
                     {
@@ -167,9 +166,10 @@ namespace RH365.Infrastructure.Persistence.Context
         #region Modelo
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // 1) Aplicar TODAS las configuraciones desde este ensamblado
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // RecID y RowVersion globales
+            // 2) Convención global: PK RecID + RowVersion
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var clr = entityType.ClrType;
@@ -195,11 +195,38 @@ namespace RH365.Infrastructure.Persistence.Context
                 }
             }
 
-            // Secuencia global para RecID
+            // 3) Secuencia global para RecID (ajusta el inicio a tu entorno)
             modelBuilder.HasSequence<long>("RecId", schema: "dbo")
                         .StartsAt(2020450L);
 
-            // (deja tus otras secuencias tal como las tenías, si las usas)
+            // 4) Red de seguridad: eliminar FKs/props sombra conflictivas en Loan
+            var loanType = modelBuilder.Model.FindEntityType(typeof(Loan));
+            if (loanType != null)
+            {
+                // Candidatos problemáticos: DepartmentRecID*, ProjectCategoryRecID* (incluye ...RecID1)
+                var badPropPrefixes = new[] { "DepartmentRecID", "ProjectCategoryRecID", "ProjectRecID" };
+
+                // 4.1) Enumerar todas las props que empiecen por esos prefijos
+                var propsToDrop = loanType.GetProperties()
+                    .Where(p => badPropPrefixes.Any(pref => p.Name.StartsWith(pref)))
+                    .ToList();
+
+                // 4.2) Quitar FKs que dependan de esas props
+                foreach (var prop in propsToDrop)
+                {
+                    var fks = loanType.GetForeignKeys()
+                                      .Where(fk => fk.Properties.Contains(prop))
+                                      .ToList();
+                    foreach (var fk in fks)
+                        loanType.RemoveForeignKey(fk);
+                }
+
+                // 4.3) Quitar las props
+                foreach (var prop in propsToDrop)
+                    loanType.RemoveProperty(prop);
+            }
+
+            // 5) Filtro global por empresa (DataareaID)
             ConfigureGlobalFilters(modelBuilder);
 
             base.OnModelCreating(modelBuilder);

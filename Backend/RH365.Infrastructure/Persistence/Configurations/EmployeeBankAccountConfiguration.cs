@@ -1,48 +1,81 @@
 // ============================================================================
 // Archivo: EmployeeBankAccountConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Employee/EmployeeBankAccountConfiguration.cs
-// Descripción: Configuración Entity Framework para EmployeeBankAccount.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/EmployeeBankAccountConfiguration.cs
+// Descripción: Configuración EF Core para EmployeeBankAccount.
+//   - Tabla: [dbo].[EmployeeBankAccounts]
+//   - RecID: secuencia global dbo.RecId (DEFAULT en BD)
+//   - ID legible (sombra): 'EBA-'+RIGHT(...,8) con secuencia dbo.EmployeeBankAccountsId (DEFAULT en BD)
+//   - FK: EmployeeRefRecID → Employees.RecID
+//   - Única cuenta principal por empleado (índice único filtrado)
+//   - Cumple ISO 27001 (auditoría y multiempresa)
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad EmployeeBankAccount.
-    /// </summary>
-    public class EmployeeBankAccountConfiguration : IEntityTypeConfiguration<EmployeeBankAccount>
+    public sealed class EmployeeBankAccountConfiguration : IEntityTypeConfiguration<EmployeeBankAccount>
     {
         public void Configure(EntityTypeBuilder<EmployeeBankAccount> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EmployeeBankAccount");
+            // Tabla
+            builder.ToTable("EmployeeBankAccount", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.AccountNum).HasMaxLength(255).HasColumnName("AccountNum");
-            builder.Property(e => e.AccountType).HasColumnName("AccountType");
-            builder.Property(e => e.BankName).IsRequired().HasMaxLength(255).HasColumnName("BankName");
-            builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            builder.Property(e => e.Currency).HasMaxLength(255).HasColumnName("Currency");
-            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
-            builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.IsPrincipal).HasColumnName("IsPrincipal");
+            // Campos de negocio
+            builder.Property(p => p.EmployeeRefRecID).IsRequired();
 
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.EmployeeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            builder.Property(p => p.BankName)
+                   .HasMaxLength(80)
+                   .IsRequired();
+
+            builder.Property(p => p.AccountType)
+                   .IsRequired();
+
+            builder.Property(p => p.AccountNum)
+                   .HasMaxLength(50)
+                   .IsRequired();
+
+            builder.Property(p => p.Currency)
+                   .HasMaxLength(10);
+
+            builder.Property(p => p.Comment)
+                   .HasMaxLength(255);
+
+            builder.Property(p => p.IsPrincipal)
+                   .HasDefaultValue(false)
+                   .IsRequired();
+
+            // ID legible (propiedad sombra)
+            builder.Property<string>("ID")
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd()
+                   .HasDefaultValueSql("('EBA-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.EmployeeBankAccountsId AS VARCHAR(8)), 8))");
 
             // Índices
-            builder.HasIndex(e => e.EmployeeRefRecID)
-                .HasDatabaseName("IX_EmployeeBankAccount_EmployeeRefRecID");
+            builder.HasIndex(p => new { p.DataareaID, p.EmployeeRefRecID })
+                   .HasDatabaseName("IX_EBA_Emp_Dataarea");
+
+            builder.HasIndex(p => new { p.DataareaID, p.EmployeeRefRecID, p.IsPrincipal })
+                   .HasFilter("[IsPrincipal] = 1")
+                   .IsUnique()
+                   .HasDatabaseName("UX_EBA_Principal_ByEmployee");
+
+            // Relaciones
+            builder.HasOne(p => p.EmployeeRefRec)
+                   .WithMany(e => e.EmployeeBankAccounts)
+                   .HasForeignKey(p => p.EmployeeRefRecID)
+                   .HasPrincipalKey(e => e.RecID)
+                   .OnDelete(DeleteBehavior.Cascade)
+                   .HasConstraintName("FK_EBA_Employees");
+
+            // Checks opcionales
+            builder.ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_EBA_BankName_NotEmpty", "LEN(LTRIM(RTRIM([BankName]))) > 0");
+                t.HasCheckConstraint("CK_EBA_AccountNum_NotEmpty", "LEN(LTRIM(RTRIM([AccountNum]))) > 0");
+            });
         }
     }
 }
