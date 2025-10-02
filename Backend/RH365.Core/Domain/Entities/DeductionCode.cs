@@ -4,11 +4,9 @@
 // Ruta: RH365.Core/Domain/Entities/Payroll/DeductionCode.cs
 // Descripción:
 //   - Catálogo de códigos de deducción utilizados en la nómina.
-//   - NO utiliza propiedad de “código” propia; se trabaja con ID (del base)
-//     y Name como identificadores de negocio.
+//   - Define relaciones FK con Project, ProjectCategory y Department mediante RecID.
 //   - Define reglas, límites y parámetros de cálculo (contribución y deducción).
 //   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
-//     (incluye RecID, ID, DataareaID, auditoría y RowVersion).
 // ============================================================================
 
 using RH365.Core.Domain.Common;
@@ -28,14 +26,14 @@ namespace RH365.Core.Domain.Entities
         public string Name { get; set; } = null!;
 
         /// <summary>
-        /// Proyecto asociado (opcional).
+        /// FK al proyecto asociado (opcional).
         /// </summary>
-        public string? ProjId { get; set; }
+        public long? ProjectRefRecID { get; set; }
 
         /// <summary>
-        /// Categoría del proyecto asociado (opcional).
+        /// FK a la categoría del proyecto asociado (opcional).
         /// </summary>
-        public string? ProjCategory { get; set; }
+        public long? ProjCategoryRefRecID { get; set; }
 
         /// <summary>
         /// Vigente desde.
@@ -102,14 +100,11 @@ namespace RH365.Core.Domain.Entities
         /// </summary>
         public bool DeductionStatus { get; set; } = true;
 
-        /// <summary>
-        /// Observaciones (opcional).
-        /// </summary>
-        public string? Observations { get; set; }
-
         // -------------------------
         // Navegación
         // -------------------------
+        public virtual Project? ProjectRefRec { get; set; }
+        public virtual ProjectCategory? ProjCategoryRefRec { get; set; }
         public virtual Department? DepartmentRefRec { get; set; }
         public virtual ICollection<EmployeeDeductionCode> EmployeeDeductionCodes { get; set; } = new List<EmployeeDeductionCode>();
     }

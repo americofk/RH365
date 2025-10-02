@@ -1,43 +1,48 @@
 ﻿// ============================================================================
 // Archivo: CreateDeductionCodeRequest.cs
-// Proyecto: RH365.Core.Application
-// Ruta: RH365.Core.Application/Features/DTOs/DeductionCode/CreateDeductionCodeRequest.cs
-// Descripción: DTO de creación para DeductionCode.
-//   - No incluye RecID ni ID (ambos generados por BD)
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Application/Features/DTOs/DeductionCode/CreateDeductionCodeRequest.cs
+// Descripción:
+//   - DTO de creación para DeductionCode (dbo.DeductionCodes)
+//   - No incluye ID/RecID (se generan en BD); auditoría la maneja el DbContext
 // ============================================================================
-
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace RH365.Core.Application.Features.DTOs.DeductionCode
 {
+    /// <summary>
+    /// Payload para crear un código de deducción.
+    /// </summary>
     public class CreateDeductionCodeRequest
     {
-        [Required, MaxLength(100)]
+        /// <summary>Nombre de la deducción.</summary>
         public string Name { get; set; } = null!;
 
-        [MaxLength(50)]
-        public string? ProjId { get; set; }
+        /// <summary>FK al proyecto asociado (opcional).</summary>
+        public long? ProjectRefRecID { get; set; }
 
-        [MaxLength(50)]
-        public string? ProjCategory { get; set; }
+        /// <summary>FK a la categoría del proyecto (opcional).</summary>
+        public long? ProjCategoryRefRecID { get; set; }
 
-        [Required]
+        /// <summary>Vigente desde.</summary>
         public DateTime ValidFrom { get; set; }
 
-        [Required]
+        /// <summary>Vigente hasta.</summary>
         public DateTime ValidTo { get; set; }
 
-        [MaxLength(255)]
+        /// <summary>Descripción (opcional).</summary>
         public string? Description { get; set; }
 
-        [MaxLength(50)]
+        /// <summary>Cuenta contable (opcional).</summary>
         public string? LedgerAccount { get; set; }
 
+        /// <summary>FK al departamento (opcional).</summary>
         public long? DepartmentRefRecID { get; set; }
 
+        /// <summary>Acción de nómina.</summary>
         public int PayrollAction { get; set; }
 
+        // Parámetros de contribución
         public int CtbutionIndexBase { get; set; }
         public decimal CtbutionMultiplyAmount { get; set; }
         public int CtbutionPayFrecuency { get; set; }
@@ -45,6 +50,7 @@ namespace RH365.Core.Application.Features.DTOs.DeductionCode
         public decimal CtbutionLimitAmount { get; set; }
         public decimal CtbutionLimitAmountToApply { get; set; }
 
+        // Parámetros de deducción
         public int DductionIndexBase { get; set; }
         public decimal DductionMultiplyAmount { get; set; }
         public int DductionPayFrecuency { get; set; }
@@ -52,11 +58,12 @@ namespace RH365.Core.Application.Features.DTOs.DeductionCode
         public decimal DductionLimitAmount { get; set; }
         public decimal DductionLimitAmountToApply { get; set; }
 
+        // Banderas
         public bool IsForTaxCalc { get; set; }
         public bool IsForTssCalc { get; set; }
-        public bool DeductionStatus { get; set; }
+        public bool DeductionStatus { get; set; } = true;
 
-        [MaxLength(500)]
+        /// <summary>Observaciones (opcional).</summary>
         public string? Observations { get; set; }
     }
 }

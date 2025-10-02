@@ -3,39 +3,22 @@
 // Proyecto: RH365.WebAPI
 // Ruta: RH365.WebAPI/Controllers/DeductionCodesController.cs
 // Descripción:
-//   Controlador REST para administrar el catálogo de DeductionCodes (CRUD).
-//   - Paginación con metadatos y búsqueda con EF.Functions.Like
-//   - Usa RecID (BIGINT, generado por secuencia dbo.RecId) como clave primaria
-//   - Auditoría y multiempresa las maneja el DbContext por filtros y SaveChanges
-//   - No crea tipos locales duplicados (PagedResult<T>): usa el de la capa Application
-// Dependencias (DTOs en CAPA APPLICATION):
-//   - RH365.Core.Application.Features.DTOs.DeductionCode.DeductionCodeDto
-//   - RH365.Core.Application.Features.DTOs.DeductionCode.CreateDeductionCodeRequest
-//   - RH365.Core.Application.Features.DTOs.DeductionCode.UpdateDeductionCodeRequest
-//   - RH365.Core.Application.Common.Models.PagedResult<T>
+//   - Controlador API REST para DeductionCode (dbo.DeductionCodes)
+//   - CRUD completo con validaciones de FKs (Project, ProjectCategory, Department)
+//   - Auditoría e ID legible los maneja el DbContext/BD
 // ============================================================================
-
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Authorization;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RH365.Core.Application.Common.Interfaces;
+using RH365.Core.Application.Features.DTOs.DeductionCode;
 using RH365.Core.Domain.Entities;
-
-// ALIAS para evitar ambigüedades con PagedResult<T> y los DTOs
-using DC_Dto = RH365.Core.Application.Features.DTOs.DeductionCode.DeductionCodeDto;
-using DC_Create = RH365.Core.Application.Features.DTOs.DeductionCode.CreateDeductionCodeRequest;
-using DC_Update = RH365.Core.Application.Features.DTOs.DeductionCode.UpdateDeductionCodeRequest;
-using AppPagedResult = RH365.Core.Application.Common.Models.PagedResult<
-    RH365.Core.Application.Features.DTOs.DeductionCode.DeductionCodeDto
->;
 
 namespace RH365.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    [Authorize]
+    [Produces(MediaTypeNames.Application.Json)]
     public class DeductionCodesController : ControllerBase
     {
         private readonly IApplicationDbContext _context;
@@ -47,168 +30,150 @@ namespace RH365.WebAPI.Controllers
             _logger = logger;
         }
 
-        // =========================================================================
-        // GET: /api/deductioncodes?pageNumber=1&pageSize=10&search=ss
-        // =========================================================================
-        [HttpGet(Name = "GetDeductionCodes")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AppPagedResult>> Get(
-            [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1,
-            [FromQuery, Range(1, 100)] int pageSize = 10,
-            [FromQuery] string? search = null,
+        // GET: api/DeductionCodes?skip=0&take=50
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<DeductionCodeDto>>> GetAll(
+            [FromQuery] int skip = 0,
+            [FromQuery] int take = 50,
             CancellationToken ct = default)
         {
+            take = take <= 0 ? 50 : Math.Min(take, 200);
+
+            var items = await _context.DeductionCodes
+                .AsNoTracking()
+                .OrderByDescending(x => x.RecID)
+                .Skip(skip)
+                .Take(take)
+                .Select(x => new DeductionCodeDto
+                {
+                    RecID = x.RecID,
+                    ID = x.ID,
+                    Name = x.Name,
+                    ProjectRefRecID = x.ProjectRefRecID,
+                    ProjCategoryRefRecID = x.ProjCategoryRefRecID,
+                    ValidFrom = x.ValidFrom,
+                    ValidTo = x.ValidTo,
+                    Description = x.Description,
+                    LedgerAccount = x.LedgerAccount,
+                    DepartmentRefRecID = x.DepartmentRefRecID,
+                    PayrollAction = x.PayrollAction,
+                    CtbutionIndexBase = x.CtbutionIndexBase,
+                    CtbutionMultiplyAmount = x.CtbutionMultiplyAmount,
+                    CtbutionPayFrecuency = x.CtbutionPayFrecuency,
+                    CtbutionLimitPeriod = x.CtbutionLimitPeriod,
+                    CtbutionLimitAmount = x.CtbutionLimitAmount,
+                    CtbutionLimitAmountToApply = x.CtbutionLimitAmountToApply,
+                    DductionIndexBase = x.DductionIndexBase,
+                    DductionMultiplyAmount = x.DductionMultiplyAmount,
+                    DductionPayFrecuency = x.DductionPayFrecuency,
+                    DductionLimitPeriod = x.DductionLimitPeriod,
+                    DductionLimitAmount = x.DductionLimitAmount,
+                    DductionLimitAmountToApply = x.DductionLimitAmountToApply,
+                    IsForTaxCalc = x.IsForTaxCalc,
+                    IsForTssCalc = x.IsForTssCalc,
+                    DeductionStatus = x.DeductionStatus,
+                    Observations = x.Observations,
+                    DataareaID = x.DataareaID,
+                    CreatedBy = x.CreatedBy,
+                    CreatedOn = x.CreatedOn,
+                    ModifiedBy = x.ModifiedBy,
+                    ModifiedOn = x.ModifiedOn,
+                    RowVersion = x.RowVersion
+                })
+                .ToListAsync(ct);
+
+            return Ok(items);
+        }
+
+        // GET: api/DeductionCodes/{recId:long}
+        [HttpGet("{recId:long}")]
+        public async Task<ActionResult<DeductionCodeDto>> GetByRecId(long recId, CancellationToken ct = default)
+        {
+            var x = await _context.DeductionCodes.AsNoTracking().FirstOrDefaultAsync(e => e.RecID == recId, ct);
+            if (x == null) return NotFound();
+
+            var dto = new DeductionCodeDto
+            {
+                RecID = x.RecID,
+                ID = x.ID,
+                Name = x.Name,
+                ProjectRefRecID = x.ProjectRefRecID,
+                ProjCategoryRefRecID = x.ProjCategoryRefRecID,
+                ValidFrom = x.ValidFrom,
+                ValidTo = x.ValidTo,
+                Description = x.Description,
+                LedgerAccount = x.LedgerAccount,
+                DepartmentRefRecID = x.DepartmentRefRecID,
+                PayrollAction = x.PayrollAction,
+                CtbutionIndexBase = x.CtbutionIndexBase,
+                CtbutionMultiplyAmount = x.CtbutionMultiplyAmount,
+                CtbutionPayFrecuency = x.CtbutionPayFrecuency,
+                CtbutionLimitPeriod = x.CtbutionLimitPeriod,
+                CtbutionLimitAmount = x.CtbutionLimitAmount,
+                CtbutionLimitAmountToApply = x.CtbutionLimitAmountToApply,
+                DductionIndexBase = x.DductionIndexBase,
+                DductionMultiplyAmount = x.DductionMultiplyAmount,
+                DductionPayFrecuency = x.DductionPayFrecuency,
+                DductionLimitPeriod = x.DductionLimitPeriod,
+                DductionLimitAmount = x.DductionLimitAmount,
+                DductionLimitAmountToApply = x.DductionLimitAmountToApply,
+                IsForTaxCalc = x.IsForTaxCalc,
+                IsForTssCalc = x.IsForTssCalc,
+                DeductionStatus = x.DeductionStatus,
+                Observations = x.Observations,
+                DataareaID = x.DataareaID,
+                CreatedBy = x.CreatedBy,
+                CreatedOn = x.CreatedOn,
+                ModifiedBy = x.ModifiedBy,
+                ModifiedOn = x.ModifiedOn,
+                RowVersion = x.RowVersion
+            };
+
+            return Ok(dto);
+        }
+
+        // POST: api/DeductionCodes
+        [HttpPost]
+        public async Task<ActionResult<DeductionCodeDto>> Create([FromBody] CreateDeductionCodeRequest request, CancellationToken ct = default)
+        {
             try
             {
-                IQueryable<DeductionCode> query = _context.DeductionCodes.AsNoTracking();
+                if (string.IsNullOrWhiteSpace(request.Name))
+                    return BadRequest("Name es obligatorio.");
 
-                if (!string.IsNullOrWhiteSpace(search))
+                // Validar FK Project (si se envía)
+                if (request.ProjectRefRecID.HasValue)
                 {
-                    string pattern = $"%{search.Trim()}%";
-                    query = query.Where(d =>
-                        EF.Functions.Like(d.Name, pattern) ||
-                        (d.Description != null && EF.Functions.Like(d.Description, pattern)) ||
-                        (d.LedgerAccount != null && EF.Functions.Like(d.LedgerAccount, pattern)) ||
-                        (d.ProjId != null && EF.Functions.Like(d.ProjId, pattern)) ||
-                        (d.ProjCategory != null && EF.Functions.Like(d.ProjCategory, pattern)));
+                    var projectExists = await _context.Projects.AnyAsync(p => p.RecID == request.ProjectRefRecID.Value, ct);
+                    if (!projectExists)
+                        return BadRequest($"El Project con RecID {request.ProjectRefRecID.Value} no existe.");
                 }
 
-                int totalCount = await query.CountAsync(ct);
+                // Validar FK ProjectCategory (si se envía)
+                if (request.ProjCategoryRefRecID.HasValue)
+                {
+                    var categoryExists = await _context.ProjectCategories.AnyAsync(pc => pc.RecID == request.ProjCategoryRefRecID.Value, ct);
+                    if (!categoryExists)
+                        return BadRequest($"El ProjectCategory con RecID {request.ProjCategoryRefRecID.Value} no existe.");
+                }
 
-                List<DC_Dto> data = await query
-                    .OrderBy(d => d.Name)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(d => new DC_Dto
-                    {
-                        RecID = d.RecID,
-                        ID = d.ID,
-                        Name = d.Name,
-                        ProjId = d.ProjId,
-                        ProjCategory = d.ProjCategory,
-                        ValidFrom = d.ValidFrom,
-                        ValidTo = d.ValidTo,
-                        Description = d.Description,
-                        LedgerAccount = d.LedgerAccount,
-                        DepartmentRefRecID = d.DepartmentRefRecID,
-                        PayrollAction = d.PayrollAction,
-                        CtbutionIndexBase = d.CtbutionIndexBase,
-                        CtbutionMultiplyAmount = d.CtbutionMultiplyAmount,
-                        CtbutionPayFrecuency = d.CtbutionPayFrecuency,
-                        CtbutionLimitPeriod = d.CtbutionLimitPeriod,
-                        CtbutionLimitAmount = d.CtbutionLimitAmount,
-                        CtbutionLimitAmountToApply = d.CtbutionLimitAmountToApply,
-                        DductionIndexBase = d.DductionIndexBase,
-                        DductionMultiplyAmount = d.DductionMultiplyAmount,
-                        DductionPayFrecuency = d.DductionPayFrecuency,
-                        DductionLimitPeriod = d.DductionLimitPeriod,
-                        DductionLimitAmount = d.DductionLimitAmount,
-                        DductionLimitAmountToApply = d.DductionLimitAmountToApply,
-                        IsForTaxCalc = d.IsForTaxCalc,
-                        IsForTssCalc = d.IsForTssCalc,
-                        DeductionStatus = d.DeductionStatus,
-                        Observations = d.Observations,
-                        CreatedBy = d.CreatedBy,
-                        CreatedOn = d.CreatedOn,
-                        ModifiedBy = d.ModifiedBy,
-                        ModifiedOn = d.ModifiedOn
-                    })
-                    .ToListAsync(ct);
-
-                return Ok(new AppPagedResult(data, totalCount, pageNumber, pageSize));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al listar DeductionCodes");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
-            }
-        }
-
-        // =========================================================================
-        // GET: /api/deductioncodes/{id}  (RecID)
-        // =========================================================================
-        [HttpGet("{id:long}", Name = "GetDeductionCodeById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DC_Dto>> GetById([FromRoute] long id, CancellationToken ct = default)
-        {
-            try
-            {
-                var dto = await _context.DeductionCodes
-                    .AsNoTracking()
-                    .Where(d => d.RecID == id)
-                    .Select(d => new DC_Dto
-                    {
-                        RecID = d.RecID,
-                        ID = d.ID,
-                        Name = d.Name,
-                        ProjId = d.ProjId,
-                        ProjCategory = d.ProjCategory,
-                        ValidFrom = d.ValidFrom,
-                        ValidTo = d.ValidTo,
-                        Description = d.Description,
-                        LedgerAccount = d.LedgerAccount,
-                        DepartmentRefRecID = d.DepartmentRefRecID,
-                        PayrollAction = d.PayrollAction,
-                        CtbutionIndexBase = d.CtbutionIndexBase,
-                        CtbutionMultiplyAmount = d.CtbutionMultiplyAmount,
-                        CtbutionPayFrecuency = d.CtbutionPayFrecuency,
-                        CtbutionLimitPeriod = d.CtbutionLimitPeriod,
-                        CtbutionLimitAmount = d.CtbutionLimitAmount,
-                        CtbutionLimitAmountToApply = d.CtbutionLimitAmountToApply,
-                        DductionIndexBase = d.DductionIndexBase,
-                        DductionMultiplyAmount = d.DductionMultiplyAmount,
-                        DductionPayFrecuency = d.DductionPayFrecuency,
-                        DductionLimitPeriod = d.DductionLimitPeriod,
-                        DductionLimitAmount = d.DductionLimitAmount,
-                        DductionLimitAmountToApply = d.DductionLimitAmountToApply,
-                        IsForTaxCalc = d.IsForTaxCalc,
-                        IsForTssCalc = d.IsForTssCalc,
-                        DeductionStatus = d.DeductionStatus,
-                        Observations = d.Observations,
-                        CreatedBy = d.CreatedBy,
-                        CreatedOn = d.CreatedOn,
-                        ModifiedBy = d.ModifiedBy,
-                        ModifiedOn = d.ModifiedOn
-                    })
-                    .FirstOrDefaultAsync(ct);
-
-                if (dto == null) return NotFound($"DeductionCode con RecID {id} no encontrado.");
-                return Ok(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener DeductionCode {RecID}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
-            }
-        }
-
-        // =========================================================================
-        // POST: /api/deductioncodes
-        // =========================================================================
-        [HttpPost(Name = "CreateDeductionCode")]
-        [Consumes("application/json")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<DC_Dto>> Create([FromBody] DC_Create request, CancellationToken ct = default)
-        {
-            try
-            {
-                if (!ModelState.IsValid) return ValidationProblem(ModelState);
-
-                // Normaliza strings
-                string name = request.Name.Trim();
+                // Validar FK Department (si se envía)
+                if (request.DepartmentRefRecID.HasValue)
+                {
+                    var deptExists = await _context.Departments.AnyAsync(d => d.RecID == request.DepartmentRefRecID.Value, ct);
+                    if (!deptExists)
+                        return BadRequest($"El Department con RecID {request.DepartmentRefRecID.Value} no existe.");
+                }
 
                 var entity = new DeductionCode
                 {
-                    // ID (string) lo genera la BD por DEFAULT; no asignar aquí.
-                    Name = name,
-                    ProjId = request.ProjId?.Trim(),
-                    ProjCategory = request.ProjCategory?.Trim(),
+                    Name = request.Name.Trim(),
+                    ProjectRefRecID = request.ProjectRefRecID,
+                    ProjCategoryRefRecID = request.ProjCategoryRefRecID,
                     ValidFrom = request.ValidFrom,
                     ValidTo = request.ValidTo,
-                    Description = request.Description?.Trim(),
-                    LedgerAccount = request.LedgerAccount?.Trim(),
+                    Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+                    LedgerAccount = string.IsNullOrWhiteSpace(request.LedgerAccount) ? null : request.LedgerAccount.Trim(),
                     DepartmentRefRecID = request.DepartmentRefRecID,
                     PayrollAction = request.PayrollAction,
                     CtbutionIndexBase = request.CtbutionIndexBase,
@@ -226,19 +191,19 @@ namespace RH365.WebAPI.Controllers
                     IsForTaxCalc = request.IsForTaxCalc,
                     IsForTssCalc = request.IsForTssCalc,
                     DeductionStatus = request.DeductionStatus,
-                    Observations = request.Observations
+                    Observations = string.IsNullOrWhiteSpace(request.Observations) ? null : request.Observations.Trim()
                 };
 
-                _context.DeductionCodes.Add(entity);
+                await _context.DeductionCodes.AddAsync(entity, ct);
                 await _context.SaveChangesAsync(ct);
 
-                var dto = new DC_Dto
+                var dto = new DeductionCodeDto
                 {
                     RecID = entity.RecID,
                     ID = entity.ID,
                     Name = entity.Name,
-                    ProjId = entity.ProjId,
-                    ProjCategory = entity.ProjCategory,
+                    ProjectRefRecID = entity.ProjectRefRecID,
+                    ProjCategoryRefRecID = entity.ProjCategoryRefRecID,
                     ValidFrom = entity.ValidFrom,
                     ValidTo = entity.ValidTo,
                     Description = entity.Description,
@@ -261,72 +226,113 @@ namespace RH365.WebAPI.Controllers
                     IsForTssCalc = entity.IsForTssCalc,
                     DeductionStatus = entity.DeductionStatus,
                     Observations = entity.Observations,
+                    DataareaID = entity.DataareaID,
                     CreatedBy = entity.CreatedBy,
                     CreatedOn = entity.CreatedOn,
                     ModifiedBy = entity.ModifiedBy,
-                    ModifiedOn = entity.ModifiedOn
+                    ModifiedOn = entity.ModifiedOn,
+                    RowVersion = entity.RowVersion
                 };
 
-                return CreatedAtRoute("GetDeductionCodeById", new { id = dto.RecID }, dto);
+                return CreatedAtAction(nameof(GetByRecId), new { recId = entity.RecID }, dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear DeductionCode");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al crear DeductionCode.");
             }
         }
 
-        // =========================================================================
-        // PUT: /api/deductioncodes/{id}  (RecID)
-        // =========================================================================
-        [HttpPut("{id:long}", Name = "UpdateDeductionCode")]
-        [Consumes("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DC_Dto>> Update([FromRoute] long id, [FromBody] DC_Update request, CancellationToken ct = default)
+        // PUT: api/DeductionCodes/{recId:long}
+        [HttpPut("{recId:long}")]
+        public async Task<ActionResult<DeductionCodeDto>> Update(long recId, [FromBody] UpdateDeductionCodeRequest request, CancellationToken ct = default)
         {
             try
             {
-                if (!ModelState.IsValid) return ValidationProblem(ModelState);
+                var entity = await _context.DeductionCodes.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
 
-                var entity = await _context.DeductionCodes.FirstOrDefaultAsync(d => d.RecID == id, ct);
-                if (entity == null) return NotFound($"DeductionCode con RecID {id} no encontrado.");
+                // Validar FK Project (si se envía)
+                if (request.ProjectRefRecID.HasValue)
+                {
+                    var projectExists = await _context.Projects.AnyAsync(p => p.RecID == request.ProjectRefRecID.Value, ct);
+                    if (!projectExists)
+                        return BadRequest($"El Project con RecID {request.ProjectRefRecID.Value} no existe.");
+                    entity.ProjectRefRecID = request.ProjectRefRecID.Value;
+                }
 
-                entity.Name = request.Name.Trim();
-                entity.ProjId = request.ProjId?.Trim();
-                entity.ProjCategory = request.ProjCategory?.Trim();
-                entity.ValidFrom = request.ValidFrom;
-                entity.ValidTo = request.ValidTo;
-                entity.Description = request.Description?.Trim();
-                entity.LedgerAccount = request.LedgerAccount?.Trim();
-                entity.DepartmentRefRecID = request.DepartmentRefRecID;
-                entity.PayrollAction = request.PayrollAction;
-                entity.CtbutionIndexBase = request.CtbutionIndexBase;
-                entity.CtbutionMultiplyAmount = request.CtbutionMultiplyAmount;
-                entity.CtbutionPayFrecuency = request.CtbutionPayFrecuency;
-                entity.CtbutionLimitPeriod = request.CtbutionLimitPeriod;
-                entity.CtbutionLimitAmount = request.CtbutionLimitAmount;
-                entity.CtbutionLimitAmountToApply = request.CtbutionLimitAmountToApply;
-                entity.DductionIndexBase = request.DductionIndexBase;
-                entity.DductionMultiplyAmount = request.DductionMultiplyAmount;
-                entity.DductionPayFrecuency = request.DductionPayFrecuency;
-                entity.DductionLimitPeriod = request.DductionLimitPeriod;
-                entity.DductionLimitAmount = request.DductionLimitAmount;
-                entity.DductionLimitAmountToApply = request.DductionLimitAmountToApply;
-                entity.IsForTaxCalc = request.IsForTaxCalc;
-                entity.IsForTssCalc = request.IsForTssCalc;
-                entity.DeductionStatus = request.DeductionStatus;
-                entity.Observations = request.Observations;
+                // Validar FK ProjectCategory (si se envía)
+                if (request.ProjCategoryRefRecID.HasValue)
+                {
+                    var categoryExists = await _context.ProjectCategories.AnyAsync(pc => pc.RecID == request.ProjCategoryRefRecID.Value, ct);
+                    if (!categoryExists)
+                        return BadRequest($"El ProjectCategory con RecID {request.ProjCategoryRefRecID.Value} no existe.");
+                    entity.ProjCategoryRefRecID = request.ProjCategoryRefRecID.Value;
+                }
+
+                // Validar FK Department (si se envía)
+                if (request.DepartmentRefRecID.HasValue)
+                {
+                    var deptExists = await _context.Departments.AnyAsync(d => d.RecID == request.DepartmentRefRecID.Value, ct);
+                    if (!deptExists)
+                        return BadRequest($"El Department con RecID {request.DepartmentRefRecID.Value} no existe.");
+                    entity.DepartmentRefRecID = request.DepartmentRefRecID.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                    entity.Name = request.Name.Trim();
+                if (request.ValidFrom.HasValue)
+                    entity.ValidFrom = request.ValidFrom.Value;
+                if (request.ValidTo.HasValue)
+                    entity.ValidTo = request.ValidTo.Value;
+                if (request.Description != null)
+                    entity.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+                if (request.LedgerAccount != null)
+                    entity.LedgerAccount = string.IsNullOrWhiteSpace(request.LedgerAccount) ? null : request.LedgerAccount.Trim();
+                if (request.PayrollAction.HasValue)
+                    entity.PayrollAction = request.PayrollAction.Value;
+                if (request.CtbutionIndexBase.HasValue)
+                    entity.CtbutionIndexBase = request.CtbutionIndexBase.Value;
+                if (request.CtbutionMultiplyAmount.HasValue)
+                    entity.CtbutionMultiplyAmount = request.CtbutionMultiplyAmount.Value;
+                if (request.CtbutionPayFrecuency.HasValue)
+                    entity.CtbutionPayFrecuency = request.CtbutionPayFrecuency.Value;
+                if (request.CtbutionLimitPeriod.HasValue)
+                    entity.CtbutionLimitPeriod = request.CtbutionLimitPeriod.Value;
+                if (request.CtbutionLimitAmount.HasValue)
+                    entity.CtbutionLimitAmount = request.CtbutionLimitAmount.Value;
+                if (request.CtbutionLimitAmountToApply.HasValue)
+                    entity.CtbutionLimitAmountToApply = request.CtbutionLimitAmountToApply.Value;
+                if (request.DductionIndexBase.HasValue)
+                    entity.DductionIndexBase = request.DductionIndexBase.Value;
+                if (request.DductionMultiplyAmount.HasValue)
+                    entity.DductionMultiplyAmount = request.DductionMultiplyAmount.Value;
+                if (request.DductionPayFrecuency.HasValue)
+                    entity.DductionPayFrecuency = request.DductionPayFrecuency.Value;
+                if (request.DductionLimitPeriod.HasValue)
+                    entity.DductionLimitPeriod = request.DductionLimitPeriod.Value;
+                if (request.DductionLimitAmount.HasValue)
+                    entity.DductionLimitAmount = request.DductionLimitAmount.Value;
+                if (request.DductionLimitAmountToApply.HasValue)
+                    entity.DductionLimitAmountToApply = request.DductionLimitAmountToApply.Value;
+                if (request.IsForTaxCalc.HasValue)
+                    entity.IsForTaxCalc = request.IsForTaxCalc.Value;
+                if (request.IsForTssCalc.HasValue)
+                    entity.IsForTssCalc = request.IsForTssCalc.Value;
+                if (request.DeductionStatus.HasValue)
+                    entity.DeductionStatus = request.DeductionStatus.Value;
+                if (request.Observations != null)
+                    entity.Observations = string.IsNullOrWhiteSpace(request.Observations) ? null : request.Observations.Trim();
 
                 await _context.SaveChangesAsync(ct);
 
-                var dto = new DC_Dto
+                var dto = new DeductionCodeDto
                 {
                     RecID = entity.RecID,
                     ID = entity.ID,
                     Name = entity.Name,
-                    ProjId = entity.ProjId,
-                    ProjCategory = entity.ProjCategory,
+                    ProjectRefRecID = entity.ProjectRefRecID,
+                    ProjCategoryRefRecID = entity.ProjCategoryRefRecID,
                     ValidFrom = entity.ValidFrom,
                     ValidTo = entity.ValidTo,
                     Description = entity.Description,
@@ -349,47 +355,36 @@ namespace RH365.WebAPI.Controllers
                     IsForTssCalc = entity.IsForTssCalc,
                     DeductionStatus = entity.DeductionStatus,
                     Observations = entity.Observations,
+                    DataareaID = entity.DataareaID,
                     CreatedBy = entity.CreatedBy,
                     CreatedOn = entity.CreatedOn,
                     ModifiedBy = entity.ModifiedBy,
-                    ModifiedOn = entity.ModifiedOn
+                    ModifiedOn = entity.ModifiedOn,
+                    RowVersion = entity.RowVersion
                 };
 
                 return Ok(dto);
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.LogError(ex, "Conflicto de concurrencia al actualizar DeductionCode {RecID}", id);
-                return StatusCode(StatusCodes.Status409Conflict, "Conflicto de concurrencia al actualizar el registro.");
+                _logger.LogError(ex, "Concurrencia al actualizar DeductionCode {RecID}", recId);
+                return Conflict("Conflicto de concurrencia al actualizar DeductionCode.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar DeductionCode {RecID}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                _logger.LogError(ex, "Error al actualizar DeductionCode {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al actualizar DeductionCode.");
             }
         }
 
-        // =========================================================================
-        // DELETE: /api/deductioncodes/{id}  (RecID)
-        // =========================================================================
-        [HttpDelete("{id:long}", Name = "DeleteDeductionCode")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> Delete([FromRoute] long id, CancellationToken ct = default)
+        // DELETE: api/DeductionCodes/{recId:long}
+        [HttpDelete("{recId:long}")]
+        public async Task<IActionResult> Delete(long recId, CancellationToken ct = default)
         {
             try
             {
-                var entity = await _context.DeductionCodes.FindAsync(new object?[] { id }, ct);
-                if (entity == null) return NotFound($"DeductionCode con RecID {id} no encontrado.");
-
-                // Si hay integridad referencial, valida aquí (ejemplo con EmployeeDeductionCodes)
-                bool inUse = await _context.EmployeeDeductionCodes
-                    .AsNoTracking()
-                    .AnyAsync(ed => ed.DeductionCodeRefRecID == id, ct);
-
-                if (inUse)
-                    return Conflict("No se puede eliminar: existen registros relacionados en EmployeeDeductionCodes.");
+                var entity = await _context.DeductionCodes.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
 
                 _context.DeductionCodes.Remove(entity);
                 await _context.SaveChangesAsync(ct);
@@ -398,8 +393,9 @@ namespace RH365.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar DeductionCode {RecID}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                _logger.LogError(ex, "Error al eliminar DeductionCode {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al eliminar DeductionCode.");
+
             }
         }
     }

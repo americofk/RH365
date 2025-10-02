@@ -1,109 +1,119 @@
 // ============================================================================
 // Archivo: DeductionCodeConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/DeductionCodeConfiguration.cs
-// Descripción: Configuración EF Core para la entidad DeductionCode.
-//   - Tabla: dbo.DeductionCodes
-//   - Clave: RecID (secuencia global dbo.RecId)
-//   - ID (string) lo genera la BD vía DEFAULT (no se envía en INSERT)
-//   - RowVersion como token de concurrencia
-//   - Longitudes/obligatoriedad alineadas con la BD
-//   - FK opcional: DepartmentRefRecID (restrict)
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Payroll/DeductionCodeConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para DeductionCode -> dbo.DeductionCodes
+//   - FK a Project, ProjectCategory y Department
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Payroll
 {
+    /// <summary>EF Configuration para <see cref="DeductionCode"/>.</summary>
     public class DeductionCodeConfiguration : IEntityTypeConfiguration<DeductionCode>
     {
         public void Configure(EntityTypeBuilder<DeductionCode> builder)
         {
+            // Tabla
             builder.ToTable("DeductionCodes", "dbo");
 
-            // PK + RecID por secuencia global
+            // PK (RecID)
             builder.HasKey(e => e.RecID);
-            builder.Property(e => e.RecID)
-                   .HasColumnName("RecID")
-                   .ValueGeneratedOnAdd()
-                   .HasDefaultValueSql("NEXT VALUE FOR dbo.RecId");
 
-            // ID generado por la BD (no enviar en INSERT)
+            // ID legible generado en BD
             builder.Property(e => e.ID)
-                   .HasColumnName("ID")
-                   .HasMaxLength(40)
+                   .HasMaxLength(50)
                    .ValueGeneratedOnAdd();
 
-            // Concurrency
-            builder.Property(e => e.RowVersion)
-                   .IsRowVersion()
-                   .IsConcurrencyToken();
-
-            // Campos principales
+            // Campos obligatorios
             builder.Property(e => e.Name)
                    .IsRequired()
                    .HasMaxLength(100);
 
-            builder.Property(e => e.ProjId)
-                   .HasMaxLength(50);
+            builder.Property(e => e.ValidFrom)
+                   .IsRequired();
 
-            builder.Property(e => e.ProjCategory)
-                   .HasMaxLength(50);
+            builder.Property(e => e.ValidTo)
+                   .IsRequired();
 
+            builder.Property(e => e.PayrollAction)
+                   .IsRequired();
+
+            // Campos opcionales
             builder.Property(e => e.Description)
-                   .HasMaxLength(255);
+                   .HasMaxLength(500);
 
             builder.Property(e => e.LedgerAccount)
-                   .HasMaxLength(50);
+                   .HasMaxLength(30);
 
-            builder.Property(e => e.ValidFrom).IsRequired();
-            builder.Property(e => e.ValidTo).IsRequired();
+            // Parámetros decimales
+            builder.Property(e => e.CtbutionMultiplyAmount)
+                   .HasPrecision(18, 2);
+
+            builder.Property(e => e.CtbutionLimitAmount)
+                   .HasPrecision(18, 2);
+
+            builder.Property(e => e.CtbutionLimitAmountToApply)
+                   .HasPrecision(18, 2);
+
+            builder.Property(e => e.DductionMultiplyAmount)
+                   .HasPrecision(18, 2);
+
+            builder.Property(e => e.DductionLimitAmount)
+                   .HasPrecision(18, 2);
+
+            builder.Property(e => e.DductionLimitAmountToApply)
+                   .HasPrecision(18, 2);
+
+            // Banderas
+            builder.Property(e => e.DeductionStatus)
+                   .IsRequired()
+                   .HasDefaultValue(true);
 
             builder.Property(e => e.Observations)
                    .HasMaxLength(500);
 
-            // Auditoría / multiempresa
+            // Auditoría ISO 27001
             builder.Property(e => e.DataareaID)
-                   .HasMaxLength(10)
-                   .HasColumnName("DataareaID");
+                   .IsRequired()
+                   .HasMaxLength(10);
 
             builder.Property(e => e.CreatedBy)
+                   .IsRequired()
                    .HasMaxLength(50);
 
             builder.Property(e => e.ModifiedBy)
                    .HasMaxLength(50);
 
-            // Númericos/flags
-            builder.Property(e => e.PayrollAction);
-            builder.Property(e => e.CtbutionIndexBase);
-            builder.Property(e => e.CtbutionMultiplyAmount).HasColumnType("decimal(18,4)");
-            builder.Property(e => e.CtbutionPayFrecuency);
-            builder.Property(e => e.CtbutionLimitPeriod);
-            builder.Property(e => e.CtbutionLimitAmount).HasColumnType("decimal(18,4)");
-            builder.Property(e => e.CtbutionLimitAmountToApply).HasColumnType("decimal(18,4)");
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
 
-            builder.Property(e => e.DductionIndexBase);
-            builder.Property(e => e.DductionMultiplyAmount).HasColumnType("decimal(18,4)");
-            builder.Property(e => e.DductionPayFrecuency);
-            builder.Property(e => e.DductionLimitPeriod);
-            builder.Property(e => e.DductionLimitAmount).HasColumnType("decimal(18,4)");
-            builder.Property(e => e.DductionLimitAmountToApply).HasColumnType("decimal(18,4)");
+            // FK a Project (opcional)
+            builder.HasOne(e => e.ProjectRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.ProjectRefRecID)
+                   .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Property(e => e.IsForTaxCalc);
-            builder.Property(e => e.IsForTssCalc);
-            builder.Property(e => e.DeductionStatus);
+            // FK a ProjectCategory (opcional)
+            builder.HasOne(e => e.ProjCategoryRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.ProjCategoryRefRecID)
+                   .OnDelete(DeleteBehavior.Restrict);
 
-            // FK opcional a Department (sin navegación requerida en la entidad)
-            builder.HasOne<Department>()
+            // FK a Department (opcional)
+            builder.HasOne(e => e.DepartmentRefRec)
                    .WithMany()
                    .HasForeignKey(e => e.DepartmentRefRecID)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // Índices sugeridos
+            // Índice único por empresa para el nombre de la deducción
             builder.HasIndex(e => new { e.DataareaID, e.Name })
-                   .HasDatabaseName("IX_DeductionCodes_DataareaID_Name");
+                   .IsUnique()
+                   .HasDatabaseName("UX_DeductionCodes_Dataarea_Name");
         }
     }
 }
