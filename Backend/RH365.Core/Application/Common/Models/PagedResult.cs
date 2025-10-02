@@ -5,12 +5,33 @@
 // Descripción: Contenedor genérico de resultados paginados para responses.
 // ============================================================================
 using System.Collections.Generic;
+using RH365.Core.Application.DTOs.Position;
+using RH365.Core.Application.Features.DTOs.DeductionCode;
 
 namespace RH365.Core.Application.Common.Models
 {
     /// <summary>Resultado paginado genérico.</summary>
     public sealed class PagedResult<T>
     {
+        private List<DeductionCodeDto> data;
+        private List<PositionDto> items;
+
+        public PagedResult(List<DeductionCodeDto> data, int totalCount, int pageNumber, int pageSize)
+        {
+            this.data = data;
+            TotalCount = totalCount;
+            PageNumber = pageNumber;
+            PageSize = pageSize;
+        }
+
+        public PagedResult(List<PositionDto> items, int totalCount, int pageNumber, int pageSize)
+        {
+            this.items = items;
+            TotalCount = totalCount;
+            PageNumber = pageNumber;
+            PageSize = pageSize;
+        }
+
         /// <summary>Datos de la página solicitada.</summary>
         public List<T> Data { get; set; } = new();
 
