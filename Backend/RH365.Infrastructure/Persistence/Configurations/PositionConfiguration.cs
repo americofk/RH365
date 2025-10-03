@@ -3,8 +3,8 @@
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Persistence/Configurations/Organization/PositionConfiguration.cs
 // Descripción: Configuración Entity Framework para la entidad Position.
+//   - Sin relaciones inversas que causen shadow properties
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
@@ -36,32 +36,42 @@ namespace RH365.Infrastructure.Persistence.Configurations.Organization
 
             builder.Property(e => e.PositionStatus)
                 .IsRequired()
-                .HasDefaultValue(true);   // ✅ Fix aquí
+                .HasDefaultValue(true);
 
             builder.Property(e => e.StartDate)
                 .IsRequired();
 
             // ID legible
-            builder.Property<string>("ID")
+            builder.Property(e => e.ID)
                 .HasMaxLength(50)
-                .HasDefaultValueSql("('POS-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.PositionsId AS VARCHAR(8)), 8))")
                 .ValueGeneratedOnAdd();
 
-            // Relaciones
+            // Auditoría
+            builder.Property(e => e.DataareaID).IsRequired().HasMaxLength(10);
+            builder.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.ModifiedBy).HasMaxLength(50);
+            builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
+
+            // Relaciones - SIN WithMany para evitar shadow properties
             builder.HasOne(e => e.DepartmentRefRec)
-                .WithMany(d => d.Positions)
+                .WithMany()
                 .HasForeignKey(e => e.DepartmentRefRecID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.JobRefRec)
-                .WithMany(j => j.Positions)
+                .WithMany()
                 .HasForeignKey(e => e.JobRefRecID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.NotifyPositionRefRec)
-                .WithMany(p => p.InverseNotifyPositionRefRec)
+                .WithMany()
                 .HasForeignKey(e => e.NotifyPositionRefRecID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Ignorar navegaciones inversas
+            builder.Ignore("Positions");
+            builder.Ignore("InverseNotifyPositionRefRec");
+            builder.Ignore("PositionRequirements");
 
             builder.HasIndex(e => new { e.PositionCode, e.DataareaID })
                 .IsUnique()
