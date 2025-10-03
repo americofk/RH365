@@ -3,10 +3,6 @@
 // Proyecto: RH365.Infrastructure
 // Ruta: Infrastructure/Persistence/Configurations/DepartmentConfiguration.cs
 // Descripción: Configuración Entity Framework Core para Department.
-//   - Tabla: dbo.Departments
-//   - RecID usa secuencia global dbo.RecId (configurada en ApplicationDbContext)
-//   - ID legible generado por secuencia dbo.DepartmentsId
-//   - Índice único por DataareaID + DepartmentCode
 // ============================================================================
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -20,6 +16,8 @@ namespace RH365.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("Departments", "dbo");
 
+            builder.HasKey(e => e.RecID);
+
             // Propiedades
             builder.Property(p => p.DepartmentCode)
                    .HasMaxLength(10)
@@ -29,16 +27,25 @@ namespace RH365.Infrastructure.Persistence.Configurations
                    .HasMaxLength(255)
                    .IsRequired();
 
-            // ID legible (ej. DEPT-00000001)
-            builder.Property<string>("ID")
+            // ID legible
+            builder.Property(p => p.ID)
                    .HasMaxLength(50)
-                   .ValueGeneratedOnAdd()
-                   .HasDefaultValueSql("('DEPT-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.DepartmentsId AS VARCHAR(8)), 8))");
+                   .ValueGeneratedOnAdd();
 
-            // Índice único por empresa + código
+            // Auditoría
+            builder.Property(e => e.DataareaID).IsRequired().HasMaxLength(10);
+            builder.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.ModifiedBy).HasMaxLength(50);
+            builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
+
+            // Índice único
             builder.HasIndex(p => new { p.DataareaID, p.DepartmentCode })
                    .IsUnique()
                    .HasDatabaseName("UX_Departments_Dataarea_DepartmentCode");
+
+            // CRÍTICO: Ignorar navegaciones inversas que EF pueda inferir
+            builder.Ignore("EarningCodes");
+            builder.Ignore("DeductionCodes");
         }
     }
 }

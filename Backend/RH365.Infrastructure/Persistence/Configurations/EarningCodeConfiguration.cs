@@ -2,65 +2,130 @@
 // Archivo: EarningCodeConfiguration.cs
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Persistence/Configurations/Payroll/EarningCodeConfiguration.cs
-// Descripción: Configuración Entity Framework para EarningCode.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Descripción:
+//   - Configuración EF Core para EarningCode -> dbo.EarningCodes
+//   - FK a Project, ProjectCategory y Department
+//   - Sin shadow properties ni relaciones inferidas
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Payroll
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad EarningCode.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="EarningCode"/>.</summary>
     public class EarningCodeConfiguration : IEntityTypeConfiguration<EarningCode>
     {
         public void Configure(EntityTypeBuilder<EarningCode> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EarningCode");
+            // Tabla
+            builder.ToTable("EarningCodes", "dbo");
 
-            // Configuración de propiedades
-            //builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
-            builder.Property(e => e.DepartmentRefRecID).HasColumnName("DepartmentRefRecID");
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.EarningCode1).HasMaxLength(50).HasColumnName("EarningCode1");
-            builder.Property(e => e.EarningCodeStatus).HasColumnName("EarningCodeStatus");
-            builder.Property(e => e.IndexBase).HasColumnName("IndexBase");
-            builder.Property(e => e.IsExtraHours).HasColumnName("IsExtraHours");
-            builder.Property(e => e.IsHoliday).HasColumnName("IsHoliday");
-            builder.Property(e => e.IsIsr).HasColumnName("IsIsr");
-            builder.Property(e => e.IsRoyaltyPayroll).HasColumnName("IsRoyaltyPayroll");
-            builder.Property(e => e.IsTss).HasColumnName("IsTss");
-            builder.Property(e => e.IsUseDgt).HasColumnName("IsUseDgt");
-            builder.Property(e => e.LedgerAccount).HasMaxLength(255).HasColumnName("LedgerAccount");
-            builder.Property(e => e.MultiplyAmount).HasPrecision(18, 4).HasColumnName("MultiplyAmount");
-            builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
-            builder.Property(e => e.ProjId).HasMaxLength(255).HasColumnName("ProjId");
-            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
-            builder.Property(e => e.WorkFrom).HasColumnType("time").HasColumnName("WorkFrom");
-            builder.Property(e => e.WorkTo).HasColumnType("time").HasColumnName("WorkTo");
+            // PK (RecID)
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.DepartmentRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.DepartmentRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeEarningCodes)
-            //    .WithOne(d => d.EarningCodeRefRec)
-            //    .HasForeignKey(d => d.EarningCodeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.EmployeeExtraHours)
-            //    .WithOne(d => d.EarningCodeRefRec)
-            //    .HasForeignKey(d => d.EarningCodeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible generado en BD
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            // Índices
+            // Campos obligatorios
+            builder.Property(e => e.Name)
+                   .IsRequired()
+                   .HasMaxLength(100);
+
+            builder.Property(e => e.IsTSS)
+                   .IsRequired();
+
+            builder.Property(e => e.IsISR)
+                   .IsRequired();
+
+            builder.Property(e => e.ValidFrom)
+                   .IsRequired();
+
+            builder.Property(e => e.ValidTo)
+                   .IsRequired();
+
+            builder.Property(e => e.IndexBase)
+                   .IsRequired();
+
+            builder.Property(e => e.MultiplyAmount)
+                   .HasPrecision(18, 2)
+                   .IsRequired();
+
+            builder.Property(e => e.WorkFrom)
+                   .IsRequired();
+
+            builder.Property(e => e.WorkTo)
+                   .IsRequired();
+
+            // Campos opcionales
+            builder.Property(e => e.Description)
+                   .HasMaxLength(500);
+
+            builder.Property(e => e.LedgerAccount)
+                   .HasMaxLength(30);
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Banderas booleanas
+            builder.Property(e => e.EarningCodeStatus)
+                   .IsRequired()
+                   .HasDefaultValue(true);
+
+            builder.Property(e => e.IsExtraHours)
+                   .IsRequired();
+
+            builder.Property(e => e.IsRoyaltyPayroll)
+                   .IsRequired();
+
+            builder.Property(e => e.IsUseDGT)
+                   .IsRequired();
+
+            builder.Property(e => e.IsHoliday)
+                   .IsRequired();
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // FK a Project (opcional)
+            builder.HasOne(e => e.ProjectRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.ProjectRefRecID)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // FK a ProjectCategory (opcional)
+            builder.HasOne(e => e.ProjCategoryRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.ProjCategoryRefRecID)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // FK a Department (opcional) - sin AutoInclude
+            builder.Navigation(e => e.DepartmentRefRec).AutoInclude(false);
+
+            builder.HasOne(e => e.DepartmentRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.DepartmentRefRecID)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Índice único por empresa para el nombre
+            builder.HasIndex(e => new { e.DataareaID, e.Name })
+                   .IsUnique()
+                   .HasDatabaseName("UX_EarningCodes_Dataarea_Name");
         }
     }
 }

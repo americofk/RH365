@@ -4,11 +4,11 @@
 // Ruta: RH365.Core/Domain/Entities/Payroll/EarningCode.cs
 // Descripción: Catálogo de códigos de percepciones en nómina (sueldos, extras, etc.).
 //   - Define reglas de cálculo y condiciones de aplicación
+//   - Relaciones FK con Project, ProjectCategory y Department
 //   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
 // ============================================================================
 
 using RH365.Core.Domain.Common;
-using RH365.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
 
@@ -20,11 +20,6 @@ namespace RH365.Core.Domain.Entities
     public class EarningCode : AuditableCompanyEntity
     {
         /// <summary>
-        /// Código único de percepción.
-        /// </summary>
-        public string EarningCode1 { get; set; } = null!;
-
-        /// <summary>
         /// Nombre de la percepción.
         /// </summary>
         public string Name { get; set; } = null!;
@@ -32,17 +27,22 @@ namespace RH365.Core.Domain.Entities
         /// <summary>
         /// Indica si afecta aportes a la TSS.
         /// </summary>
-        public bool IsTss { get; set; }
+        public bool IsTSS { get; set; }
 
         /// <summary>
         /// Indica si afecta el cálculo de ISR.
         /// </summary>
-        public bool IsIsr { get; set; }
+        public bool IsISR { get; set; }
 
         /// <summary>
-        /// Proyecto asociado (opcional).
+        /// FK al proyecto asociado (opcional).
         /// </summary>
-        public string? ProjId { get; set; }
+        public long? ProjectRefRecID { get; set; }
+
+        /// <summary>
+        /// FK a la categoría del proyecto asociado (opcional).
+        /// </summary>
+        public long? ProjCategoryRefRecID { get; set; }
 
         /// <summary>
         /// Fecha de inicio de validez.
@@ -75,7 +75,7 @@ namespace RH365.Core.Domain.Entities
         public string? LedgerAccount { get; set; }
 
         /// <summary>
-        /// FK al departamento responsable.
+        /// FK al departamento responsable (opcional).
         /// </summary>
         public long? DepartmentRefRecID { get; set; }
 
@@ -97,7 +97,7 @@ namespace RH365.Core.Domain.Entities
         /// <summary>
         /// Indica si se usa para reportes a la DGT.
         /// </summary>
-        public bool IsUseDgt { get; set; }
+        public bool IsUseDGT { get; set; }
 
         /// <summary>
         /// Indica si corresponde a feriados.
@@ -114,6 +114,9 @@ namespace RH365.Core.Domain.Entities
         /// </summary>
         public TimeOnly WorkTo { get; set; }
 
+        // Navegación
+        public virtual Project? ProjectRefRec { get; set; }
+        public virtual ProjectCategory? ProjCategoryRefRec { get; set; }
         public virtual Department? DepartmentRefRec { get; set; }
         public virtual ICollection<EmployeeEarningCode> EmployeeEarningCodes { get; set; } = new List<EmployeeEarningCode>();
         public virtual ICollection<EmployeeExtraHour> EmployeeExtraHours { get; set; } = new List<EmployeeExtraHour>();
