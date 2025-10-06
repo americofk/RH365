@@ -1,34 +1,62 @@
 // ============================================================================
 // Archivo: CalendarHolidayConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/General/CalendarHolidayConfiguration.cs
-// Descripción: Configuración Entity Framework para CalendarHoliday.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Calendar/CalendarHolidayConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para CalendarHoliday -> dbo.CalendarHolidays
+//   - ID generado por DEFAULT en BD
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Calendar
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad CalendarHoliday.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="CalendarHoliday"/>.</summary>
     public class CalendarHolidayConfiguration : IEntityTypeConfiguration<CalendarHoliday>
     {
         public void Configure(EntityTypeBuilder<CalendarHoliday> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("CalendarHoliday");
+            builder.ToTable("CalendarHolidays", "dbo");
+            builder.HasKey(e => e.RecID);
 
-            // Configuración de propiedades
-            builder.Property(e => e.CalendarDate).HasColumnType("date").HasColumnName("CalendarDate");
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
+            // ID legible generado en BD
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            // Índices
+            // Campos obligatorios
+            builder.Property(e => e.CalendarDate)
+                   .IsRequired();
+
+            builder.Property(e => e.Description)
+                   .IsRequired()
+                   .HasMaxLength(100);
+
+            // Campos opcionales
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Índice único por empresa y fecha
+            builder.HasIndex(e => new { e.DataareaID, e.CalendarDate })
+                   .IsUnique()
+                   .HasDatabaseName("UX_CalendarHolidays_Dataarea_Date");
         }
     }
 }

@@ -14,7 +14,6 @@
     <Folder Include="External\DGII\" />
     <Folder Include="External\Banking\" />
     <Folder Include="External\TSS\" />
-    <Folder Include="Persistence\Configurations\" />
     <Folder Include="Persistence\Interceptors\" />
     <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\Seeds\" />

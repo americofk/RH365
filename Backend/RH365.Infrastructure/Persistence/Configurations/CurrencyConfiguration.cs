@@ -4,7 +4,7 @@
 // Ruta: RH365.Infrastructure/Persistence/Configurations/General/CurrencyConfiguration.cs
 // Descripción:
 //   - Configuración EF Core para Currency -> dbo.Currencies
-//   - Reglas de longitudes, FKs (no aplica aquí), índices y defaults
+//   - Reglas de longitudes, índices y defaults
 //   - ID (string) se genera por DEFAULT en BD (secuencia + prefijo CUR-)
 //   - Cumple auditoría ISO 27001 (DataareaID, RowVersion, etc.)
 // ============================================================================
@@ -22,10 +22,10 @@ namespace RH365.Infrastructure.Persistence.Configurations.General
             // Tabla
             builder.ToTable("Currencies", "dbo");
 
-            // PK (RecID). El default de RecID (NEXT VALUE FOR dbo.RecId) lo aplica el DbContext globalmente.
+            // PK (RecID)
             builder.HasKey(e => e.RecID);
 
-            // ID legible (string) generado en BD por DEFAULT (secuencia + prefijo)
+            // ID legible generado en BD por DEFAULT
             builder.Property(e => e.ID)
                    .HasMaxLength(40)
                    .ValueGeneratedOnAdd();
@@ -33,7 +33,7 @@ namespace RH365.Infrastructure.Persistence.Configurations.General
             // Campos
             builder.Property(e => e.CurrencyCode)
                    .IsRequired()
-                   .HasMaxLength(10); // ISO 3 + elasticidad
+                   .HasMaxLength(10);
 
             builder.Property(e => e.Name)
                    .IsRequired()
@@ -57,6 +57,11 @@ namespace RH365.Infrastructure.Persistence.Configurations.General
             builder.Property(e => e.RowVersion)
                    .IsRowVersion()
                    .IsConcurrencyToken();
+
+            // Ignorar navegaciones inversas para evitar shadow properties
+            builder.Ignore("Companies");
+            builder.Ignore("Payrolls");
+            builder.Ignore("Taxes");
 
             // Índice único por empresa para el código de moneda
             builder.HasIndex(e => new { e.DataareaID, e.CurrencyCode })

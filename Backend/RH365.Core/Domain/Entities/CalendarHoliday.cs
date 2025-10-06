@@ -6,7 +6,6 @@
 //   - Incluye herencia de AuditableCompanyEntity para cumplir con estándares ISO 27001
 //   - Permite gestionar feriados nacionales/empresariales en el sistema multiempresa
 // ============================================================================
-
 using RH365.Core.Domain.Common;
 using System;
 

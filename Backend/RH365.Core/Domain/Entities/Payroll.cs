@@ -9,7 +9,6 @@
 // ============================================================================
 
 using RH365.Core.Domain.Common;
-using RH365.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
 
@@ -20,11 +19,6 @@ namespace RH365.Core.Domain.Entities
     /// </summary>
     public class Payroll : AuditableCompanyEntity
     {
-        /// <summary>
-        /// Código único de la nómina.
-        /// </summary>
-        public string PayrollCode { get; set; } = null!;
-
         /// <summary>
         /// Nombre descriptivo de la nómina.
         /// </summary>
