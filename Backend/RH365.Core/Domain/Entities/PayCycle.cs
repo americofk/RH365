@@ -18,10 +18,7 @@ namespace RH365.Core.Domain.Entities
     /// </summary>
     public class PayCycle : AuditableCompanyEntity
     {
-        /// <summary>
-        /// Identificador interno del ciclo de pago.
-        /// </summary>
-        public int PayCycleId { get; set; }
+        
 
         /// <summary>
         /// FK a la nómina a la que pertenece este ciclo.
