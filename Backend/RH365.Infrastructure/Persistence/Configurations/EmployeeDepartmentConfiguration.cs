@@ -1,54 +1,53 @@
 // ============================================================================
 // Archivo: EmployeeDepartmentConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Employee/EmployeeDepartmentConfiguration.cs
-// Descripción: Configuración Entity Framework para EmployeeDepartment.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Employees/EmployeeDepartmentConfiguration.cs
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad EmployeeDepartment.
-    /// </summary>
     public class EmployeeDepartmentConfiguration : IEntityTypeConfiguration<EmployeeDepartment>
     {
         public void Configure(EntityTypeBuilder<EmployeeDepartment> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EmployeeDepartment");
+            builder.ToTable("EmployeeDepartments", "dbo");
+            builder.HasKey(e => e.RecID);
 
-            // Configuración de propiedades
-            builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            //builder.Property(e => e.DepartmentRefRec).HasColumnName("DepartmentRefRec");
-            builder.Property(e => e.DepartmentRefRecID).HasColumnName("DepartmentRefRecID");
-            builder.Property(e => e.EmployeeDepartmentStatus).HasColumnName("EmployeeDepartmentStatus");
-            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
-            builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.FromDate).HasColumnType("date").HasColumnName("FromDate");
-            builder.Property(e => e.ToDate).HasColumnType("date").HasColumnName("ToDate");
+            builder.Property(e => e.ID).HasMaxLength(50).ValueGeneratedOnAdd();
+            builder.Property(e => e.EmployeeRefRecID).IsRequired().HasColumnName("EmployeeRefRecID");
+            builder.Property(e => e.DepartmentRefRecID).IsRequired().HasColumnName("DepartmentRefRecID");
+            builder.Property(e => e.FromDate).IsRequired();
+            builder.Property(e => e.ToDate);
+            builder.Property(e => e.EmployeeDepartmentStatus).IsRequired().HasDefaultValue(true);
 
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.DepartmentRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.DepartmentRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.EmployeeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // Mapear Observations (plural heredada) a Observation (singular en BD)
+            builder.Property(e => e.Observations).HasMaxLength(500).HasColumnName("Observation");
 
-            // Índices
-            builder.HasIndex(e => e.EmployeeRefRecID)
-                .HasDatabaseName("IX_EmployeeDepartment_EmployeeRefRecID");
-            builder.HasIndex(e => e.DepartmentRefRecID)
-                .HasDatabaseName("IX_EmployeeDepartment_DepartmentRefRecID");
+            builder.Property(e => e.DataareaID).IsRequired().HasMaxLength(10);
+            builder.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.ModifiedBy).HasMaxLength(50);
+            builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
+
+            // FK a Employee
+            builder.HasOne(e => e.EmployeeRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.EmployeeRefRecID)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // FK a Department
+            builder.HasOne(e => e.DepartmentRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.DepartmentRefRecID)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(e => e.EmployeeRefRec).AutoInclude(false);
+            builder.Navigation(e => e.DepartmentRefRec).AutoInclude(false);
+
+            builder.HasIndex(e => new { e.DataareaID, e.EmployeeRefRecID, e.DepartmentRefRecID })
+                   .HasDatabaseName("IX_EmployeeDepartments_Dataarea_Employee_Dept");
         }
     }
 }

@@ -15,7 +15,6 @@ namespace RH365.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Department> builder)
         {
             builder.ToTable("Departments", "dbo");
-
             builder.HasKey(e => e.RecID);
 
             // Propiedades
@@ -43,9 +42,11 @@ namespace RH365.Infrastructure.Persistence.Configurations
                    .IsUnique()
                    .HasDatabaseName("UX_Departments_Dataarea_DepartmentCode");
 
-            // CRÍTICO: Ignorar navegaciones inversas que EF pueda inferir
+            // Ignorar navegaciones inversas
             builder.Ignore("EarningCodes");
             builder.Ignore("DeductionCodes");
+            builder.Ignore("EmployeeDepartments");
+            builder.Ignore("Positions");
         }
     }
 }

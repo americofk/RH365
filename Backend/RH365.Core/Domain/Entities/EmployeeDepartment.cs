@@ -42,11 +42,6 @@ namespace RH365.Core.Domain.Entities
         /// </summary>
         public bool EmployeeDepartmentStatus { get; set; }
 
-        /// <summary>
-        /// Comentario adicional sobre la asignación.
-        /// </summary>
-        public string? Comment { get; set; }
-
         // -----------------------------
         // Propiedades de navegación
         // -----------------------------
