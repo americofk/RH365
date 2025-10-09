@@ -126,6 +126,10 @@ namespace RH365.Infrastructure.Persistence.Configurations.Payroll
             builder.HasIndex(e => new { e.DataareaID, e.Name })
                    .IsUnique()
                    .HasDatabaseName("UX_EarningCodes_Dataarea_Name");
+
+            // Ignorar navegaciones inversas para evitar shadow properties
+            builder.Ignore("EmployeeExtraHours");
+            builder.Ignore("EmployeeEarningCodes");
         }
     }
 }
