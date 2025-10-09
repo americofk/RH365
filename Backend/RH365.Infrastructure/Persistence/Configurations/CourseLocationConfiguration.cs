@@ -2,43 +2,37 @@
 // Archivo: CourseLocationConfiguration.cs
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Persistence/Configurations/Training/CourseLocationConfiguration.cs
-// Descripción: Configuración Entity Framework para CourseLocation.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad CourseLocation.
-    /// </summary>
     public class CourseLocationConfiguration : IEntityTypeConfiguration<CourseLocation>
     {
         public void Configure(EntityTypeBuilder<CourseLocation> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("CourseLocation");
+            builder.ToTable("CourseLocations", "dbo");
+            builder.HasKey(e => e.RecID);
 
-            // Configuración de propiedades
-            builder.Property(e => e.CourseLocationCode).IsRequired().HasMaxLength(50).HasColumnName("CourseLocationCode");
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
+            builder.Property(e => e.ID).HasMaxLength(50).ValueGeneratedOnAdd();
+            builder.Property(e => e.CourseLocationCode).IsRequired().HasMaxLength(20);
+            builder.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            builder.Property(e => e.Description).HasMaxLength(300);
+            builder.Property(e => e.Observations).HasMaxLength(500);
 
-            //// Configuración de relaciones
-            //builder.HasMany(e => e.ClassRooms)
-            //    .WithOne(d => d.CourseLocationRefRec)
-            //    .HasForeignKey(d => d.CourseLocationRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            builder.Property(e => e.DataareaID).IsRequired().HasMaxLength(10);
+            builder.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.ModifiedBy).HasMaxLength(50);
+            builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
 
-            // Índices
-            builder.HasIndex(e => new { e.CourseLocationCode, e.DataareaID })
-                .HasDatabaseName("IX_CourseLocation_CourseLocationCode_DataareaID")
-                .IsUnique();
+            // Ignorar navegación inversa
+            builder.Ignore("ClassRooms");
+
+            builder.HasIndex(e => new { e.DataareaID, e.CourseLocationCode })
+                   .IsUnique()
+                   .HasDatabaseName("UX_CourseLocations_Dataarea_Code");
         }
     }
 }
