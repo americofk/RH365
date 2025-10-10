@@ -2,74 +2,52 @@
 // Archivo: ClassRoomConfiguration.cs
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Persistence/Configurations/Training/ClassRoomConfiguration.cs
-// Descripción: Configuración Entity Framework para ClassRoom.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad ClassRoom.
-    /// </summary>
     public class ClassRoomConfiguration : IEntityTypeConfiguration<ClassRoom>
     {
         public void Configure(EntityTypeBuilder<ClassRoom> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("ClassRoom");
+            builder.ToTable("ClassRooms", "dbo");
+            builder.HasKey(e => e.RecID);
 
-            // Configuración de propiedades
-            builder.Property(e => e.AvailableTimeEnd)
-                .HasColumnType("time")
-                .HasColumnName("AvailableTimeEnd");
+            builder.Property(e => e.ID).HasMaxLength(50).ValueGeneratedOnAdd();
+            builder.Property(e => e.ClassRoomCode).IsRequired().HasMaxLength(20);
+            builder.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.CourseLocationRefRecID).IsRequired().HasColumnName("CourseLocationRefRecID");
+            builder.Property(e => e.MaxStudentQty).IsRequired();
+            builder.Property(e => e.Comment).HasMaxLength(100);
+            builder.Property(e => e.AvailableTimeStart).HasColumnType("time").IsRequired();
+            builder.Property(e => e.AvailableTimeEnd).HasColumnType("time").IsRequired();
+            builder.Property(e => e.Observations).HasMaxLength(500);
 
-            builder.Property(e => e.AvailableTimeStart)
-                .HasColumnType("time")
-                .HasColumnName("AvailableTimeStart");
+            builder.Property(e => e.DataareaID).IsRequired().HasMaxLength(10);
+            builder.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.ModifiedBy).HasMaxLength(50);
+            builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
 
-            builder.Property(e => e.ClassRoomCode)
-                .IsRequired()
-                .HasMaxLength(50)
-                .HasColumnName("ClassRoomCode");
+            // FK a CourseLocation
+            builder.HasOne(e => e.CourseLocationRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.CourseLocationRefRecID)
+                   .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Property(e => e.Comment)
-                .HasMaxLength(500)
-                .HasColumnName("Comment");
+            builder.Navigation(e => e.CourseLocationRefRec).AutoInclude(false);
 
-            builder.Property(e => e.CourseLocationRefRecID)
-                .HasColumnName("CourseLocationRefRecID");
+            // Ignorar navegación inversa
+            builder.Ignore("Courses");
 
-            builder.Property(e => e.MaxStudentQty)
-                .HasColumnName("MaxStudentQty");
-
-            builder.Property(e => e.Name)
-                .HasMaxLength(255)
-                .HasColumnName("Name");
-
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.CourseLocationRefRec)
-            //    .WithMany(cl => cl.ClassRooms)
-            //    .HasForeignKey(e => e.CourseLocationRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-
-            //builder.HasMany(e => e.Courses)
-            //    .WithOne(c => c.ClassRoomRefRec)
-            //    .HasForeignKey(c => c.ClassRoomRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-
-            // Índices
             builder.HasIndex(e => new { e.ClassRoomCode, e.DataareaID })
-                .HasDatabaseName("IX_ClassRoom_ClassRoomCode_DataareaID")
-                .IsUnique();
+                   .IsUnique()
+                   .HasDatabaseName("IX_ClassRoom_ClassRoomCode_DataareaID");
 
             builder.HasIndex(e => e.CourseLocationRefRecID)
-                .HasDatabaseName("IX_ClassRoom_CourseLocationRefRecID");
+                   .HasDatabaseName("IX_ClassRoom_CourseLocationRefRecID");
         }
     }
 }

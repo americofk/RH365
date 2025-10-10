@@ -3,10 +3,10 @@
 // Proyecto: RH365.Core
 // Ruta: RH365.Core/Domain/Entities/Training/Course.cs
 // Descripción: Entidad que representa los cursos de capacitación dentro del sistema.
-//   - Relacionada con ClassRoom, CourseType, CourseEmployee e Instructor
+//   - Relacionada con CourseType, CourseEmployee e Instructor
+//   - ClassRoomRefRecID como FK sin navegación (incompatibilidad int vs long)
 //   - Incluye herencia de AuditableCompanyEntity para cumplir con ISO 27001
 // ============================================================================
-
 using RH365.Core.Domain.Common;
 using RH365.Core.Domain.Entities;
 using System;
@@ -36,8 +36,10 @@ namespace RH365.Core.Domain.Entities
 
         /// <summary>
         /// FK al aula donde se imparte el curso.
+        /// NOTA: Es int? porque ClassRooms.RecID es int en la BD actual.
+        /// No tiene propiedad de navegación por incompatibilidad de tipos (int vs long).
         /// </summary>
-        public long? ClassRoomRefRecID { get; set; }
+        public int? ClassRoomRefRecID { get; set; }
 
         /// <summary>
         /// Descripción detallada del curso.
@@ -109,10 +111,23 @@ namespace RH365.Core.Domain.Entities
         /// </summary>
         public string? UrlDocuments { get; set; }
 
+        // -----------------------------
         // Propiedades de navegación
-        public virtual ClassRoom? ClassRoomRefRec { get; set; }
+        // -----------------------------
+
+        /// <summary>
+        /// Empleados inscritos en el curso.
+        /// </summary>
         public virtual ICollection<CourseEmployee> CourseEmployees { get; set; } = new List<CourseEmployee>();
+
+        /// <summary>
+        /// Instructores asignados al curso.
+        /// </summary>
         public virtual ICollection<CourseInstructor> CourseInstructors { get; set; } = new List<CourseInstructor>();
+
+        /// <summary>
+        /// Tipo de curso asociado.
+        /// </summary>
         public virtual CourseType CourseTypeRefRec { get; set; } = null!;
     }
 }

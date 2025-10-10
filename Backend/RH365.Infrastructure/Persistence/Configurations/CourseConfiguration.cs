@@ -1,75 +1,65 @@
 // ============================================================================
 // Archivo: CourseConfiguration.cs
-// Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Training/CourseConfiguration.cs
-// Descripci贸n: Configuraci贸n Entity Framework para Course.
-//   - Mapeo de propiedades y relaciones
-//   - 脥ndices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
 namespace RH365.Infrastructure.Persistence.Configurations
 {
-    /// <summary>
-    /// Configuraci贸n Entity Framework para la entidad Course.
-    /// </summary>
     public class CourseConfiguration : IEntityTypeConfiguration<Course>
     {
         public void Configure(EntityTypeBuilder<Course> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("Course");
+            builder.ToTable("Courses", "dbo");
+            builder.HasKey(e => e.RecID);
 
-            // Configuraci贸n de propiedades
-            //builder.Property(e => e.ClassRoomRefRec).HasColumnName("ClassRoomRefRec");
+            builder.Property(e => e.ID).HasMaxLength(50).ValueGeneratedOnAdd();
+            builder.Property(e => e.CourseCode).IsRequired().HasMaxLength(20);
+            builder.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            builder.Property(e => e.CourseTypeRefRecID).IsRequired().HasColumnName("CourseTypeRefRecID");
+
+            // Configurar ClassRoomRefRecID sin navegaci髇
             builder.Property(e => e.ClassRoomRefRecID).HasColumnName("ClassRoomRefRecID");
-            builder.Property(e => e.CourseCode).IsRequired().HasMaxLength(50).HasColumnName("CourseCode");
-            builder.Property(e => e.CourseParentId).HasMaxLength(255).HasColumnName("CourseParentId");
-            builder.Property(e => e.CourseStatus).HasColumnName("CourseStatus");
-            //builder.Property(e => e.CourseTypeRefRec).HasColumnName("CourseTypeRefRec");
-            builder.Property(e => e.CourseTypeRefRecID).HasColumnName("CourseTypeRefRecID");
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.EndDate).HasColumnType("date").HasColumnName("EndDate");
-            builder.Property(e => e.InternalExternal).HasColumnName("InternalExternal");
-            builder.Property(e => e.IsMatrixTraining).HasColumnName("IsMatrixTraining");
-            builder.Property(e => e.MaxStudents).HasColumnName("MaxStudents");
-            builder.Property(e => e.MinStudents).HasColumnName("MinStudents");
-            builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
-            builder.Property(e => e.Objetives).HasMaxLength(255).HasColumnName("Objetives");
-            builder.Property(e => e.Periodicity).HasColumnName("Periodicity");
-            builder.Property(e => e.QtySessions).HasColumnName("QtySessions");
-            builder.Property(e => e.StartDate).HasColumnType("date").HasColumnName("StartDate");
-            builder.Property(e => e.Topics).HasMaxLength(255).HasColumnName("Topics");
-            builder.Property(e => e.UrlDocuments).HasMaxLength(255).HasColumnName("UrlDocuments");
 
-            //// Configuraci贸n de relaciones
-            //builder.HasOne(e => e.ClassRoomRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.ClassRoomRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.CourseEmployees)
-            //    .WithOne(d => d.CourseRefRec)
-            //    .HasForeignKey(d => d.CourseRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.CourseInstructors)
-            //    .WithOne(d => d.CourseRefRec)
-            //    .HasForeignKey(d => d.CourseRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.CourseTypeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.CourseTypeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            builder.Property(e => e.Description).HasMaxLength(200);
+            builder.Property(e => e.StartDate).IsRequired();
+            builder.Property(e => e.EndDate).IsRequired();
+            builder.Property(e => e.IsMatrixTraining).IsRequired().HasDefaultValue(false);
+            builder.Property(e => e.InternalExternal).IsRequired().HasDefaultValue(0);
+            builder.Property(e => e.CourseParentId).HasMaxLength(20);
+            builder.Property(e => e.MinStudents).IsRequired().HasDefaultValue(0);
+            builder.Property(e => e.MaxStudents).IsRequired().HasDefaultValue(0);
+            builder.Property(e => e.Periodicity).IsRequired().HasDefaultValue(0);
+            builder.Property(e => e.QtySessions).IsRequired().HasDefaultValue(0);
+            builder.Property(e => e.Objetives).IsRequired().HasMaxLength(1000);
+            builder.Property(e => e.Topics).IsRequired().HasMaxLength(1000);
+            builder.Property(e => e.CourseStatus).IsRequired().HasDefaultValue(0);
+            builder.Property(e => e.UrlDocuments).HasMaxLength(1000).HasColumnName("URLDocuments");
+            builder.Property(e => e.Observations).HasMaxLength(500);
 
-            // 脥ndices
-            builder.HasIndex(e => new { e.CourseCode, e.DataareaID })
-                .HasDatabaseName("IX_Course_CourseCode_DataareaID")
-                .IsUnique();
-            builder.HasIndex(e => e.CourseTypeRefRecID)
-                .HasDatabaseName("IX_Course_CourseTypeRefRecID");
+            builder.Property(e => e.DataareaID).IsRequired().HasMaxLength(10);
+            builder.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.ModifiedBy).HasMaxLength(50);
+            builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
+
+            // FK a CourseType
+            builder.HasOne(e => e.CourseTypeRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.CourseTypeRefRecID)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Navigation(e => e.CourseTypeRefRec).AutoInclude(false);
+
+            // Ignorar navegaciones inversas y ClassRoom
+            builder.Ignore("CourseEmployees");
+            builder.Ignore("CourseInstructors");
+            builder.Ignore("ClassRoomRefRec");
+            builder.Ignore("ClassRoom");
+
+            builder.HasIndex(e => new { e.DataareaID, e.CourseCode })
+                   .IsUnique()
+                   .HasDatabaseName("UX_Courses_Dataarea_Code");
         }
     }
 }

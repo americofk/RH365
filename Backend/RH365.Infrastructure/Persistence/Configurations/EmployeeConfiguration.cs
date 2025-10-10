@@ -73,6 +73,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Ignore("EmployeeWorkCalendars");
             builder.Ignore("EmployeeWorkControlCalendars");
             builder.Ignore("EmployeesAddresses");
+            builder.Ignore("CourseEmployees");
 
             builder.HasIndex(e => new { e.DataareaID, e.EmployeeCode })
                    .IsUnique()
