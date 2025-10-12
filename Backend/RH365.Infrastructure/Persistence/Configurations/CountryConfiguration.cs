@@ -1,59 +1,76 @@
 // ============================================================================
 // Archivo: CountryConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/CountryConfiguration.cs
+// Ruta: RH365.Infrastructure/Persistence/Configurations/General/CountryConfiguration.cs
 // Descripción: Configuración EF Core para Country.
-//   - Tabla: [dbo].[Countries]
-//   - RecID: NEXT VALUE FOR dbo.RecId (DEFAULT en BD)
-//   - ID legible: 'CNTY-'+RIGHT(...,8) (DEFAULT en BD)  ← ajusta si usas otro prefijo
-//   - IMPORTANTE: Se ignoran posibles navegaciones a EmployeesAddress para
-//                 evitar que EF cree FKs sombra tipo CountryRecID{n}.
+//   - Mapeo completo de propiedades
+//   - Ignorar navegaciones inversas para evitar shadow properties
+//   - Cumplimiento ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.General
 {
-    public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
+    public class CountryConfiguration : IEntityTypeConfiguration<Country>
     {
         public void Configure(EntityTypeBuilder<Country> builder)
         {
             // Tabla
             builder.ToTable("Countries", "dbo");
 
-            // Campos básicos (ajusta longitudes según tu modelo real)
-            builder.Property<string>("ID")
+            // PK
+            builder.HasKey(e => e.RecID);
+
+            // ID legible
+            builder.Property(e => e.ID)
                    .HasMaxLength(50)
-                   .ValueGeneratedOnAdd(); // DEFAULT en BD
+                   .ValueGeneratedOnAdd();
 
-            builder.Property(p => p.DataareaID)
-                   .HasMaxLength(10)
-                   .IsRequired();
+            // Propiedades obligatorias
+            builder.Property(e => e.CountryCode)
+                   .IsRequired()
+                   .HasMaxLength(10);
 
-            builder.Property(p => p.CreatedBy).HasMaxLength(50);
-            builder.Property(p => p.ModifiedBy).HasMaxLength(50);
-            builder.Property(p => p.Observations).HasMaxLength(500);
+            builder.Property(e => e.Name)
+                   .IsRequired()
+                   .HasMaxLength(100);
 
-            // ---------------------------
-            // 🔒 Corte del problema:
-            // Anulamos cualquier navegación/convención desde Country → EmployeesAddress
-            // que estuviera provocando la creación de FKs sombra CountryRecID{n}.
-            // Si estas propiedades no existen, Ignore() es inocuo.
-            // ---------------------------
-            builder.Ignore("EmployeesAddress");
-            builder.Ignore("EmployeesAddresses");
-            builder.Ignore("EmployeeAddresses");
-            builder.Ignore("EmployeeAddress");
+            // Propiedades opcionales
+            builder.Property(e => e.NationalityCode)
+                   .HasMaxLength(10);
 
-            // No definimos relaciones aquí. La relación válida queda definida
-            // exclusivamente desde EmployeesAddressConfiguration así:
-            //    HasOne(p => p.CountryRefRec)
-            //      .WithMany()                      // sin navegación inversa
-            //      .HasForeignKey(p => p.CountryRefRecID)
-            //      .OnDelete(DeleteBehavior.Restrict)
-            //      .HasConstraintName("FK_EmployeesAddress_Countries");
+            builder.Property(e => e.NationalityName)
+                   .HasMaxLength(100);
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Ignorar navegaciones inversas
+            builder.Ignore(e => e.Companies);
+            builder.Ignore(e => e.EmployeesAddresses);
+
+            // Índice único por código y empresa
+            builder.HasIndex(e => new { e.CountryCode, e.DataareaID })
+                   .IsUnique()
+                   .HasDatabaseName("UX_Countries_CountryCode_Dataarea");
         }
     }
 }

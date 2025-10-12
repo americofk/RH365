@@ -1,66 +1,117 @@
 // ============================================================================
 // Archivo: UserConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/System/UserConfiguration.cs
-// Descripción: Configuración Entity Framework para User.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Security/UserConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para User -> dbo.Users
+//   - Mapeo completo de FKs con .HasColumnName() explícito
+//   - CompaniesAssignedToUsers es navegación obligatoria (NO se ignora)
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Security
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad User.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="User"/>.</summary>
     public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("Users");
+            // Tabla
+            builder.ToTable("Users", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.Alias).HasMaxLength(255).HasColumnName("Alias");
-            //builder.Property(e => e.CompanyDefaultRefRec).HasColumnName("CompanyDefaultRefRec");
-            builder.Property(e => e.CompanyDefaultRefRecID).HasColumnName("CompanyDefaultRefRecID");
-            builder.Property(e => e.DateTemporaryPassword).HasColumnType("date").HasColumnName("DateTemporaryPassword");
-            builder.Property(e => e.ElevationType).HasColumnName("ElevationType");
-            builder.Property(e => e.Email).HasMaxLength(255).HasColumnName("Email");
-            //builder.Property(e => e.FormatCodeRefRec).HasColumnName("FormatCodeRefRec");
-            builder.Property(e => e.FormatCodeRefRecID).HasColumnName("FormatCodeRefRecID");
-            builder.Property(e => e.IsActive).HasColumnName("IsActive");
-            builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
-            builder.Property(e => e.PasswordHash).HasMaxLength(255).HasColumnName("PasswordHash");
-            builder.Property(e => e.TemporaryPassword).HasMaxLength(255).HasColumnName("TemporaryPassword");
+            // PK (RecID). El default de RecID (NEXT VALUE FOR dbo.RecId) lo aplica el DbContext globalmente.
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasMany(e => e.CompaniesAssignedToUsers)
-            //    .WithOne(d => d.UserRefRec)
-            //    .HasForeignKey(d => d.UserRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.CompanyDefaultRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.CompanyDefaultRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.FormatCodeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.FormatCodeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.MenuAssignedToUsers)
-            //    .WithOne(d => d.UserRefRec)
-            //    .HasForeignKey(d => d.UserRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.UserImages)
-            //    .WithOne(d => d.UserRefRec)
-            //    .HasForeignKey(d => d.UserRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible (string) generado en BD por DEFAULT (secuencia + prefijo)
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            // Índices
+            // Campos obligatorios
+            builder.Property(e => e.Alias)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.Email)
+                   .IsRequired()
+                   .HasMaxLength(200);
+
+            builder.Property(e => e.PasswordHash)
+                   .IsRequired()
+                   .HasMaxLength(512);
+
+            builder.Property(e => e.Name)
+                   .IsRequired()
+                   .HasMaxLength(100);
+
+            builder.Property(e => e.ElevationType)
+                   .IsRequired()
+                   .HasDefaultValue(0);
+
+            builder.Property(e => e.IsActive)
+                   .IsRequired()
+                   .HasDefaultValue(true);
+
+            // Campos opcionales con .HasColumnName() EXPLÍCITO
+            builder.Property(e => e.FormatCodeRefRecID)
+                   .HasColumnName("FormatCodeRefRecID");
+
+            builder.Property(e => e.CompanyDefaultRefRecID)
+                   .HasColumnName("CompanyDefaultRefRecID");
+
+            builder.Property(e => e.TemporaryPassword)
+                   .HasMaxLength(512);
+
+            builder.Property(e => e.DateTemporaryPassword);
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Relaciones FK
+            builder.HasOne(e => e.FormatCodeRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.FormatCodeRefRecID)
+                   .HasConstraintName("FK_Users_FormatCodes")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(e => e.CompanyDefaultRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.CompanyDefaultRefRecID)
+                   .HasConstraintName("FK_Users_Companies")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Ignorar navegaciones inversas NO CRÍTICAS
+            builder.Ignore(e => e.MenuAssignedToUsers);
+            builder.Ignore(e => e.UserImages);
+
+            // Navegaciones con AutoInclude(false)
+            builder.Navigation(e => e.CompaniesAssignedToUsers).AutoInclude(false);
+            builder.Navigation(e => e.FormatCodeRefRec).AutoInclude(false);
+            builder.Navigation(e => e.CompanyDefaultRefRec).AutoInclude(false);
+
+            // Índice único por Alias
+            builder.HasIndex(e => e.Alias)
+                   .IsUnique()
+                   .HasDatabaseName("UQ_Users_Alias");
         }
     }
 }

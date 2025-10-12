@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.System
 {
     /// <summary>
     /// Configuración Entity Framework para la entidad FormatCode.
@@ -21,20 +21,53 @@ namespace RH365.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<FormatCode> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("FormatCode");
+            // Tabla
+            builder.ToTable("FormatCodes", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.FormatCode1).HasMaxLength(50).HasColumnName("FormatCode1");
-            builder.Property(e => e.Name).HasMaxLength(255).HasColumnName("Name");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasMany(e => e.Users)
-            //    .WithOne(d => d.FormatCodeRefRec)
-            //    .HasForeignKey(d => d.FormatCodeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            // Índices
+            // Propiedades obligatorias
+            builder.Property(e => e.FormatCode1)
+                   .IsRequired()
+                   .HasMaxLength(50)
+                   .HasColumnName("FormatCode1");
+
+            builder.Property(e => e.Name)
+                   .IsRequired()
+                   .HasMaxLength(255);
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Ignorar navegaciones inversas
+            builder.Ignore(e => e.Users);
+
+            // Índice único por código y empresa
+            builder.HasIndex(e => new { e.FormatCode1, e.DataareaID })
+                   .IsUnique()
+                   .HasDatabaseName("UX_FormatCode_Code_Dataarea");
         }
     }
 }
