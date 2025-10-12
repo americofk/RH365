@@ -75,6 +75,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Ignore("EmployeesAddresses");
             builder.Ignore("CourseEmployees");
             builder.Ignore("PayrollProcessActions");
+            builder.Ignore("PayrollProcessDetails");
 
             builder.HasIndex(e => new { e.DataareaID, e.EmployeeCode })
                    .IsUnique()

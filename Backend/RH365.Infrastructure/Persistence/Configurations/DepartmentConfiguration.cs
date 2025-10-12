@@ -47,6 +47,7 @@ namespace RH365.Infrastructure.Persistence.Configurations
             builder.Ignore("DeductionCodes");
             builder.Ignore("EmployeeDepartments");
             builder.Ignore("Positions");
+            builder.Ignore("PayrollProcessDetails");
         }
     }
 }
