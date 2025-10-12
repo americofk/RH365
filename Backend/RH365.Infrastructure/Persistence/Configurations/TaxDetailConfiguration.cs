@@ -2,46 +2,91 @@
 // Archivo: TaxDetailConfiguration.cs
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Persistence/Configurations/Payroll/TaxDetailConfiguration.cs
-// Descripción: Configuración Entity Framework para TaxDetail.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Descripción:
+//   - Configuración EF Core para TaxDetail -> dbo.TaxDetails
+//   - Mapeo completo de FKs con .HasColumnName() explícito
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Payroll
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad TaxDetail.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="TaxDetail"/>.</summary>
     public class TaxDetailConfiguration : IEntityTypeConfiguration<TaxDetail>
     {
         public void Configure(EntityTypeBuilder<TaxDetail> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("TaxDetail");
+            // Tabla
+            builder.ToTable("TaxDetails", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.AnnualAmountHigher).HasPrecision(18, 4).HasColumnName("AnnualAmountHigher");
-            builder.Property(e => e.AnnualAmountNotExceed).HasPrecision(18, 4).HasColumnName("AnnualAmountNotExceed");
-            builder.Property(e => e.ApplicableScale).HasPrecision(18, 2).HasColumnName("ApplicableScale");
-            builder.Property(e => e.FixedAmount).HasPrecision(18, 4).HasColumnName("FixedAmount");
-            builder.Property(e => e.Percent).HasPrecision(5, 2).HasColumnName("Percent");
-            //builder.Property(e => e.TaxRefRec).HasColumnName("TaxRefRec");
-            builder.Property(e => e.TaxRefRecID).HasColumnName("TaxRefRecID");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.TaxRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.TaxRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            // Índices
+            // FK con .HasColumnName() explícito
+            builder.Property(e => e.TaxRefRecID)
+                   .IsRequired()
+                   .HasColumnName("TaxRefRecID");
+
+            // Propiedades obligatorias
+            builder.Property(e => e.AnnualAmountHigher)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.AnnualAmountNotExceed)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.Percent)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.FixedAmount)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.ApplicableScale)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Relación FK
+            builder.HasOne(e => e.TaxRefRec)
+                   .WithMany(t => t.TaxDetails)
+                   .HasForeignKey(e => e.TaxRefRecID)
+                   .HasConstraintName("FK_TaxDetails_Taxes")
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Navegación con AutoInclude(false)
+            builder.Navigation(e => e.TaxRefRec).AutoInclude(false);
+
+            // Índice
             builder.HasIndex(e => e.TaxRefRecID)
-                .HasDatabaseName("IX_TaxDetail_TaxRefRecID");
+                   .HasDatabaseName("IX_TaxDetails_TaxRefRecID");
         }
     }
 }

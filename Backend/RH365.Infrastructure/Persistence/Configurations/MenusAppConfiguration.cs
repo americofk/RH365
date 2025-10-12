@@ -1,58 +1,105 @@
 // ============================================================================
 // Archivo: MenusAppConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/System/MenusAppConfiguration.cs
-// Descripción: Configuración Entity Framework para MenusApp.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Security/MenusAppConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para MenusApp -> dbo.MenusApp
+//   - Mapeo completo de FKs con .HasColumnName() explícito
+//   - Relación jerárquica (self-reference)
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Security
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad MenusApp.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="MenusApp"/>.</summary>
     public class MenusAppConfiguration : IEntityTypeConfiguration<MenusApp>
     {
         public void Configure(EntityTypeBuilder<MenusApp> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("MenusApp");
+            // Tabla
+            builder.ToTable("MenusApp", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.Action).HasMaxLength(255).HasColumnName("Action");
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.Icon).HasMaxLength(255).HasColumnName("Icon");
-            builder.Property(e => e.IsViewMenu).HasColumnName("IsViewMenu");
-            builder.Property(e => e.MenuCode).IsRequired().HasMaxLength(50).HasColumnName("MenuCode");
-            //builder.Property(e => e.MenuFatherRefRec).HasColumnName("MenuFatherRefRec");
-            builder.Property(e => e.MenuFatherRefRecID).HasColumnName("MenuFatherRefRecID");
-            builder.Property(e => e.MenuName).IsRequired().HasMaxLength(255).HasColumnName("MenuName");
-            builder.Property(e => e.Sort).HasColumnName("Sort");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasMany(e => e.InverseMenuFatherRefRec)
-            //    .WithOne(d => d.MenuFatherRefRec)
-            //    .HasForeignKey(d => d.MenuFatherRefRec)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasMany(e => e.MenuAssignedToUsers)
-            //    .WithOne(d => d.MenuRefRec)
-            //    .HasForeignKey(d => d.MenuRefRec)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.MenuFatherRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.MenuFatherRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
+
+            // Propiedades obligatorias
+            builder.Property(e => e.MenuCode)
+                   .IsRequired()
+                   .HasMaxLength(20);
+
+            builder.Property(e => e.MenuName)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.Icon)
+                   .IsRequired()
+                   .HasMaxLength(100);
+
+            builder.Property(e => e.Sort)
+                   .IsRequired();
+
+            builder.Property(e => e.IsViewMenu)
+                   .IsRequired()
+                   .HasDefaultValue(true);
+
+            // Propiedades opcionales
+            builder.Property(e => e.Description)
+                   .HasMaxLength(500);
+
+            builder.Property(e => e.Action)
+                   .HasMaxLength(100);
+
+            builder.Property(e => e.MenuFatherRefRecID)
+                   .HasColumnName("MenuFatherRefRecID");
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Relación jerárquica (self-reference)
+            builder.HasOne(e => e.MenuFatherRefRec)
+                   .WithMany(m => m.InverseMenuFatherRefRec)
+                   .HasForeignKey(e => e.MenuFatherRefRecID)
+                   .HasConstraintName("FK_MenusApp_MenusApp_MenuFather")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Ignorar navegación inversa MenuAssignedToUsers
+            builder.Ignore(e => e.MenuAssignedToUsers);
+
+            // Navegaciones con AutoInclude(false)
+            builder.Navigation(e => e.MenuFatherRefRec).AutoInclude(false);
+            builder.Navigation(e => e.InverseMenuFatherRefRec).AutoInclude(false);
 
             // Índices
             builder.HasIndex(e => new { e.MenuCode, e.DataareaID })
-                .HasDatabaseName("IX_MenusApp_MenuCode_DataareaID")
-                .IsUnique();
+                   .IsUnique()
+                   .HasDatabaseName("UX_MenusApp_MenuCode_Dataarea");
+
+            builder.HasIndex(e => e.MenuFatherRefRecID)
+                   .HasDatabaseName("IX_MenusApp_MenuFatherRefRecID");
         }
     }
 }
