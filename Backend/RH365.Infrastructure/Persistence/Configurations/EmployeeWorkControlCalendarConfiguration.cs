@@ -1,79 +1,107 @@
 // ============================================================================
 // Archivo: EmployeeWorkControlCalendarConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Employee/EmployeeWorkControlCalendarConfiguration.cs
-// Descripción: Configuración Entity Framework para EmployeeWorkControlCalendar.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Employees/EmployeeWorkControlCalendarConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para EmployeeWorkControlCalendar -> dbo.EmployeeWorkControlCalendars
+//   - Mapeo completo de FKs con .HasColumnName() explícito
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Employees
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad EmployeeWorkControlCalendar.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="EmployeeWorkControlCalendar"/>.</summary>
     public class EmployeeWorkControlCalendarConfiguration : IEntityTypeConfiguration<EmployeeWorkControlCalendar>
     {
         public void Configure(EntityTypeBuilder<EmployeeWorkControlCalendar> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EmployeeWorkControlCalendar");
+            // Tabla
+            builder.ToTable("EmployeeWorkControlCalendars", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.BreakWorkFrom)
-                .HasColumnType("time")
-                .HasColumnName("BreakWorkFrom");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            builder.Property(e => e.BreakWorkTo)
-                .HasColumnType("time")
-                .HasColumnName("BreakWorkTo");
+            // ID legible
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            builder.Property(e => e.CalendarDate)
-                .HasColumnType("datetime2")
-                .HasColumnName("CalendarDate");
-
-            builder.Property(e => e.CalendarDay)
-                .HasMaxLength(255)
-                .HasColumnName("CalendarDay");
-
+            // FK con .HasColumnName() explícito
             builder.Property(e => e.EmployeeRefRecID)
-                .HasColumnName("EmployeeRefRecID");
+                   .IsRequired()
+                   .HasColumnName("EmployeeRefRecID");
 
             builder.Property(e => e.PayrollProcessRefRecID)
-                .HasColumnName("PayrollProcessRefRecID");
+                   .HasColumnName("PayrollProcessRefRecID");
 
-            builder.Property(e => e.StatusWorkControl)
-                .HasColumnName("StatusWorkControl");
+            // Propiedades obligatorias
+            builder.Property(e => e.CalendarDate)
+                   .IsRequired();
 
-            builder.Property(e => e.TotalHour)
-                .HasPrecision(18, 2)
-                .HasColumnName("TotalHour");
+            builder.Property(e => e.CalendarDay)
+                   .IsRequired()
+                   .HasMaxLength(30);
 
             builder.Property(e => e.WorkFrom)
-                .HasColumnType("time")
-                .HasColumnName("WorkFrom");
+                   .IsRequired();
 
             builder.Property(e => e.WorkTo)
-                .HasColumnType("time")
-                .HasColumnName("WorkTo");
+                   .IsRequired();
 
-            // Configuración de relaciones
+            builder.Property(e => e.BreakWorkFrom)
+                   .IsRequired();
+
+            builder.Property(e => e.BreakWorkTo)
+                   .IsRequired();
+
+            builder.Property(e => e.TotalHour)
+                   .IsRequired()
+                   .HasColumnType("decimal(32,16)");
+
+            builder.Property(e => e.StatusWorkControl)
+                   .IsRequired();
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Relación FK
             builder.HasOne(e => e.EmployeeRefRec)
-                .WithMany(emp => emp.EmployeeWorkControlCalendars)
-                .HasForeignKey(e => e.EmployeeRefRecID)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                   .WithMany()
+                   .HasForeignKey(e => e.EmployeeRefRecID)
+                   .HasConstraintName("FK_EmployeeWorkControlCalendars_Employees")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Navegación con AutoInclude(false)
+            builder.Navigation(e => e.EmployeeRefRec).AutoInclude(false);
 
             // Índices
             builder.HasIndex(e => e.EmployeeRefRecID)
-                .HasDatabaseName("IX_EmployeeWorkControlCalendar_EmployeeRefRecID");
+                   .HasDatabaseName("IX_EmployeeWorkControlCalendars_EmployeeRefRecID");
 
             builder.HasIndex(e => e.CalendarDate)
-                .HasDatabaseName("IX_EmployeeWorkControlCalendar_CalendarDate");
+                   .HasDatabaseName("IX_EmployeeWorkControlCalendars_CalendarDate");
+
+            builder.HasIndex(e => new { e.EmployeeRefRecID, e.CalendarDate })
+                   .HasDatabaseName("IX_EmployeeWorkControlCalendars_Employee_Date");
         }
     }
 }
