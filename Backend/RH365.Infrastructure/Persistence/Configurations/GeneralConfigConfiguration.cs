@@ -1,36 +1,75 @@
 // ============================================================================
 // Archivo: GeneralConfigConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/System/GeneralConfigConfiguration.cs
-// Descripción: Configuración Entity Framework para GeneralConfig.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/General/GeneralConfigConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para GeneralConfig -> dbo.GeneralConfigs
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.General
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad GeneralConfig.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="GeneralConfig"/>.</summary>
     public class GeneralConfigConfiguration : IEntityTypeConfiguration<GeneralConfig>
     {
         public void Configure(EntityTypeBuilder<GeneralConfig> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("GeneralConfig");
+            // Tabla
+            builder.ToTable("GeneralConfigs", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.Email).HasMaxLength(255).HasColumnName("Email");
-            builder.Property(e => e.EmailPassword).HasMaxLength(255).HasColumnName("EmailPassword");
-            builder.Property(e => e.Smtp).HasMaxLength(255).HasColumnName("Smtp");
-            builder.Property(e => e.Smtpport).HasMaxLength(255).HasColumnName("Smtpport");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            // Índices
+            // ID legible
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
+
+            // Propiedades obligatorias
+            builder.Property(e => e.Email)
+                   .IsRequired()
+                   .HasMaxLength(200);
+
+            builder.Property(e => e.Smtp)
+                   .IsRequired()
+                   .HasMaxLength(50)
+                   .HasColumnName("SMTP");
+
+            builder.Property(e => e.Smtpport)
+                   .IsRequired()
+                   .HasMaxLength(10)
+                   .HasColumnName("SMTPPort");
+
+            builder.Property(e => e.EmailPassword)
+                   .IsRequired()
+                   .HasColumnType("nvarchar(max)");
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Índice único por empresa
+            builder.HasIndex(e => e.DataareaID)
+                   .IsUnique()
+                   .HasDatabaseName("UX_GeneralConfigs_Dataarea");
         }
     }
 }
