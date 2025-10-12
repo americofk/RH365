@@ -44,14 +44,14 @@ namespace RH365.Core.Domain.Entities
         public int EmployeeQuantity { get; set; }
 
         /// <summary>
-        /// Proyecto asociado (opcional).
+        /// FK al proyecto asociado.
         /// </summary>
-        public string? ProjId { get; set; }
+        public long? ProjectRefRecID { get; set; }
 
         /// <summary>
-        /// Categoría del proyecto asociada (opcional).
+        /// FK a la categoría del proyecto asociada.
         /// </summary>
-        public string? ProjCategoryId { get; set; }
+        public long? ProjCategoryRefRecID { get; set; }
 
         /// <summary>
         /// Fecha de inicio del período de nómina.
@@ -66,7 +66,7 @@ namespace RH365.Core.Domain.Entities
         /// <summary>
         /// Identificador del ciclo de pago.
         /// </summary>
-        public int PayCycleId { get; set; }
+        public int PayCycleID { get; set; }
 
         /// <summary>
         /// Cantidad de empleados incluidos para pago.
@@ -118,6 +118,21 @@ namespace RH365.Core.Domain.Entities
         // -----------------------------
 
         /// <summary>
+        /// Nómina relacionada con el proceso.
+        /// </summary>
+        public virtual Payroll? PayrollRefRec { get; set; }
+
+        /// <summary>
+        /// Proyecto asociado.
+        /// </summary>
+        public virtual Project? ProjectRefRec { get; set; }
+
+        /// <summary>
+        /// Categoría de proyecto asociada.
+        /// </summary>
+        public virtual ProjectCategory? ProjCategoryRefRec { get; set; }
+
+        /// <summary>
         /// Códigos de percepciones asociados.
         /// </summary>
         public virtual ICollection<EmployeeEarningCode> EmployeeEarningCodes { get; set; } = new List<EmployeeEarningCode>();
@@ -136,10 +151,5 @@ namespace RH365.Core.Domain.Entities
         /// Detalles individuales por empleado en el proceso.
         /// </summary>
         public virtual ICollection<PayrollProcessDetail> PayrollProcessDetails { get; set; } = new List<PayrollProcessDetail>();
-
-        /// <summary>
-        /// Nómina relacionada con el proceso.
-        /// </summary>
-        public virtual Payroll? PayrollRefRec { get; set; }
     }
 }
