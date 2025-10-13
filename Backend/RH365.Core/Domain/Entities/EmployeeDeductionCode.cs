@@ -1,15 +1,16 @@
 ﻿// ============================================================================
-// Archivo: EmployeeDeductionCode.cs
+// Archivo: EmployeeDeductionCode.cs (CORREGIDO)
 // Proyecto: RH365.Core
 // Ruta: RH365.Core/Domain/Entities/Employees/EmployeeDeductionCode.cs
 // Descripción: Relación que representa las deducciones aplicadas a un empleado.
 //   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
 //   - Permite registrar deducciones periódicas, montos y parámetros de cálculo
+//   - CORREGIDO: Atributos ForeignKey explícitos para evitar shadow properties
 // ============================================================================
-
 using RH365.Core.Domain.Common;
 using RH365.Core.Domain.Entities;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RH365.Core.Domain.Entities
 {
@@ -90,16 +91,19 @@ namespace RH365.Core.Domain.Entities
         /// <summary>
         /// Código de deducción relacionado.
         /// </summary>
+        [ForeignKey(nameof(DeductionCodeRefRecID))]
         public virtual DeductionCode DeductionCodeRefRec { get; set; } = null!;
 
         /// <summary>
         /// Empleado relacionado.
         /// </summary>
+        [ForeignKey(nameof(EmployeeRefRecID))]
         public virtual Employee EmployeeRefRec { get; set; } = null!;
 
         /// <summary>
         /// Nómina relacionada.
         /// </summary>
+        [ForeignKey(nameof(PayrollRefRecID))]
         public virtual Payroll PayrollRefRec { get; set; } = null!;
     }
 }

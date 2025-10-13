@@ -1,5 +1,5 @@
 ﻿// ============================================================================
-// Archivo: DeductionCode.cs
+// Archivo: DeductionCode.cs (CORREGIDO)
 // Proyecto: RH365.Core
 // Ruta: RH365.Core/Domain/Entities/Payroll/DeductionCode.cs
 // Descripción:
@@ -7,11 +7,13 @@
 //   - Define relaciones FK con Project, ProjectCategory y Department mediante RecID.
 //   - Define reglas, límites y parámetros de cálculo (contribución y deducción).
 //   - Hereda de AuditableCompanyEntity para cumplir con ISO 27001
+//   - [NotMapped] en navegación inversa para evitar shadow properties
 // ============================================================================
 
 using RH365.Core.Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RH365.Core.Domain.Entities
 {
@@ -106,6 +108,12 @@ namespace RH365.Core.Domain.Entities
         public virtual Project? ProjectRefRec { get; set; }
         public virtual ProjectCategory? ProjCategoryRefRec { get; set; }
         public virtual Department? DepartmentRefRec { get; set; }
+
+        /// <summary>
+        /// Colección de deducciones de empleados.
+        /// [NotMapped] para evitar inferencia automática de FK incorrecta.
+        /// </summary>
+        [NotMapped]
         public virtual ICollection<EmployeeDeductionCode> EmployeeDeductionCodes { get; set; } = new List<EmployeeDeductionCode>();
     }
 }
