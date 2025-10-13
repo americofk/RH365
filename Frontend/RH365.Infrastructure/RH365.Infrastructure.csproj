@@ -13,4 +13,8 @@
     <PackageReference Include="Newtonsoft.Json.Encryption" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RH365.Core\RH365.Core.csproj" />
+  </ItemGroup>
+
 </Project>

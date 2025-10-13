@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include=".config\.eslintrc.json" />
+    <Content Include=".config\.prettierrc.json" />
+    <Content Include=".config\package.json" />
+    <Content Include=".config\tsconfig.json" />
     <Content Include="Views\Layout\bar.html">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -35,10 +39,12 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
+    <Folder Include="TS\" />
     <Folder Include="wwwroot\html\" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".config\README.md" />
     <None Include="wwwroot\vendors\parsleyjs\bower_components\bootstrap\dist\fonts\glyphicons-halflings-regular.svg" />
     <None Include="wwwroot\vendors\parsleyjs\bower_components\bootstrap\dist\js\bootstrap.js" />
     <None Include="wwwroot\vendors\parsleyjs\bower_components\bootstrap\dist\js\bootstrap.min.js" />
@@ -195,6 +201,11 @@
     <None Include="wwwroot\vendors\parsleyjs\bower_components\uwidget\LICENSE" />
     <None Include="wwwroot\vendors\parsleyjs\bower_components\uwidget\uwidget.js" />
     <None Include="wwwroot\vendors\parsleyjs\bower_components\uwidget\uwidget.less" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RH365.Core\RH365.Core.csproj" />
+    <ProjectReference Include="..\RH365.Infrastructure\RH365.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

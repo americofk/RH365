@@ -1,67 +1,152 @@
 ﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+    Archivo: Login.cshtml
+    Proyecto: RH365.WebUI
+    Descripción:
+      Vista de inicio de sesión profesional, fija y proporcionada.
+      - Ícono y título centrados con separación adecuada
+      - Campos de entrada alineados y proporcionales
+      - Widget fijo centrado
+      - Footer equilibrado
 *@
+@model RH365.Core.Domain.Models.Auth.LoginRequest
 @{
+    Layout = null;
 }
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RH365 | Iniciar Sesión</title>
+
+    <!-- Bootstrap y dependencias originales -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-    <!-- Include the above in your HEAD tag -->
-    <link href="~/css/login.css" rel="stylesheet" />
+
+    <!-- Iconos -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <!-- CSS personalizado -->
+    <link href="~/css/Login.css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="main">
-        <center>
-        <div class="logo2">
-                <img class="image" src="..\img\LogoD365_blanco.png" width="450" alt="Italian Trulli">
-            <div class="clearfix"></div>
-        </div>
-            </center>
-        <div class="container">            
-            <center>
-                <div class="middle">                    
-                    <div id="login">                        
-                        <form action="javascript:void(0);" method="get">                            
-                            <fieldset class="clearfix">
-                                <p><span class="fa fa-user"></span><input type="text" Placeholder="Email" ></p> <!-- JS because of IE support; better: placeholder="Username" -->
-                                <p><span class="fa fa-lock"></span><input type="password" Placeholder="Password" ></p> <!-- JS because of IE support; better: placeholder="Password" -->
-                                 <div>
-                                    <span style="width:48%; text-align:left; font-size: 13px;  display: inline-block;">
-                                        <a class="small-text" href="#">
-                                            Forgot
-                                            password?
-                                        </a>
-                                    </span>
-                                    
-                                    <span style="width:50%; text-align:right; display: inline-block;">
-                                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Sign In</a>
-                                    </span>
+        <!-- 🔹 Widget fijo centrado -->
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;">
 
-                                </div>
-                            </fieldset>
-                            <div class="clearfix"></div>
-                        </form>
-                        <div class="clearfix"></div>
-                    </div> <!-- end login -->
-                    <div class="logo">
-                        Dynacorp Cargo
-                        <div >
-                            Experience
-                        <div class="clearfix"></div>
-                    </div>           
-                </div>            
-        </div>
-                <div class="logo">
-                    <a class="futter" style=" color: white"> Engine by Dynacorp 365... </a>
+            <div class="row" style="
+                width: 90%;
+                max-width: 950px;
+                height: 70%;
+                background: rgba(255,255,255,0.05);
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 0 20px rgba(0,0,0,0.25);
+                border: 2px solid #ffffff;">
+
+                <!-- Panel izquierdo -->
+                <div class="col-md-6 text-center text-white"
+                     style="padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <img src="~/img/Logo_Ancho.png" alt="RH365"
+                         style="width: 260px; margin-bottom: 10px; filter: brightness(0) invert(1);" />
+                    <h2 style="font-weight: 100;">Sistema de Nómina y Recursos Humanos</h2>
+                    <hr style="width: 60px; border-top: 2px solid #fff; opacity: 0.7; margin: 20px auto;" />
+                    <ul style="list-style: none; padding: 0; font-size: 16px; text-align: left; line-height: 2;">
+                        <li><i class="fa fa-users"></i> Control de empleados</li>
+                        <li><i class="fa fa-money"></i> Procesos de nómina</li>
+                        <li><i class="fa fa-bar-chart"></i> Reportes inteligentes</li>
+                        <li><i class="fa fa-building"></i> Portal del colaborador</li>
+                    </ul>
                 </div>
+
+                <!-- Panel derecho -->
+                <div class="col-md-6"
+                     style="background-color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 50px 40px;">
+
+                    <!-- Mostrar errores si existen -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" style="width: 100%; max-width: 300px;">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <p>@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+
+                    <!-- Ícono -->
+                    <img src="~/img/icon.png" alt="Icono RH365"
+                         style="width: 85px; height: auto;  margin-top: 50px;" />
+
+                    <!-- Título -->
+                    <h3 style="margin-bottom: 40px; font-weight: 600; color: #1c2b5a; text-align: center;">
+                        Iniciar Sesión
+                    </h3>
+
+                    <!-- Formulario -->
+                    @using (Html.BeginForm("Login", "Login", FormMethod.Post, new { style = "width: 100%; max-width: 300px; margin: auto; text-align: left;" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group">
+                            <label for="email" style="font-weight: 500;">Correo electrónico</label>
+                            @Html.TextBoxFor(m => m.EmailOrAlias, new
+                                {
+                                    @class = "form-control",
+                                    @id = "email",
+                                    @type = "email",
+                                    @placeholder = "usuario@empresa.com",
+                                    @required = "required",
+                                    @style = "height: 38px; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box;"
+                                })
+                        </div>
+
+                        <div class="form-group" style="margin-top: 18px;">
+                            <label for="password" style="font-weight: 500;">Contraseña</label>
+                            @Html.PasswordFor(m => m.Password, new
+                                {
+                                    @class = "form-control",
+                                    @id = "password",
+                                    @placeholder = "********",
+                                    @required = "required",
+                                    @style = "height: 38px; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box;"
+                                })
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block"
+                                style="margin-top: 30px; background-color: #0264d6; border: none; font-weight: 500; height: 38px; border-radius: 6px; width: 100%;">
+                            Ingresar
+                        </button>
+
+                        <div style="margin-top: 15px; text-align: center;">
+                            <a href="#" style="font-size: 13px; color: #1c2b5a;">¿Olvidaste tu contraseña?</a>
+                        </div>
+                    }
+
+                    <div style="text-align: center; margin-top: 45px; color: #888; font-size: 13px;">
+                        <small>Engine by <strong>RH365</strong></small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Script TypeScript compilado -->
+    <script src="~/js/login.js"></script>
 </body>
 </html>

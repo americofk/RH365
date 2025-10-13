@@ -1,0 +1,104 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "module",
+        "project": "./tsconfig.json",
+        "tsconfigRootDir": "."
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:@typescript-eslint/strict",
+        "prettier"
+    ],
+    "plugins": [ "@typescript-eslint" ],
+    "env": {
+        "browser": true,
+        "es2020": true,
+        "jquery": true
+    },
+    "globals": {
+        "bootstrap": "readonly",
+        "Swal": "readonly",
+        "toastr": "readonly"
+    },
+    "rules": {
+        // Reglas TypeScript
+        "@typescript-eslint/explicit-function-return-type": [
+            "warn",
+            {
+                "allowExpressions": true,
+                "allowTypedFunctionExpressions": true
+            }
+        ],
+        "@typescript-eslint/explicit-module-boundary-types": "warn",
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_"
+            }
+        ],
+        "@typescript-eslint/no-non-null-assertion": "error",
+        "@typescript-eslint/no-floating-promises": "error",
+        "@typescript-eslint/await-thenable": "error",
+        // Convenciones de nomenclatura
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": "interface",
+                "format": [ "PascalCase" ],
+                "prefix": [ "I" ]
+            },
+            {
+                "selector": "typeAlias",
+                "format": [ "PascalCase" ]
+            },
+            {
+                "selector": "enum",
+                "format": [ "PascalCase" ]
+            },
+            {
+                "selector": "enumMember",
+                "format": [ "PascalCase" ]
+            },
+            {
+                "selector": "class",
+                "format": [ "PascalCase" ]
+            },
+            {
+                "selector": "method",
+                "format": [ "camelCase" ]
+            }
+        ],
+        // Reglas de seguridad
+        "no-eval": "error",
+        "no-implied-eval": "error",
+        "no-new-func": "error",
+        "no-script-url": "error",
+        // Mejores prácticas
+        "no-console": [
+            "warn",
+            { "allow": [ "warn", "error" ] }
+        ],
+        "no-debugger": "error",
+        "prefer-const": "error",
+        "no-var": "error",
+        "prefer-template": "warn",
+        "curly": [ "error", "all" ],
+        "eqeqeq": [ "error", "always" ],
+        // Manejo de errores
+        "@typescript-eslint/no-throw-literal": "error",
+        "no-throw-literal": "off"
+    },
+    "ignorePatterns": [
+        "node_modules/",
+        "../wwwroot/js/",
+        "*.js",
+        "*.d.ts"
+    ]
+}

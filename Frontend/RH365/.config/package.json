@@ -1,0 +1,35 @@
+{
+    "name": "rh365-webmvc",
+    "version": "1.0.0",
+    "description": "Frontend MVC para RH365 - Sistema Integral de RRHH y Nómina",
+    "private": true,
+    "author": "RH365 Development Team",
+    "license": "PROPRIETARY",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "build:prod": "tsc -p tsconfig.json --sourceMap false --removeComments true",
+        "watch": "tsc -p tsconfig.json --watch",
+        "clean": "node -e \"const fs=require('fs'),path=require('path');const dir=path.join(__dirname,'..','wwwroot','js');if(fs.existsSync(dir)){fs.rmSync(dir,{recursive:true,force:true});fs.mkdirSync(dir,{recursive:true})}\"",
+        "lint": "eslint ../TS/**/*.ts",
+        "lint:fix": "eslint ../TS/**/*.ts --fix",
+        "format": "prettier --write \"../TS/**/*.ts\"",
+        "format:check": "prettier --check \"../TS/**/*.ts\"",
+        "type-check": "tsc -p tsconfig.json --noEmit",
+        "dev": "npm run build && npm run watch"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3",
+        "@types/jquery": "^3.5.29",
+        "@types/bootstrap": "^5.2.10",
+        "@types/node": "^20.10.5",
+        "@typescript-eslint/eslint-plugin": "^6.15.0",
+        "@typescript-eslint/parser": "^6.15.0",
+        "eslint": "^8.56.0",
+        "eslint-config-prettier": "^9.1.0",
+        "prettier": "^3.1.1"
+    },
+    "dependencies": {
+        "axios": "^1.6.2",
+        "sweetalert2": "^11.10.1"
+    }
+}
