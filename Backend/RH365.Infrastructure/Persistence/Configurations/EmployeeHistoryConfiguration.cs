@@ -1,50 +1,115 @@
 // ============================================================================
 // Archivo: EmployeeHistoryConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Employee/EmployeeHistoryConfiguration.cs
-// Descripción: Configuración Entity Framework para EmployeeHistory.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Employees/EmployeeHistoryConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para EmployeeHistory -> dbo.EmployeeHistories
+//   - Mapeo completo de FK con .HasColumnName() explícito
+//   - Define índices para optimizar búsquedas por empleado, fecha y tipo
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Employees
 {
     /// <summary>
-    /// Configuración Entity Framework para la entidad EmployeeHistory.
+    /// Configuración de EF Core para <see cref="EmployeeHistory"/>.
     /// </summary>
     public class EmployeeHistoryConfiguration : IEntityTypeConfiguration<EmployeeHistory>
     {
         public void Configure(EntityTypeBuilder<EmployeeHistory> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EmployeeHistory");
+            // Tabla
+            builder.ToTable("EmployeeHistories", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.Description).HasMaxLength(500).HasColumnName("Description");
-            builder.Property(e => e.EmployeeHistoryCode).IsRequired().HasMaxLength(50).HasColumnName("EmployeeHistoryCode");
-            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
-            builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.IsUseDgt).HasColumnName("IsUseDgt");
-            builder.Property(e => e.RegisterDate).HasColumnType("datetime2").HasColumnName("RegisterDate");
-            builder.Property(e => e.Type).HasMaxLength(255).HasColumnName("Type");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.EmployeeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible generado por secuencia en BD
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            // Índices
-            builder.HasIndex(e => new { e.EmployeeHistoryCode, e.DataareaID })
-                .HasDatabaseName("IX_EmployeeHistory_EmployeeHistoryCode_DataareaID")
-                .IsUnique();
+            // Código único del evento (obligatorio, máximo 20 caracteres)
+            builder.Property(e => e.EmployeeHistoryCode)
+                   .IsRequired()
+                   .HasMaxLength(20);
+
+            // Tipo de evento (obligatorio, máximo 5 caracteres)
+            // Permite códigos cortos como "PROM", "SANC", "CAMB", etc.
+            builder.Property(e => e.Type)
+                   .IsRequired()
+                   .HasMaxLength(5);
+
+            // Descripción del evento (obligatoria, máximo 200 caracteres)
+            builder.Property(e => e.Description)
+                   .IsRequired()
+                   .HasMaxLength(200);
+
+            // Fecha de registro del evento
+            builder.Property(e => e.RegisterDate)
+                   .IsRequired();
+
+            // FK con .HasColumnName() explícito para evitar shadow properties
+            builder.Property(e => e.EmployeeRefRecID)
+                   .IsRequired()
+                   .HasColumnName("EmployeeRefRecID");
+
+            // Indicador de reporte a DGT (Dirección General de Trabajo)
+            builder.Property(e => e.IsUseDgt)
+                   .IsRequired()
+                   .HasColumnName("IsUseDGT")
+                   .HasDefaultValue(false);
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Relación FK con Employee (CASCADE delete)
+            builder.HasOne(e => e.EmployeeRefRec)
+                   .WithMany(emp => emp.EmployeeHistories)
+                   .HasForeignKey(e => e.EmployeeRefRecID)
+                   .HasConstraintName("FK_EmployeeHistories_Employees")
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Navegación con AutoInclude(false) para control de rendimiento
+            builder.Navigation(e => e.EmployeeRefRec).AutoInclude(false);
+
+            // Índices para optimizar consultas
             builder.HasIndex(e => e.EmployeeRefRecID)
-                .HasDatabaseName("IX_EmployeeHistory_EmployeeRefRecID");
+                   .HasDatabaseName("IX_EmployeeHistories_EmployeeRefRecID");
+
+            builder.HasIndex(e => e.RegisterDate)
+                   .HasDatabaseName("IX_EmployeeHistories_RegisterDate");
+
+            builder.HasIndex(e => e.Type)
+                   .HasDatabaseName("IX_EmployeeHistories_Type");
+
+            // Índice único para evitar duplicados de código por empresa
+            builder.HasIndex(e => new { e.DataareaID, e.EmployeeHistoryCode })
+                   .IsUnique()
+                   .HasDatabaseName("UX_EmployeeHistories_Dataarea_Code");
+
+            // Índice compuesto para consultas por empleado y fecha
+            builder.HasIndex(e => new { e.EmployeeRefRecID, e.RegisterDate })
+                   .HasDatabaseName("IX_EmployeeHistories_Employee_Date");
         }
     }
 }
