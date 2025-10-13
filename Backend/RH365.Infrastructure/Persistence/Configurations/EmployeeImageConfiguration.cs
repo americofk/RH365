@@ -1,46 +1,96 @@
 // ============================================================================
 // Archivo: EmployeeImageConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Employee/EmployeeImageConfiguration.cs
-// Descripción: Configuración Entity Framework para EmployeeImage.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Employees/EmployeeImageConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para EmployeeImage -> dbo.EmployeeImages
+//   - Mapeo completo de FK con .HasColumnName() explícito
+//   - Soporte para almacenamiento de imágenes en formato binario
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Employees
 {
     /// <summary>
-    /// Configuración Entity Framework para la entidad EmployeeImage.
+    /// Configuración de EF Core para <see cref="EmployeeImage"/>.
     /// </summary>
     public class EmployeeImageConfiguration : IEntityTypeConfiguration<EmployeeImage>
     {
         public void Configure(EntityTypeBuilder<EmployeeImage> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EmployeeImage");
+            // Tabla
+            builder.ToTable("EmployeeImages", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
-            builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.Extension).HasMaxLength(255).HasColumnName("Extension");
-            builder.Property(e => e.Image).HasColumnType("varbinary(max)").HasColumnName("Image");
-            builder.Property(e => e.IsPrincipal).HasColumnName("IsPrincipal");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasOne(e => e.EmployeeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible generado por secuencia en BD
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
 
-            // Índices
+            // FK con .HasColumnName() explícito para evitar shadow properties
+            builder.Property(e => e.EmployeeRefRecID)
+                   .IsRequired()
+                   .HasColumnName("EmployeeRefRecID");
+
+            // Imagen en formato binario (puede ser null)
+            builder.Property(e => e.Image)
+                   .HasColumnType("varbinary(max)");
+
+            // Extensión del archivo (obligatoria, máximo 4 caracteres)
+            builder.Property(e => e.Extension)
+                   .IsRequired()
+                   .HasMaxLength(4);
+
+            // Indicador si es imagen principal
+            builder.Property(e => e.IsPrincipal)
+                   .IsRequired()
+                   .HasDefaultValue(false);
+
+            // Comentario adicional sobre la imagen
+            builder.Property(e => e.Comment)
+                   .HasMaxLength(200);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Nota: Observations no está en la tabla física
+            builder.Ignore(e => e.Observations);
+
+            // Relación FK con Employee (CASCADE delete)
+            builder.HasOne(e => e.EmployeeRefRec)
+                   .WithMany(emp => emp.EmployeeImages)
+                   .HasForeignKey(e => e.EmployeeRefRecID)
+                   .HasConstraintName("FK_EmployeeImages_Employees")
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Navegación con AutoInclude(false) para control de rendimiento
+            builder.Navigation(e => e.EmployeeRefRec).AutoInclude(false);
+
+            // Índices para optimizar consultas
             builder.HasIndex(e => e.EmployeeRefRecID)
-                .HasDatabaseName("IX_EmployeeImage_EmployeeRefRecID");
+                   .HasDatabaseName("IX_EmployeeImages_EmployeeRefRecID");
+
+            // Índice para buscar imagen principal por empleado
+            builder.HasIndex(e => new { e.EmployeeRefRecID, e.IsPrincipal })
+                   .HasDatabaseName("IX_EmployeeImages_Employee_Principal");
         }
     }
 }
