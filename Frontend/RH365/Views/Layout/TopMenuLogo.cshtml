@@ -1,0 +1,35 @@
+﻿<div class="navbar nav_title" style="border: 0;">
+    <a href="@Url.Action("Index", "Home")" class="site_title" style="display: flex; justify-content: center; align-items: center; padding: 15px 0;">
+        <!-- Logo completo para menú expandido -->
+        <img src="~/img/Logo_Ancho.png" alt="RH365" class="logo-expanded" style="height: 45px; width: auto; filter: brightness(0) invert(1);">
+        <!-- Icono para menú contraído (solo el cuadrado) -->
+        <img src="~/img/icon.png" alt="RH365" class="logo-collapsed" style="height: 39px; width: 35px; filter: brightness(0) invert(1); display: none;">
+    </a>
+</div>
+
+<style>
+    /* Cuando el menú está expandido */
+    body.nav-md .logo-expanded {
+        display: block !important;
+    }
+
+    body.nav-md .logo-collapsed {
+        display: none !important;
+    }
+
+    /* Cuando el menú está contraído */
+    body.nav-sm .logo-expanded,
+    body.nav-sm .site_title .logo-expanded {
+        display: none !important;
+    }
+
+    body.nav-sm .logo-collapsed,
+    body.nav-sm .site_title .logo-collapsed {
+        display: block !important;
+    }
+
+    /* Ajustar el padding cuando está contraído */
+    body.nav-sm .nav_title a.site_title {
+        padding: 10px !important;
+    }
+</style>

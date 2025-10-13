@@ -102,16 +102,35 @@ class LoginManager {
             });
 
             if (response.ok) {
-                // Si la respuesta es HTML (redirect), seguirla
+                // Si la respuesta es redirect (login exitoso)
                 if (response.redirected) {
-                    window.location.href = response.url;
+                    // Mostrar mensaje de éxito
+                    this.showSuccess('Autenticación exitosa. Cargando sistema...');
+
+                    // Fade out del formulario
+                    this.elements.form.style.transition = 'opacity 0.5s ease';
+                    this.elements.form.style.opacity = '0.5';
+
+                    // Esperar un momento antes de redirigir
+                    setTimeout(() => {
+                        // Fade out completo
+                        document.body.style.transition = 'opacity 0.3s ease';
+                        document.body.style.opacity = '0';
+
+                        setTimeout(() => {
+                            window.location.href = response.url;
+                        }, 300);
+                    }, 800);
                 } else {
                     // Si es JSON, procesarlo
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
                         const data = await response.json();
                         if (data.success) {
-                            window.location.href = data.redirectUrl || '/Home';
+                            this.showSuccess('Autenticación exitosa. Cargando...');
+                            setTimeout(() => {
+                                window.location.href = data.redirectUrl || '/Home';
+                            }, 1000);
                         } else {
                             this.showError(data.message || 'Credenciales inválidas');
                         }
@@ -246,6 +265,27 @@ class LoginManager {
         setTimeout(() => {
             alertElement.remove();
         }, 5000);
+    }
+
+    /**
+     * Mostrar mensaje de éxito
+     */
+    private showSuccess(message: string): void {
+        // Remover errores previos
+        const existingError = document.querySelector('.alert-danger');
+        if (existingError) existingError.remove();
+
+        // Crear alert de éxito
+        const alertElement = document.createElement('div');
+        alertElement.className = 'alert alert-success fade-in';
+        alertElement.style.cssText = 'animation: fadeIn 0.5s ease; margin-bottom: 20px;';
+        alertElement.innerHTML = `
+            <i class="fa fa-check-circle"></i> ${message}
+            <div class="spinner-border spinner-border-sm float-right" role="status" style="float: right;">
+                <span class="sr-only">Cargando...</span>
+            </div>
+        `;
+        this.elements.form.parentElement?.insertBefore(alertElement, this.elements.form);
     }
 
     /**

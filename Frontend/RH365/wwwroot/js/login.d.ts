@@ -49,6 +49,10 @@ declare class LoginManager {
      */
     private showError;
     /**
+     * Mostrar mensaje de éxito
+     */
+    private showSuccess;
+    /**
      * Establecer estado de carga
      */
     private setLoadingState;
