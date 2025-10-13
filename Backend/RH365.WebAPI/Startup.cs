@@ -77,10 +77,10 @@ namespace RH365.WebAPI
             ConfigureExceptionHandling(app, env);
 
             // Swagger UI (debe ir temprano en el pipeline)
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
                 app.UseSwaggerDocumentation(env);
-            }
+            //}
 
             // Middleware de seguridad
             ConfigureSecurityMiddleware(app, env);

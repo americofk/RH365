@@ -2,10 +2,11 @@
 // Archivo: Program.cs
 // Proyecto: RH365.WebAPI
 // Ruta: RH365.WebAPI/Program.cs
-// Descripción: Punto de entrada principal limpio de la API REST.
-//   - Configuración mínima usando Startup.cs
-//   - Bootstrapping de la aplicación web
-//   - Manejo de excepciones en startup
+// Descripción:
+//   Punto de entrada .NET 8 preparado para IIS In-Process.
+//   - Agrega webBuilder.UseIIS() para habilitar IIS Server cuando corre bajo w3wp.
+//   - Mantiene Startup clásico y logging a consola/depuración.
+//   - Kestrel queda activo para self-host (dotnet RH365.WebAPI.dll).
 // ============================================================================
 
 using Microsoft.AspNetCore.Hosting;
@@ -15,15 +16,10 @@ using System;
 
 namespace RH365.WebAPI
 {
-    /// <summary>
-    /// Clase principal de entrada de la aplicación.
-    /// </summary>
+    /// <summary>Punto de entrada de la aplicación.</summary>
     public class Program
     {
-        /// <summary>
-        /// Punto de entrada principal de la aplicación.
-        /// </summary>
-        /// <param name="args">Argumentos de línea de comandos.</param>
+        /// <summary>Método principal.</summary>
         public static void Main(string[] args)
         {
             try
@@ -32,32 +28,28 @@ namespace RH365.WebAPI
             }
             catch (Exception ex)
             {
-                // Log crítico de errores de startup
                 Console.WriteLine($"Error crítico al iniciar la aplicación: {ex.Message}");
                 Console.WriteLine($"StackTrace: {ex.StackTrace}");
-
-                // En desarrollo, mostrar detalles completos
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
                 {
                     Console.WriteLine($"Excepción completa: {ex}");
                 }
-
-                throw; // Re-lanzar para que el sistema maneje el shutdown
+                throw;
             }
         }
 
-        /// <summary>
-        /// Crea y configura el host de la aplicación web.
-        /// </summary>
-        /// <param name="args">Argumentos de línea de comandos.</param>
-        /// <returns>Builder del host web configurado.</returns>
+        /// <summary>Construye el host web con soporte para IIS In-Process.</summary>
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    // Habilita IIS Server cuando la app corre dentro de w3wp (hostingModel="InProcess")
+                    webBuilder.UseIIS();
+
+                    // Startup clásico
                     webBuilder.UseStartup<Startup>();
 
-                    // Configuración adicional del host web si es necesaria
+                    // Logging básico
                     webBuilder.ConfigureLogging(logging =>
                     {
                         logging.ClearProviders();
@@ -65,10 +57,10 @@ namespace RH365.WebAPI
                         logging.AddDebug();
                     });
 
-                    // Configurar Kestrel si es necesario
+                    // Kestrel para ejecución out-of-process / consola
                     webBuilder.UseKestrel(options =>
                     {
-                        // Configuraciones del servidor web si son necesarias
+                        // Configuración adicional si se requiere
                     });
                 });
     }
