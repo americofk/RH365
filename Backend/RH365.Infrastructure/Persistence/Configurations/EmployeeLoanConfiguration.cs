@@ -1,72 +1,135 @@
 // ============================================================================
 // Archivo: EmployeeLoanConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: RH365.Infrastructure/Persistence/Configurations/Payroll/EmployeeLoanConfiguration.cs
-// Descripción: Configuración Entity Framework para EmployeeLoan.
-//   - Mapeo de propiedades y relaciones
-//   - Índices y restricciones de base de datos
-//   - Cumplimiento ISO 27001
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Employees/EmployeeLoanConfiguration.cs
+// Descripción:
+//   - Configuración EF Core para EmployeeLoan -> dbo.EmployeeLoans
+//   - Mapeo completo de FKs con .HasColumnName() explícito
+//   - Cumple auditoría ISO 27001
 // ============================================================================
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RH365.Core.Domain.Entities;
 
-namespace RH365.Infrastructure.Persistence.Configurations
+namespace RH365.Infrastructure.Persistence.Configurations.Employees
 {
-    /// <summary>
-    /// Configuración Entity Framework para la entidad EmployeeLoan.
-    /// </summary>
+    /// <summary>EF Configuration para <see cref="EmployeeLoan"/>.</summary>
     public class EmployeeLoanConfiguration : IEntityTypeConfiguration<EmployeeLoan>
     {
         public void Configure(EntityTypeBuilder<EmployeeLoan> builder)
         {
-            // Mapeo a tabla
-            builder.ToTable("EmployeeLoan");
+            // Tabla
+            builder.ToTable("EmployeeLoans", "dbo");
 
-            // Configuración de propiedades
-            builder.Property(e => e.AmountByDues).HasPrecision(18, 4).HasColumnName("AmountByDues");
-            //builder.Property(e => e.EmployeeRefRec).HasColumnName("EmployeeRefRec");
-            builder.Property(e => e.EmployeeRefRecID).HasColumnName("EmployeeRefRecID");
-            builder.Property(e => e.LoanAmount).HasPrecision(18, 4).HasColumnName("LoanAmount");
-            //builder.Property(e => e.LoanRefRec).HasColumnName("LoanRefRec");
-            builder.Property(e => e.LoanRefRecID).HasColumnName("LoanRefRecID");
-            builder.Property(e => e.PaidAmount).HasPrecision(18, 4).HasColumnName("PaidAmount");
-            //builder.Property(e => e.PayrollRefRec).HasColumnName("PayrollRefRec");
-            builder.Property(e => e.PayrollRefRecID).HasColumnName("PayrollRefRecID");
-            builder.Property(e => e.PendingAmount).HasPrecision(18, 4).HasColumnName("PendingAmount");
-            builder.Property(e => e.PendingDues).HasColumnName("PendingDues");
-            builder.Property(e => e.QtyPeriodForPaid).HasColumnName("QtyPeriodForPaid");
-            builder.Property(e => e.StartPeriodForPaid).HasColumnName("StartPeriodForPaid");
-            builder.Property(e => e.TotalDues).HasColumnName("TotalDues");
-            builder.Property(e => e.ValidFrom).HasColumnType("date").HasColumnName("ValidFrom");
-            builder.Property(e => e.ValidTo).HasColumnType("date").HasColumnName("ValidTo");
+            // PK
+            builder.HasKey(e => e.RecID);
 
-            //// Configuración de relaciones
-            //builder.HasMany(e => e.EmployeeLoanHistories)
-            //    .WithOne(d => d.EmployeeLoanRefRec)
-            //    .HasForeignKey(d => d.EmployeeLoanRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.EmployeeRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.EmployeeRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.LoanRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.LoanRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
-            //builder.HasOne(e => e.PayrollRefRec)
-            //    .WithMany()
-            //    .HasForeignKey(e => e.PayrollRefRecID)
-            //    .OnDelete(DeleteBehavior.ClientSetNull);
+            // ID legible
+            builder.Property(e => e.ID)
+                   .HasMaxLength(50)
+                   .ValueGeneratedOnAdd();
+
+            // FKs con .HasColumnName() explícito
+            builder.Property(e => e.LoanRefRecID)
+                   .IsRequired()
+                   .HasColumnName("LoanRefRecID");
+
+            builder.Property(e => e.EmployeeRefRecID)
+                   .IsRequired()
+                   .HasColumnName("EmployeeRefRecID");
+
+            builder.Property(e => e.PayrollRefRecID)
+                   .IsRequired()
+                   .HasColumnName("PayrollRefRecID");
+
+            // Propiedades obligatorias
+            builder.Property(e => e.ValidFrom)
+                   .IsRequired();
+
+            builder.Property(e => e.ValidTo)
+                   .IsRequired();
+
+            builder.Property(e => e.LoanAmount)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.StartPeriodForPaid)
+                   .IsRequired();
+
+            builder.Property(e => e.PaidAmount)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.PendingAmount)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.TotalDues)
+                   .IsRequired();
+
+            builder.Property(e => e.PendingDues)
+                   .IsRequired();
+
+            builder.Property(e => e.QtyPeriodForPaid)
+                   .IsRequired();
+
+            builder.Property(e => e.AmountByDues)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(e => e.Observations)
+                   .HasMaxLength(500);
+
+            // Auditoría ISO 27001
+            builder.Property(e => e.DataareaID)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                   .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                   .IsRowVersion()
+                   .IsConcurrencyToken();
+
+            // Relaciones FK
+            builder.HasOne(e => e.LoanRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.LoanRefRecID)
+                   .HasConstraintName("FK_EmployeeLoans_Loans")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(e => e.EmployeeRefRec)
+                   .WithMany(emp => emp.EmployeeLoans)
+                   .HasForeignKey(e => e.EmployeeRefRecID)
+                   .HasConstraintName("FK_EmployeeLoans_Employees")
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.PayrollRefRec)
+                   .WithMany()
+                   .HasForeignKey(e => e.PayrollRefRecID)
+                   .HasConstraintName("FK_EmployeeLoans_Payrolls")
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Navegaciones con AutoInclude(false)
+            builder.Navigation(e => e.LoanRefRec).AutoInclude(false);
+            builder.Navigation(e => e.EmployeeRefRec).AutoInclude(false);
+            builder.Navigation(e => e.PayrollRefRec).AutoInclude(false);
+            builder.Navigation(e => e.EmployeeLoanHistories).AutoInclude(false);
 
             // Índices
             builder.HasIndex(e => e.LoanRefRecID)
-                .HasDatabaseName("IX_EmployeeLoan_LoanRefRecID");
+                   .HasDatabaseName("IX_EmployeeLoans_LoanRefRecID");
+
             builder.HasIndex(e => e.EmployeeRefRecID)
-                .HasDatabaseName("IX_EmployeeLoan_EmployeeRefRecID");
+                   .HasDatabaseName("IX_EmployeeLoans_EmployeeRefRecID");
+
             builder.HasIndex(e => e.PayrollRefRecID)
-                .HasDatabaseName("IX_EmployeeLoan_PayrollRefRecID");
+                   .HasDatabaseName("IX_EmployeeLoans_PayrollRefRecID");
         }
     }
 }
