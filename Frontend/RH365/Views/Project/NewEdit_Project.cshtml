@@ -1,0 +1,159 @@
+﻿@* ============================================================================
+   Archivo: NewEdit_Project.cshtml
+   Proyecto: RH365 (Front-End MVC .NET 8)
+   Ruta: Views/Project/NewEdit_Project.cshtml
+   Descripción:
+     - Formulario reusable para CREAR / EDITAR un Proyecto.
+     - Incluye AntiForgery, validación básica y campos estándar.
+     - El submit real (POST/PUT a WebAPI) se realizará desde /js/projects/projects-form.js.
+   Requisitos del modelo:
+     Model.DataareaID (string)
+     Model.UserRefRecID (long)
+     (Opcional en edición) Model.Project (obj con propiedades del proyecto)
+   Uso:
+     - Navegación directa (pantalla completa) o carga dentro de modal con AJAX.
+   ============================================================================ *@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Proyecto - Nuevo / Editar";
+
+    // Contexto
+    string dataareaId = Model?.DataareaID ?? "";
+    long userRefRecID = Model?.UserRefRecID ?? 0L;
+
+    // Datos de edición (si existen). Los nombres deben alinear con tu API/DTO.
+    var prj = Model?.Project;
+    long recId = prj?.RecID ?? 0L;
+    string projectCode = prj?.ProjectCode ?? "";
+    string projectName = prj?.ProjectName ?? "";
+    string description = prj?.Description ?? "";
+    string status = prj?.Status ?? "PENDIENTE"; // PENDIENTE|EN_PROCESO|CERRADO
+    string owner = prj?.Owner ?? "";
+    string startDate = prj?.StartDate != null ? ((DateTime)prj.StartDate).ToString("yyyy-MM-dd") : "";
+    string endDate = prj?.EndDate != null ? ((DateTime)prj.EndDate).ToString("yyyy-MM-dd") : "";
+    decimal budget = prj?.Budget ?? 0m;
+
+    // Concurrency (opcional si API usa RowVersion Base64)
+    string concurrency = prj?.ConcurrencyToken ?? "";
+}
+
+<div class="container-fluid" id="project-form-page"
+     data-dataarea="@dataareaId"
+     data-user="@userRefRecID">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">Proyecto — @((recId > 0) ? "Editar" : "Nuevo")</h2>
+        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("LP_Projects","Project")">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+    </div>
+
+    @* Validación/alerta de errores server-side si los hubiera *@
+    <div id="pf-server-errors" class="alert alert-danger d-none"></div>
+
+    <form id="frm-project" autocomplete="off">
+        @Html.AntiForgeryToken()
+
+        <!-- Hidden (auditoría/identidad) -->
+        <input type="hidden" id="RecID" name="RecID" value="@recId" />
+        <input type="hidden" id="DataareaID" name="DataareaID" value="@dataareaId" />
+        <input type="hidden" id="ConcurrencyToken" name="ConcurrencyToken" value="@concurrency" />
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Código -->
+                    <div class="col-12 col-md-3">
+                        <label for="ProjectCode" class="form-label">Código <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="ProjectCode" name="ProjectCode"
+                               maxlength="30" value="@projectCode" required />
+                        <div class="form-text">Código único del proyecto (ej. PRJ-001).</div>
+                    </div>
+
+                    <!-- Nombre -->
+                    <div class="col-12 col-md-5">
+                        <label for="ProjectName" class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="ProjectName" name="ProjectName"
+                               maxlength="200" value="@projectName" required />
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="col-12 col-md-4">
+                        <label for="Status" class="form-label">Estado <span class="text-danger">*</span></label>
+                        <select id="Status" name="Status" class="form-select" required>
+                            <option value="PENDIENTE" @(status == "PENDIENTE" ? "selected" : "")>Pendiente</option>
+                            <option value="EN_PROCESO" @(status == "EN_PROCESO" ? "selected" : "")>En proceso</option>
+                            <option value="CERRADO" @(status == "CERRADO" ? "selected" : "")>Cerrado</option>
+                        </select>
+                    </div>
+
+                    <!-- Responsable -->
+                    <div class="col-12 col-md-4">
+                        <label for="Owner" class="form-label">Responsable</label>
+                        <input type="text" class="form-control" id="Owner" name="Owner"
+                               maxlength="100" value="@owner" />
+                        <div class="form-text">Nombre o código del responsable.</div>
+                    </div>
+
+                    <!-- Fechas -->
+                    <div class="col-12 col-md-4">
+                        <label for="StartDate" class="form-label">Fecha Inicio</label>
+                        <input type="date" class="form-control" id="StartDate" name="StartDate" value="@startDate" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="EndDate" class="form-label">Fecha Fin</label>
+                        <input type="date" class="form-control" id="EndDate" name="EndDate" value="@endDate" />
+                    </div>
+
+                    <!-- Presupuesto -->
+                    <div class="col-12 col-md-4">
+                        <label for="Budget" class="form-label">Presupuesto</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="Budget" name="Budget"
+                               value="@(budget.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="col-12">
+                        <label for="Description" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3"
+                                  maxlength="2000">@description</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botonera -->
+        <div class="d-flex gap-2">
+            <button type="button" id="btn-save" class="btn btn-primary">
+                <i class="bi bi-save"></i> Guardar
+            </button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("LP_Projects","Project")">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+@* Alertas y modal genéricos, por si abrimos esta vista dentro de un modal *@
+@await Html.PartialAsync("Generic/_Alerts")
+@await Html.PartialAsync("Generic/_Modal")
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/generic/generic.css" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          integrity="sha384-..." crossorigin="anonymous">
+    <style>
+        /* Ajustes visuales del formulario */
+        #project-form-page .form-text {
+            font-size: .78rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <!-- JS dedicado del formulario (maneja create/update vía WebAPI) -->
+    <script src="/js/projects/projects-api.js"></script>
+    <script src="/js/projects/projects-form.js"></script>
+}

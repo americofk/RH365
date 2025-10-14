@@ -1,0 +1,169 @@
+﻿@* ============================================================================
+   Archivo: LP_Projects.cshtml
+   Proyecto: RH365 (Front-End MVC .NET 8)
+   Descripción:
+     - ListPage de Proyectos.
+     - DataTables dinámico + ColReorder.
+     - Carga desde API /api/Projects (ajustable).
+     - Usa configuración global RH365 para apiBase.
+   ============================================================================ *@
+@model dynamic
+@{
+    ViewData["Title"] = "Proyectos";
+    string dataareaId = Model?.DataareaID ?? "DAT";
+    long userRefRecID = Model?.UserRefRecID ?? 0L;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>RH-365 | Proyectos</title>
+
+    <!-- Bootstrap -->
+    <link href="~/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link href="~/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <!-- NProgress -->
+    <link href="~/vendors/nprogress/nprogress.css" rel="stylesheet" />
+    <!-- iCheck -->
+    <link href="~/vendors/iCheck/skins/flat/green.css" rel="stylesheet" />
+    <!-- DataTables -->
+    <link href="~/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet" />
+    <!-- ColReorder -->
+    <link href="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css" rel="stylesheet" />
+    <!-- Custom Theme -->
+    <link href="~/build/css/custom.min.css" rel="stylesheet" />
+</head>
+
+<body class="nav-md footer_fixed">
+    <div class="container body">
+        <div class="main_container">
+
+            <!-- Sidebar Izquierdo -->
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    @await Html.PartialAsync("../Layout/TopMenuLogo")
+                    <div class="clearfix"></div>
+                    @await Html.PartialAsync("../Layout/ProfileMenu")
+                    <br />
+                    @await Html.PartialAsync("../Layout/MainMenu")
+                    @await Html.PartialAsync("../Layout/FooterMenu")
+                </div>
+            </div>
+
+            <!-- Top Navigation -->
+            @await Html.PartialAsync("../Layout/TopMenu")
+
+            <!-- Contenido Principal -->
+            <div class="right_col" role="main"
+                 id="projects-page"
+                 data-dataarea="@dataareaId"
+                 data-user="@userRefRecID">
+                <div class="page-title">
+                    <div class="title_left">
+                        <button id="btn-prj-new" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-plus"></span> Nuevo
+                        </button>
+                        <button id="btn-prj-edit" class="btn btn-warning" disabled>
+                            <span class="glyphicon glyphicon-pencil"></span> Editar
+                        </button>
+                        <button id="btn-prj-delete" class="btn btn-danger" disabled>
+                            <span class="glyphicon glyphicon-trash"></span> Eliminar
+                        </button>
+                    </div>
+
+                    <div class="title_right">
+                        <button id="btn-prj-export" class="btn btn-success">
+                            <span class="glyphicon glyphicon-arrow-down"></span> Exportar
+                        </button>
+                        <button class="btn btn-success">
+                            <span class="glyphicon glyphicon-arrow-up"></span> Importar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <!-- Tabla -->
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <div class="x_panel">
+                            <div class="x_title">
+                                <h2>Listado de Proyectos activos</h2>
+                                <div class="clearfix"></div>
+                            </div>
+
+                            <div class="x_content">
+                                <div class="table-responsive" style="max-height: 800px; overflow-y: auto;">
+                                    <table id="datatable-checkbox"
+                                           class="table table-striped table-bordered bulk_action">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-muted small mt-1" id="prj-summary">0 registros</div>
+                    </div>
+                </div>
+            </div>
+            <!-- /Contenido Principal -->
+            <!-- Footer -->
+            <footer>
+                <div class="pull-right">
+                    Engine by Dynacorp 365 - RH365 © 2025
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- =================== Scripts =================== -->
+    <script src="~/vendors/jquery/dist/jquery.min.js"></script>
+    <script src="~/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/vendors/fastclick/lib/fastclick.js"></script>
+    <script src="~/vendors/nprogress/nprogress.js"></script>
+    <script src="~/vendors/iCheck/icheck.min.js"></script>
+
+    <!-- DataTables -->
+    <script src="~/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="~/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="~/vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+    <script src="~/vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+    <script src="~/vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+    <script src="~/vendors/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+
+    <!-- ColReorder -->
+    <script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="~/build/js/custom.min.js"></script>
+
+    <!-- Configuración Global RH365 -->
+    <script>
+        // Ajusta la URL base de la API aquí si cambia el puerto o el backend
+        window.RH365 = {
+            urls: {
+                apiBase: "http://localhost:9595/api" // 🔹 AJUSTA AQUÍ si tu API corre en otro puerto
+            },
+            ctx: {
+                dataareaId: "@dataareaId",
+                userRefRecID: "@userRefRecID"
+            }
+        };
+    </script>
+
+    <!-- JS compilado de TypeScript -->
+    <script src="~/js/projects/projects-dt.js"></script>
+</body>
+</html>

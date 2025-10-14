@@ -15,7 +15,6 @@
     <Content Include=".config\.eslintrc.json" />
     <Content Include=".config\.prettierrc.json" />
     <Content Include=".config\package.json" />
-    <Content Include=".config\tsconfig.json" />
     <Content Include="Views\Layout\bar.html">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -38,8 +37,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="JS\Projects\" />
     <Folder Include="Models\" />
-    <Folder Include="TS\" />
+    <Folder Include="TS\Projects\" />
     <Folder Include="wwwroot\html\" />
   </ItemGroup>
 

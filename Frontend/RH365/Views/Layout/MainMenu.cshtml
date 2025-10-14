@@ -1,31 +1,35 @@
 ﻿@* ============================================================================
    Archivo: _MainMenu.cshtml
    Proyecto: RH365.WebMVC
-   Ruta: RH365/Views/Layout/_MainMenu.cshtml
-   Descripción:
-     - Vista parcial para menú lateral dinámico
-     - Lee menús desde sesión cargados en login
+   Ruta: Views/Layout/_MainMenu.cshtml
+   Descripción: Menú lateral dinámico desde sesión (sin contenido estático)
    ============================================================================ *@
 @using RH365.Core.Domain.Models.Menu
 @using System.Text.Json
+
 @{
     var menusJson = Context.Session.GetString("UserMenus");
     List<MenuItemResponse>? menus = null;
 
     if (!string.IsNullOrEmpty(menusJson))
     {
-        menus = JsonSerializer.Deserialize<List<MenuItemResponse>>(menusJson);
+        menus = JsonSerializer.Deserialize<List<MenuItemResponse>>(
+            menusJson,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        );
     }
+
+    // Normalizar listas
+    menus ??= new List<MenuItemResponse>();
+    var generalMenus = menus.Where(m => m.Sort <= 5).OrderBy(m => m.Sort).ToList();
+    var configMenus = menus.Where(m => m.Sort > 5).OrderBy(m => m.Sort).ToList();
 }
 
 <!-- sidebar menu -->
 <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-    @if (menus != null && menus.Any())
+    @if (menus.Any())
     {
-        // Separar menús por sección
-        var generalMenus = menus.Where(m => m.Sort <= 5).OrderBy(m => m.Sort).ToList();
-        var configMenus = menus.Where(m => m.Sort > 5).OrderBy(m => m.Sort).ToList();
-
+        @* ===================== GENERAL ===================== *@
         @if (generalMenus.Any())
         {
             <div class="menu_section">
@@ -33,23 +37,32 @@
                 <ul class="nav side-menu">
                     @foreach (var menu in generalMenus)
                     {
+                        var hasChildren = menu.HasChildren && menu.Children != null && menu.Children.Any();
                         <li>
-                            @if (menu.HasChildren)
+                            @if (hasChildren)
                             {
                                 <a><i class="@menu.Icon"></i> @menu.MenuName <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
-                                    @foreach (var child in menu.Children.OrderBy(c => c.Sort))
+                                    @foreach (var child in menu.Children!.OrderBy(c => c.Sort))
                                     {
-                                        @if (!string.IsNullOrEmpty(child.Action) && child.Action != "#")
+                                        if (!string.IsNullOrWhiteSpace(child.Action) && child.Action != "#")
                                         {
-                                            var parts = child.Action.Split('/');
-                                            if (parts.Length == 2)
+                                            var action = child.Action.Trim();
+                                            if (action.StartsWith("/"))
                                             {
-                                                <li><a href="@Url.Action(parts[1], parts[0])">@child.MenuName</a></li>
+                                                <li><a href="@Url.Content(action)">@child.MenuName</a></li>
                                             }
                                             else
                                             {
-                                                <li><a href="@Url.Action(child.Action, "Home")">@child.MenuName</a></li>
+                                                var parts = action.Split('/');
+                                                if (parts.Length == 2)
+                                                {
+                                                    <li><a href="@Url.Action(parts[1], parts[0])">@child.MenuName</a></li>
+                                                }
+                                                else
+                                                {
+                                                    <li><a href="@Url.Action(action, "Home")">@child.MenuName</a></li>
+                                                }
                                             }
                                         }
                                         else
@@ -61,20 +74,24 @@
                             }
                             else
                             {
-                                @if (menu.Action == "Index" && menu.MenuCode == "MENU-HOME")
+                                if (!string.IsNullOrWhiteSpace(menu.Action) && menu.Action != "#")
                                 {
-                                    <a href="@Url.Action("Index", "Home")"><i class="@menu.Icon"></i> @menu.MenuName</a>
-                                }
-                                else if (!string.IsNullOrEmpty(menu.Action) && menu.Action != "#")
-                                {
-                                    var parts = menu.Action.Split('/');
-                                    if (parts.Length == 2)
+                                    var action = menu.Action.Trim();
+                                    if (action.StartsWith("/"))
                                     {
-                                        <a href="@Url.Action(parts[1], parts[0])"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                        <a href="@Url.Content(action)"><i class="@menu.Icon"></i> @menu.MenuName</a>
                                     }
                                     else
                                     {
-                                        <a href="@Url.Action(menu.Action, "Home")"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                        var parts = action.Split('/');
+                                        if (parts.Length == 2)
+                                        {
+                                            <a href="@Url.Action(parts[1], parts[0])"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action(action, "Home")"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                        }
                                     }
                                 }
                                 else
@@ -88,6 +105,7 @@
             </div>
         }
 
+        @* ===================== CONFIGURACIÓN ===================== *@
         @if (configMenus.Any())
         {
             <div class="menu_section">
@@ -95,16 +113,33 @@
                 <ul class="nav side-menu">
                     @foreach (var menu in configMenus)
                     {
+                        var hasChildren = menu.HasChildren && menu.Children != null && menu.Children.Any();
                         <li>
-                            @if (menu.HasChildren)
+                            @if (hasChildren)
                             {
                                 <a><i class="@menu.Icon"></i> @menu.MenuName <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
-                                    @foreach (var child in menu.Children.OrderBy(c => c.Sort))
+                                    @foreach (var child in menu.Children!.OrderBy(c => c.Sort))
                                     {
-                                        @if (!string.IsNullOrEmpty(child.Action) && child.Action != "#")
+                                        if (!string.IsNullOrWhiteSpace(child.Action) && child.Action != "#")
                                         {
-                                            <li><a href="@Url.Action(child.Action, "Home")">@child.MenuName</a></li>
+                                            var action = child.Action.Trim();
+                                            if (action.StartsWith("/"))
+                                            {
+                                                <li><a href="@Url.Content(action)">@child.MenuName</a></li>
+                                            }
+                                            else
+                                            {
+                                                var parts = action.Split('/');
+                                                if (parts.Length == 2)
+                                                {
+                                                    <li><a href="@Url.Action(parts[1], parts[0])">@child.MenuName</a></li>
+                                                }
+                                                else
+                                                {
+                                                    <li><a href="@Url.Action(action, "Home")">@child.MenuName</a></li>
+                                                }
+                                            }
                                         }
                                         else
                                         {
@@ -115,7 +150,22 @@
                             }
                             else
                             {
-                                <a href="#"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                if (!string.IsNullOrWhiteSpace(menu.Action) && menu.Action != "#")
+                                {
+                                    var action = menu.Action.Trim();
+                                    if (action.StartsWith("/"))
+                                    {
+                                        <a href="@Url.Content(action)"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action(action, "Home")"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                    }
+                                }
+                                else
+                                {
+                                    <a href="#"><i class="@menu.Icon"></i> @menu.MenuName</a>
+                                }
                             }
                         </li>
                     }
@@ -123,15 +173,6 @@
             </div>
         }
     }
-    else
-    {
-        // Menú estático de respaldo si no hay menús en sesión
-        <div class="menu_section">
-            <h3>General</h3>
-            <ul class="nav side-menu">
-                <li><a href="@Url.Action("Index", "Home")"><i class="fa fa-home"></i> Home</a></li>
-            </ul>
-        </div>
-    }
+    @* Si no hay menús en sesión, no se muestra nada (sin estático) *@
 </div>
 <!-- /sidebar menu -->

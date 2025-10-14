@@ -3,22 +3,32 @@
 // Proyecto: RH365.WebMVC
 // Ruta: RH365/Program.cs
 // Descripción:
-//   - Configuración principal de la aplicación MVC
-//   - Usa ServiceConfiguration para mantenerlo limpio
+//   - Configuración principal de la aplicación MVC.
+//   - Mapea carpeta estática raíz "JS" a la ruta pública "/js".
+//   - Registra IUserContext para obtener DataareaID y UserRefRecID del usuario.
+//   - Usa ServiceConfiguration para mantenerlo limpio.
 // ============================================================================
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using RH365.Configuration;
+using RH365.Infrastructure.Services; // IUserContext / UserContext
+using System.IO;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar servicios usando la clase de configuración
+// ----------------------------------------------------------------------------
+// Servicios
+// ----------------------------------------------------------------------------
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>(); // Contexto de usuario (empresa/RecID)
 
-// Usar métodos de extensión desde ServiceConfiguration
+// Extensiones personalizadas
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddSessionConfiguration(builder.Configuration);
 builder.Services.AddCorsConfiguration(builder.Configuration);
@@ -39,7 +49,9 @@ builder.Services.AddAntiforgery(options =>
 
 var app = builder.Build();
 
+// ----------------------------------------------------------------------------
 // Pipeline HTTP
+// ----------------------------------------------------------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -51,16 +63,35 @@ else
     app.UseHttpsRedirection();
 }
 
+// Archivos estáticos:
+// 1) wwwroot (por defecto)
 app.UseStaticFiles();
+
+// 2) Carpeta física "JS" en la raíz del proyecto, expuesta como "/js"
+var jsPhysicalPath = Path.Combine(builder.Environment.ContentRootPath, "JS");
+if (Directory.Exists(jsPhysicalPath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(jsPhysicalPath),
+        RequestPath = "/js"
+    });
+}
+
 app.UseRouting();
 app.UseCors("ApiPolicy");
 app.UseSession();
 
-// Middleware de autenticación
+// ----------------------------------------------------------------------------
+// Middleware de autenticación simple basado en sesión
+// ----------------------------------------------------------------------------
 app.Use(async (context, next) =>
 {
-    var path = context.Request.Path.Value?.ToLower() ?? "";
-    var publicPaths = new[] {
+    var path = context.Request.Path.Value?.ToLower() ?? string.Empty;
+
+    // Rutas/recursos públicos (no requieren sesión)
+    var publicPaths = new[]
+    {
         "/login",
         "/login/login",
         "/css",
@@ -81,10 +112,13 @@ app.Use(async (context, next) =>
             return;
         }
     }
+
     await next();
 });
 
+// ----------------------------------------------------------------------------
 // Rutas
+// ----------------------------------------------------------------------------
 app.MapControllerRoute(
     name: "login",
     pattern: "Login/{action=Login}",

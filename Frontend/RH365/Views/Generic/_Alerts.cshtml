@@ -1,0 +1,105 @@
+﻿@* ============================================================================
+   Archivo: _Alerts.cshtml
+   Proyecto: RH365 (Front-End MVC .NET 8)
+   Ruta: Views/Generic/Partials/_Alerts.cshtml
+   Descripción: Sistema de notificaciones (toasts/alerts) basado en Bootstrap.
+   Nota: Se removieron anotaciones con "@param" en comentarios para evitar CS0103.
+   ============================================================================ *@
+
+<!-- Contenedor global para TOASTS -->
+<div id="alerts-toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1080;">
+</div>
+
+<!-- Contenedor para ALERTS en la página -->
+<div id="alerts-inline-container" class="container-fluid mt-2">
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // Utilidades
+            const ICONS = {
+                success: 'bi-check-circle',
+                info: 'bi-info-circle',
+                warning: 'bi-exclamation-triangle',
+                danger: 'bi-x-circle'
+            };
+            function esc(s){ return (s ?? '').toString()
+              .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+              .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+            // TOASTS
+            function makeToast(opts) {
+                const o = Object.assign({ title:'', message:'', type:'info', timeout:3500 }, opts || {});
+                const container = document.getElementById('alerts-toast-container');
+                if (!container) return;
+
+                const id = 'toast_' + Date.now();
+                const icon = ICONS[o.type] || ICONS.info;
+
+                const el = document.createElement('div');
+                el.className = `toast align-items-center text-bg-${o.type} border-0`;
+                el.id = id;
+                el.setAttribute('role', 'alert');
+                el.setAttribute('aria-live', 'assertive');
+                el.setAttribute('aria-atomic', 'true');
+
+                el.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${o.title ? `<strong class="me-2"><i class="bi ${icon} me-1"></i>${esc(o.title)}</strong>` : ''}
+                            <span>${esc(o.message)}</span>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
+
+                container.appendChild(el);
+                const bsToast = new bootstrap.Toast(el, { autohide: o.timeout > 0, delay: o.timeout > 0 ? o.timeout : 5000 });
+                bsToast.show();
+                el.addEventListener('hidden.bs.toast', () => el.remove());
+            }
+
+            // ALERTS en página
+            function makeAlert(opts) {
+                const o = Object.assign({ title:'', message:'', type:'info', dismissible:true, timeout:0 }, opts || {});
+                const container = document.getElementById('alerts-inline-container');
+                if (!container) return;
+
+                const id = 'alert_' + Date.now();
+                const icon = ICONS[o.type] || ICONS.info;
+                const clsDismiss = o.dismissible ? 'alert-dismissible fade show' : '';
+                const btnDismiss = o.dismissible ? `<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>` : '';
+
+                const el = document.createElement('div');
+                el.className = `alert alert-${o.type} ${clsDismiss}`;
+                el.id = id;
+                el.setAttribute('role','alert');
+                el.innerHTML = `
+                    ${o.title ? `<h6 class="alert-heading mb-1"><i class="bi ${icon} me-1"></i>${esc(o.title)}</h6>` : ''}
+                    <div>${esc(o.message)}</div>
+                    ${btnDismiss}
+                `;
+
+                container.prepend(el);
+
+                if (o.timeout && o.timeout > 0) {
+                    setTimeout(() => {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(el);
+                        bsAlert.close();
+                    }, o.timeout);
+                }
+            }
+
+            // API pública
+            window.ALERTS = {
+                toast: makeToast,
+                alert: makeAlert,
+                ok:   (msg, title='OK')        => makeToast({ message: msg, title, type: 'success' }),
+                info: (msg, title='Info')      => makeToast({ message: msg, title, type: 'info' }),
+                warn: (msg, title='Atención')  => makeToast({ message: msg, title, type: 'warning' }),
+                error:(msg, title='Error')     => makeToast({ message: msg, title, type: 'danger' })
+            };
+        })();
+    </script>
+}

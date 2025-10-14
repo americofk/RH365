@@ -7,14 +7,7 @@ namespace RH365.Infrastructure.Services
     public class UrlsServices
     {
         #region Url
-        //public string urlBaseOne = "http://dynacorpservices.eastus.cloudapp.azure.com:9090/api/v2.0/"; //Dynacorp DEMO Azure
-        public string urlBaseOne = "http://localhost:9090/api/v2.0/"; // local
-        //public string urlBaseOne = "http://localhost:8096/api/v2.0/"; // DV
-        //public string urlBaseOne = "http://localhost:5897/api/v2.0/"; // Desarrollo
-        //public string urlBaseOne = "http://dynacorpqa.eastus.cloudapp.azure.com:8096/api/v2.0/"; // Desarrollo Remoto
-        //public string urlBaseOne = "http://dynacorpservices.eastus.cloudapp.azure.com:9091/api/v2.0/"; //Prod
-        //public string urlBaseOne = "http://dynacorpapps.eastus.cloudapp.azure.com:9093/api/v2.0/"; //Prod vasquez
-        //public string urlBaseOne = "http://dynacorpqa.eastus.cloudapp.azure.com:8096/api/v2.0/"; // Desarrollo Remoto
+        public string urlBaseOne = "http://localhost:9595/api"; // local
 
         #endregion
 

@@ -1,0 +1,235 @@
+﻿@* ============================================================================
+   Archivo: GenericListPage.cshtml
+   Proyecto: RH365 (Front-End MVC .NET 8)
+   Ruta: Views/Generic/GenericListPage.cshtml
+   Descripción: Vista genérica de LISTADO reutilizable.
+     - Toolbar CRUD y selector de vistas (UserGridViews).
+     - Contenedor para grid dinámico.
+     - Incluye partials de Modal y Alerts (mismo nivel: Views/Generic/_*.cshtml).
+   Requisitos del ViewModel (dinámico o tipado):
+     string Title
+     string EntityName
+     string DataareaID
+     long   UserRefRecID
+     string ViewConfigJson
+     IEnumerable<SelectListItem> AvailableViews
+   ============================================================================ *@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model dynamic
+
+@{
+    ViewData["Title"] = Model?.Title ?? "Listado";
+    string entityName = Model?.EntityName ?? "Entity";
+    string dataareaId = Model?.DataareaID ?? "DAT";
+    long userRefRecID = Model?.UserRefRecID ?? 0L;
+    string viewConfig = Model?.ViewConfigJson ?? "{\"columns\":[],\"filters\":[],\"sorting\":[],\"grouping\":[],\"pageSize\":50}";
+    IEnumerable<SelectListItem> views = Model?.AvailableViews ?? Array.Empty<SelectListItem>();
+}
+
+<div class="generic-list-page container-fluid" data-entity="@entityName" data-dataarea="@dataareaId" data-user="@userRefRecID">
+    <!-- Encabezado -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">@ViewData["Title"]</h2>
+
+        <!-- Selector de vistas guardadas -->
+        <div class="d-flex gap-2 align-items-center">
+            <select id="glp-view-selector" class="form-select form-select-sm" aria-label="Vistas guardadas">
+                @foreach (var v in views)
+                {
+                    <option value="@v.Value" selected="@(v.Selected ? "selected" : null)">@v.Text</option>
+                }
+            </select>
+
+            <button id="btn-glp-save-view" class="btn btn-sm btn-outline-primary" type="button" title="Guardar/Actualizar vista">
+                <i class="bi bi-save"></i> Guardar
+            </button>
+            <button id="btn-glp-saveas-view" class="btn btn-sm btn-outline-secondary" type="button" title="Guardar como nueva vista">
+                <i class="bi bi-journal-plus"></i> Guardar como…
+            </button>
+            <button id="btn-glp-setdefault" class="btn btn-sm btn-outline-success" type="button" title="Marcar como predeterminada">
+                <i class="bi bi-star"></i> Predeterminada
+            </button>
+        </div>
+    </div>
+
+    <!-- Toolbar CRUD -->
+    <div class="glp-toolbar d-flex flex-wrap gap-2 mb-3">
+        <button id="btn-glp-new" class="btn btn-primary btn-sm" type="button"><i class="bi bi-plus-lg"></i> Nuevo</button>
+        <button id="btn-glp-edit" class="btn btn-warning btn-sm" type="button" disabled><i class="bi bi-pencil"></i> Editar</button>
+        <button id="btn-glp-delete" class="btn btn-danger btn-sm" type="button" disabled><i class="bi bi-trash"></i> Eliminar</button>
+        <button id="btn-glp-refresh" class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-arrow-repeat"></i> Refrescar</button>
+        <div class="vr"></div>
+        <button id="btn-glp-export" class="btn btn-outline-info btn-sm" type="button"><i class="bi bi-file-earmark-excel"></i> Exportar</button>
+        <div id="glp-entity-actions" class="ms-auto"></div>
+    </div>
+
+    <!-- Filtros avanzados -->
+    <div id="glp-filters" class="card mb-3 d-none">
+        <div class="card-body">
+            <div id="glp-filters-container"><!-- Render por JS --></div>
+            <div class="mt-2 d-flex gap-2">
+                <button id="btn-glp-apply-filters" class="btn btn-sm btn-primary" type="button">Aplicar</button>
+                <button id="btn-glp-clear-filters" class="btn btn-sm btn-outline-secondary" type="button">Limpiar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid -->
+    <div id="glp-grid" class="card">
+        <div class="card-body p-0">
+            <div id="glp-grid-host" class="table-responsive"><!-- Grid host --></div>
+        </div>
+    </div>
+
+    <!-- Config JSON -->
+    <script id="glp-config" type="application/json">
+        @Html.Raw(viewConfig)
+    </script>
+</div>
+
+@* Partials (mismo nivel): *@
+@await Html.PartialAsync("Generic/_Modal")
+@await Html.PartialAsync("Generic/_Alerts")
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/generic/generic.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-..." crossorigin="anonymous">
+}
+
+@section Scripts {
+    <!-- JS genérico del ListPage -->
+    <script src="~/ts/generic/generic-list.js"></script>
+
+    <script>
+        // ============================================================
+        // Helper Modal (GLP_MODAL) — controla Views/Generic/_Modal
+        // ============================================================
+        (function(){
+            const $el = document.getElementById('glp-modal');
+            if (!$el) return;
+            const $dialog = document.getElementById('glp-modal-dialog');
+            const $title = document.getElementById('glp-modal-title');
+            const $body  = document.getElementById('glp-modal-body');
+            const $btnOk = document.getElementById('glp-modal-accept');
+            const $btnCancel = document.getElementById('glp-modal-cancel');
+
+            let bsModal = null, onAccept = null, onCancel = null;
+
+            function setSize(sz){
+                $dialog.classList.remove('modal-sm','modal-lg','modal-xl');
+                if (sz === 'sm') $dialog.classList.add('modal-sm');
+                else if (sz === 'lg') $dialog.classList.add('modal-lg');
+                else if (sz === 'xl') $dialog.classList.add('modal-xl');
+            }
+
+            window.GLP_MODAL = {
+                open: ({ title = 'Acción', size = 'lg', html = '', onAccept:ok, onCancel:ko } = {}) => {
+                    $title.textContent = title;
+                    $body.innerHTML = html;
+                    setSize(size);
+                    onAccept = typeof ok === 'function' ? ok : null;
+                    onCancel = typeof ko === 'function' ? ko : null;
+                    bsModal = bsModal || new bootstrap.Modal($el);
+                    bsModal.show();
+                },
+                close: () => { if (bsModal) bsModal.hide(); }
+            };
+
+            $btnOk?.addEventListener('click', () => {
+                if (onAccept) { if (onAccept() !== false) window.GLP_MODAL.close(); }
+                else window.GLP_MODAL.close();
+            });
+            $btnCancel?.addEventListener('click', () => { if (onCancel) onCancel(); });
+            $el.addEventListener('hidden.bs.modal', () => { $body.innerHTML = ''; onAccept = onCancel = null; });
+        })();
+
+        // ============================================================
+        // Helper ALERTS — controla Views/Generic/_Alerts (toasts y alerts)
+        // ============================================================
+        (function () {
+            const ICONS = {
+                success: 'bi-check-circle',
+                info: 'bi-info-circle',
+                warning: 'bi-exclamation-triangle',
+                danger: 'bi-x-circle'
+            };
+            function esc(s){ return (s ?? '').toString()
+              .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+              .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+            function makeToast(o) {
+                const opts = Object.assign({ title:'', message:'', type:'info', timeout:3500 }, o || {});
+                const container = document.getElementById('alerts-toast-container');
+                if (!container) return;
+                const id = 'toast_' + Date.now();
+                const icon = ICONS[opts.type] || ICONS.info;
+
+                const el = document.createElement('div');
+                el.className = `toast align-items-center text-bg-${opts.type} border-0`;
+                el.id = id;
+                el.setAttribute('role', 'alert'); el.setAttribute('aria-live', 'assertive'); el.setAttribute('aria-atomic', 'true');
+                el.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${opts.title ? `<strong class="me-2"><i class="bi ${icon} me-1"></i>${esc(opts.title)}</strong>` : ''}
+                            <span>${esc(opts.message)}</span>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>`;
+                container.appendChild(el);
+                const bsToast = new bootstrap.Toast(el, { autohide: opts.timeout > 0, delay: opts.timeout > 0 ? opts.timeout : 5000 });
+                bsToast.show();
+                el.addEventListener('hidden.bs.toast', () => el.remove());
+            }
+
+            function makeAlert(o) {
+                const opts = Object.assign({ title:'', message:'', type:'info', dismissible:true, timeout:0 }, o || {});
+                const container = document.getElementById('alerts-inline-container');
+                if (!container) return;
+                const id = 'alert_' + Date.now();
+                const icon = ICONS[opts.type] || ICONS.info;
+                const clsDismiss = opts.dismissible ? 'alert-dismissible fade show' : '';
+                const btnDismiss = opts.dismissible ? `<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>` : '';
+
+                const el = document.createElement('div');
+                el.className = `alert alert-${opts.type} ${clsDismiss}`;
+                el.id = id;
+                el.setAttribute('role','alert');
+                el.innerHTML = `
+                    ${opts.title ? `<h6 class="alert-heading mb-1"><i class="bi ${icon} me-1"></i>${esc(opts.title)}</h6>` : ''}
+                    <div>${esc(opts.message)}</div>
+                    ${btnDismiss}`;
+                container.prepend(el);
+
+                if (opts.timeout && opts.timeout > 0) {
+                    setTimeout(() => {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(el);
+                        bsAlert.close();
+                    }, opts.timeout);
+                }
+            }
+
+            window.ALERTS = {
+                toast: makeToast,
+                alert: makeAlert,
+                ok:   (msg, title='OK')       => makeToast({ message: msg, title, type: 'success' }),
+                info: (msg, title='Info')     => makeToast({ message: msg, title, type: 'info' }),
+                warn: (msg, title='Atención') => makeToast({ message: msg, title, type: 'warning' }),
+                error:(msg, title='Error')    => makeToast({ message: msg, title, type: 'danger' })
+            };
+        })();
+
+        // ============================================================
+        // Bootstrap del ListPage genérico
+        // ============================================================
+        window.GLP_BOOT && window.GLP_BOOT({
+            entityName: "@entityName",
+            dataareaId: "@dataareaId",
+            userRefRecID: @userRefRecID,
+            api: {
+                // Ajusta si tu WebAPI vive bajo otra ruta/base URL
+                viewsBase: "@Url.Content("~/api/UserGridViews")"
+            }
+        });
+    </script>
+}
