@@ -5,6 +5,7 @@
 // Descripción:
 //   - Controlador MVC para autenticación
 //   - Maneja login, logout y gestión de sesión
+//   - Carga menús del usuario al hacer login
 // ============================================================================
 
 using System;
@@ -14,6 +15,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RH365.Core.Domain.Models.Auth;
 using RH365.Infrastructure.Services;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RH365.Controllers
 {
@@ -23,15 +26,18 @@ namespace RH365.Controllers
     public class LoginController : Controller
     {
         private readonly AuthService _authService;
+        private readonly MenuService _menuService;
         private readonly ILogger<LoginController> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public LoginController(
             AuthService authService,
+            MenuService menuService,
             ILogger<LoginController> logger,
             IHttpContextAccessor httpContextAccessor)
         {
             _authService = authService;
+            _menuService = menuService;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
         }
@@ -90,6 +96,27 @@ namespace RH365.Controllers
                         _logger.LogError($"Usuario {response.User.Email} no tiene empresa asignada");
                         ModelState.AddModelError(string.Empty, "Usuario no tiene empresa asignada. Contacte al administrador.");
                         return View(model);
+                    }
+
+                    // CARGAR MENÚS DEL USUARIO
+                    try
+                    {
+                        var menus = await _menuService.GetMenusAsync(response.Token);
+                        if (menus != null && menus.Count > 0)
+                        {
+                            var menusJson = System.Text.Json.JsonSerializer.Serialize(menus);
+                            HttpContext.Session.SetString("UserMenus", menusJson);
+                            _logger.LogInformation($"Se cargaron {menus.Count} menús para el usuario {response.User.Email}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"No se encontraron menús para el usuario {response.User.Email}");
+                        }
+                    }
+                    catch (Exception menuEx)
+                    {
+                        _logger.LogError(menuEx, "Error al cargar menús del usuario");
+                        // Continuar sin menús, no es crítico
                     }
 
                     // Guardar lista de empresas autorizadas si existen
@@ -188,7 +215,7 @@ namespace RH365.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SwitchCompany(string companyCode)
+        public async Task<IActionResult> SwitchCompany(string companyCode)  // AGREGAR async Task
         {
             try
             {
@@ -220,6 +247,21 @@ namespace RH365.Controllers
                 HttpContext.Session.SetString("CompanyName", selectedCompany.Name);
                 HttpContext.Session.SetString("CompanyRecId", selectedCompany.Id);
 
+                // RECARGAR MENÚS PARA LA NUEVA EMPRESA
+                try
+                {
+                    var menus = await _menuService.GetMenusAsync(token);  // AHORA SÍ PUEDE USAR await
+                    if (menus != null && menus.Count > 0)
+                    {
+                        var menusJson = System.Text.Json.JsonSerializer.Serialize(menus);
+                        HttpContext.Session.SetString("UserMenus", menusJson);
+                    }
+                }
+                catch (Exception menuEx)
+                {
+                    _logger.LogError(menuEx, "Error al recargar menús tras cambio de empresa");
+                }
+
                 _logger.LogInformation($"Usuario cambió a empresa {selectedCompany.Name}");
 
                 return RedirectToAction("Index", "Home");
@@ -230,7 +272,6 @@ namespace RH365.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
-
         /// <summary>
         /// Obtener lista de empresas disponibles
         /// </summary>
