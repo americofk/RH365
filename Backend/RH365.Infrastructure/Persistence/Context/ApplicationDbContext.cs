@@ -97,6 +97,7 @@ namespace RH365.Infrastructure.Persistence.Context
         public virtual DbSet<MenuAssignedToUser> MenuAssignedToUsers { get; set; }
         public virtual DbSet<MenusApp> MenusApps { get; set; }
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<UserGridView> UserGridView { get; set; }
         public virtual DbSet<UserImage> UserImages { get; set; }
         #endregion
 
