@@ -1,81 +1,33 @@
-// ============================================================================
-// Archivo: tsconfig.json
-// Proyecto: RH365.WebMVC
-// Ruta: RH365/.config/tsconfig.json
-// Descripción:
-//   - Configuración TypeScript para frontend MVC
-//   - Target ES2020 para compatibilidad moderna
-//   - Modo strict para máxima seguridad de tipos
-//   - Source maps habilitados para debugging
-// Notas:
-//   - Compilación automática con "tsc --watch"
-//   - Output en wwwroot/js mantiene estructura de carpetas
-// ============================================================================
 {
     "compileOnSave": true,
     "compilerOptions": {
-        // === Configuración de salida ===
-        "target": "ES2020", // ECMAScript objetivo
-        "module": "ES2020", // Sistema de módulos
-        "lib": [ "ES2020", "DOM", "DOM.Iterable" ], // Librerías disponibles
-        "moduleResolution": "node", // Resolución estilo Node.js
-
-        // === Rutas del proyecto ===
-        "rootDir": "../TS", // Carpeta fuente TypeScript
-        "outDir": "../wwwroot/js", // Salida JavaScript compilado
-        "baseUrl": "../TS", // Base para imports
-        "paths": { // Alias de rutas
-            "@services/*": [ "services/*" ],
-            "@models/*": [ "models/*" ],
-            "@utils/*": [ "utils/*" ],
-            "@auth/*": [ "auth/*" ]
-        },
-
-        // === Modo estricto - ISO 27001 compliance ===
-        "strict": true, // Habilita todas las verificaciones estrictas
-        "noImplicitAny": true, // Error si tipo 'any' implícito
-        "strictNullChecks": true, // null/undefined explícitos
-        "strictFunctionTypes": true, // Verificación estricta de funciones
-        "strictBindCallApply": true, // Verificación bind/call/apply
-        "strictPropertyInitialization": true, // Propiedades inicializadas
-        "noImplicitThis": true, // 'this' con tipo explícito
-        "alwaysStrict": true, // "use strict" en cada archivo
-
-        // === Calidad de código ===
-        "noUnusedLocals": true, // Error variables no usadas
-        "noUnusedParameters": true, // Error parámetros no usados
-        "noImplicitReturns": true, // Todas las rutas deben retornar
-        "noFallthroughCasesInSwitch": true, // Break obligatorio en switch
-        "noUncheckedIndexedAccess": true, // Verificar acceso a índices
-
-        // === Debugging ===
-        "sourceMap": true, // Mapas para debugging
-        "inlineSources": true, // Código fuente en mapas
-        "removeComments": false, // Mantener comentarios JSDoc
-
-        // === Emisión ===
-        "declaration": true, // Generar archivos .d.ts
-        "declarationMap": true, // Mapas para .d.ts
-        "preserveConstEnums": true, // Mantener const enums
-        "resolveJsonModule": true, // Importar JSON
-
-        // === Interoperabilidad ===
-        "esModuleInterop": true, // Interop con CommonJS
-        "allowSyntheticDefaultImports": true, // Import default sintético
-        "forceConsistentCasingInFileNames": true, // Case-sensitive en archivos
-        "skipLibCheck": true // Skip verificación .d.ts
+        "target": "ES2015",
+        "module": "ES2015",
+        "lib": [ "ES2015", "DOM", "DOM.Iterable" ],
+        "outDir": "./JS",
+        "rootDir": "./TS",
+        "sourceMap": true,
+        "removeComments": false,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "strict": false,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "declaration": false,
+        "declarationMap": false,
+        "inlineSources": true,
+        "preserveConstEnums": true,
+        "allowSyntheticDefaultImports": true
     },
-
-    // === Archivos incluidos ===
     "include": [
-        "../TS/**/*.ts",
-        "../TS/**/*.d.ts"
+        "TS/**/*.ts"
     ],
-
-    // === Archivos excluidos ===
     "exclude": [
         "node_modules",
-        "../wwwroot",
+        "wwwroot",
         "**/*.spec.ts",
         "**/*.test.ts"
     ]

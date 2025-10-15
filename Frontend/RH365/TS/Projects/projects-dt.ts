@@ -1,122 +1,493 @@
-// ============================================================================
-// Archivo: projects-dt.ts
-// Proyecto: RH365 (Front-End MVC .NET 8)
-// Descripci�n:
-//   - Tabla din�mica de proyectos compatible con { Data, TotalCount }.
-//   - Previene error �aDataSort undefined� si no hay columnas.
+﻿// ============================================================================
+// Archivo: projects-list.ts
+// Proyecto: RH365.WebMVC
+// Ruta: TS/Projects/projects-list.ts
+// Descripción:
+//   - Lista de Proyectos con DataTables
+//   - Genera columnas y filas dinámicamente desde API
+//   - Compatible con compilación TypeScript
 // ============================================================================
 
-type RowObj = Record<string, unknown>;
-interface PagedResponse<T> { items?: T[]; total?: number; }
+type ProjectRow = Record<string, unknown>;
+
+interface ProjectResponse {
+    Data: ProjectRow[];
+    TotalCount: number;
+    PageNumber: number;
+    PageSize: number;
+    TotalPages: number;
+    HasNextPage: boolean;
+    HasPreviousPage: boolean;
+}
 
 (function () {
     const w: any = window;
     const d: Document = document;
     const $: any = w.jQuery || w.$;
 
-    const apiBase: string = (w.RH365?.urls?.apiBase) || "/api";
-    const dataareaId: string =
-        d.querySelector("#projects-page")?.getAttribute("data-dataarea") || "DAT";
+    // Configuración
+    const apiBase: string = (w.RH365?.urls?.apiBase) || "http://localhost:9595/api";
+    const pageContainer = d.querySelector("#projects-page");
 
-    const $table: any = $("#datatable-checkbox");
+    if (!pageContainer) return;
+
+    const token: string = pageContainer.getAttribute("data-token") || "";
+    const dataareaId: string = pageContainer.getAttribute("data-dataarea") || "DAT";
+    const userRefRecID: string = pageContainer.getAttribute("data-user") || "0";
+
+    const $table: any = $("#projects-table");
     if (!$table.length) return;
 
-    $(async function () {
-        try {
-            // 1) Obtener datos de muestra
-            const probeUrl = `${apiBase}/Projects?dataareaId=${encodeURIComponent(dataareaId)}&page=1&pageSize=1`;
-            const probe = await fetch(probeUrl).then(r => r.json());
+    let projectsData: ProjectRow[] = [];
 
-            let sample: RowObj = {};
-            if (probe?.Data?.length) sample = probe.Data[0];
-            else if (Array.isArray(probe) && probe.length) sample = probe[0];
-            else if (probe?.items?.length) sample = probe.items[0];
+    // ========================================================================
+    // UTILIDADES
+    // ========================================================================
 
-            // 2) Inferir columnas
-            let cols = Object.keys(sample || {});
-            if (cols.length === 0) cols = ["ID", "ProjectCode", "Name", "LedgerAccount"];
+    /**
+     * Convertir campo a título legible
+     */
+    const titleize = (field: string): string => {
+        const translations: Record<string, string> = {
+            'ID': 'ID Sistema',
+            'ProjectCode': 'Código Proyecto',
+            'Name': 'Nombre',
+            'LedgerAccount': 'Cuenta Contable',
+            'ProjectStatus': 'Estado',
+            'CreatedOn': 'Fecha Creación',
+            'CreatedBy': 'Creado Por',
+            'ModifiedOn': 'Modificado',
+            'ModifiedBy': 'Modificado Por',
+            'Observations': 'Observaciones'
+        };
 
-            // 3) Renderizar encabezado seguro
-            const theadHtml = `
-                <tr>
-                    <th style="width:36px;"><input type="checkbox" id="chk-all"/></th>
-                    ${cols.map((c) => `<th>${c}</th>`).join("")}
-                </tr>`;
-            $table.find("thead").html(theadHtml);
+        return translations[field] || field
+            .replace(/([a-z])([A-Z])/g, "$1 $2")
+            .replace(/_/g, " ")
+            .replace(/^./, (c) => c.toUpperCase());
+    };
 
-            // 4) Si a�n no hay columnas v�lidas ? no inicializar
-            if (!cols || cols.length === 0) {
-                console.warn("?? No se encontraron columnas v�lidas para DataTable");
-                return;
+    /**
+     * Formatear valor de celda según tipo
+     */
+    const formatCell = (value: unknown, field: string): string => {
+        if (value == null) return "";
+
+        // Booleanos
+        if (typeof value === "boolean") {
+            if (field === "ProjectStatus") {
+                return value
+                    ? '<span class="label label-success">Activo</span>'
+                    : '<span class="label label-danger">Inactivo</span>';
             }
+            return value ? "Sí" : "No";
+        }
 
-            // 5) Inicializar DataTable
-            const dt: any = $table.DataTable({
-                processing: true,
-                serverSide: false,
-                responsive: true,
-                autoWidth: false,
-                columns: [
-                    {
-                        data: null,
-                        orderable: false,
-                        className: "text-center",
-                        render: () => '<input type="checkbox" class="row-chk"/>'
-                    },
-                    ...cols.map((c) => ({ data: c, name: c, render: (d: any) => d ?? "" }))
-                ],
-                ajax: (_data: unknown, callback: (arg: { data: RowObj[] }) => void) => {
-                    const url = `${apiBase}/Projects?dataareaId=${encodeURIComponent(dataareaId)}&page=1&pageSize=1000`;
-                    fetch(url)
-                        .then(r => r.json())
-                        .then(json => {
-                            let items: RowObj[] = [];
-                            let total = 0;
-                            if (json?.Data) {
-                                items = json.Data;
-                                total = json.TotalCount ?? items.length;
-                            } else if (Array.isArray(json)) {
-                                items = json;
-                                total = items.length;
-                            } else if (json?.items) {
-                                items = json.items;
-                                total = json.total ?? items.length;
-                            }
-                            callback({ data: items });
-                            const summary = d.getElementById("prj-summary");
-                            if (summary) summary.textContent = `${total} registros`;
-                        })
-                        .catch(err => {
-                            console.error("Error cargando proyectos:", err);
-                            callback({ data: [] });
-                        });
+        // Fechas
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+            const dt = new Date(value);
+            if (!isNaN(dt.getTime())) {
+                return dt.toLocaleDateString('es-DO', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            }
+        }
+
+        return String(value);
+    };
+
+    /**
+     * Realizar petición al API
+     */
+    const fetchJson = async (url: string): Promise<any> => {
+        const headers: Record<string, string> = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, { headers });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status} @ ${url}`);
+        }
+
+        return response.json();
+    };
+
+    // ========================================================================
+    // FUNCIONES PRINCIPALES
+    // ========================================================================
+
+    /**
+     * Obtener columnas desde primer registro
+     */
+    const getColumnsFromData = (sample: ProjectRow): string[] => {
+        if (!sample || typeof sample !== 'object') {
+            return ['ID', 'ProjectCode', 'Name', 'LedgerAccount', 'ProjectStatus', 'CreatedOn'];
+        }
+
+        const excluded = new Set(['RecID', 'RowVersion', 'DataareaID']);
+        return Object.keys(sample).filter(col => !excluded.has(col));
+    };
+
+    /**
+     * Inicializar DataTable
+     */
+    const initializeDataTable = (columns: string[]): void => {
+        // Limpiar thead
+        const theadHtml = `
+            <tr>
+                <th style="width:40px;"><input type="checkbox" id="check-all" class="flat"/></th>
+                ${columns.map(col => `<th data-field="${col}">${titleize(col)}</th>`).join('')}
+            </tr>
+        `;
+        $table.find('thead').html(theadHtml);
+
+        // Inicializar iCheck para checkboxes
+        if ($.fn.iCheck) {
+            $('.flat').iCheck({
+                checkboxClass: 'icheckbox_flat-green'
+            });
+        }
+
+        // Configurar DataTable
+        const dtConfig: any = {
+            processing: true,
+            serverSide: false,
+            responsive: true,
+            autoWidth: false,
+            order: [[1, 'asc']], // Ordenar por primera columna después del checkbox
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            language: {
+                lengthMenu: 'Mostrar _MENU_ registros',
+                zeroRecords: 'No se encontraron resultados',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                infoEmpty: 'No hay registros',
+                infoFiltered: '(filtrado de _MAX_ registros)',
+                search: 'Buscar:',
+                paginate: {
+                    first: 'Primera',
+                    last: 'Última',
+                    next: 'Siguiente',
+                    previous: 'Anterior'
                 },
-                language: {
-                    zeroRecords: "No hay datos",
-                    info: "Mostrando _START_ a _END_ de _TOTAL_ entradas",
-                    infoEmpty: "0 registros",
-                    search: "Buscar:",
-                    lengthMenu: "Mostrar _MENU_ entradas",
-                    paginate: { previous: "Anterior", next: "Siguiente" }
+                processing: 'Procesando...'
+            },
+            columns: [
+                {
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: (_data: any, _type: string, row: ProjectRow) => {
+                        return `<input type="checkbox" class="flat row-check" data-recid="${row.RecID || ''}"/>`;
+                    }
+                },
+                ...columns.map(col => ({
+                    data: col,
+                    name: col,
+                    render: (data: unknown) => formatCell(data, col)
+                }))
+            ],
+            ajax: (_data: any, callback: (result: { data: ProjectRow[] }) => void) => {
+                loadProjects()
+                    .then(items => {
+                        projectsData = items;
+                        callback({ data: items });
+                        updateSummary(items.length);
+                    })
+                    .catch(err => {
+                        console.error('Error cargando proyectos:', err);
+                        showError(err.message);
+                        callback({ data: [] });
+                    });
+            },
+            drawCallback: function () {
+                // Re-inicializar iCheck después de cada draw
+                if ($.fn.iCheck) {
+                    $table.find('.flat').iCheck({
+                        checkboxClass: 'icheckbox_flat-green'
+                    });
+                }
+            }
+        };
+
+        $table.DataTable(dtConfig);
+    };
+
+    /**
+     * Cargar proyectos desde API
+     */
+    const loadProjects = async (): Promise<ProjectRow[]> => {
+        const url = `${apiBase}/Projects?pageNumber=1&pageSize=1000`;
+        console.log('Cargando proyectos desde:', url);
+
+        const response: ProjectResponse = await fetchJson(url);
+
+        if (response?.Data && Array.isArray(response.Data)) {
+            console.log(`✓ ${response.Data.length} proyectos cargados`);
+            return response.Data;
+        }
+
+        throw new Error('Respuesta del API inválida');
+    };
+
+    /**
+     * Actualizar resumen de registros
+     */
+    const updateSummary = (count: number): void => {
+        const summary = d.getElementById('projects-summary');
+        if (summary) {
+            summary.textContent = `${count} proyecto${count !== 1 ? 's' : ''}`;
+        }
+    };
+
+    /**
+     * Mostrar error en la tabla
+     */
+    const showError = (message: string): void => {
+        const errorHtml = `
+            <tr>
+                <td colspan="10" class="text-center text-danger">
+                    <i class="fa fa-exclamation-triangle"></i> ${message}
+                </td>
+            </tr>
+        `;
+        $table.find('tbody').html(errorHtml);
+    };
+
+    /**
+     * Actualizar estado de botones según selección
+     */
+    const updateButtonStates = (): void => {
+        const checkedCount = $table.find('tbody input.row-check:checked').length;
+        $('#btn-edit').prop('disabled', checkedCount !== 1);
+        $('#btn-delete').prop('disabled', checkedCount === 0);
+    };
+
+    /**
+     * Exportar a CSV
+     */
+    const exportToCSV = (): void => {
+        if (!projectsData.length) {
+            alert('No hay datos para exportar');
+            return;
+        }
+
+        const dt: any = $table.DataTable();
+        const rows: ProjectRow[] = dt.rows({ search: 'applied' }).data().toArray();
+
+        if (!rows.length) {
+            alert('No hay datos visibles para exportar');
+            return;
+        }
+
+        // Obtener columnas (excluyendo el checkbox)
+        const columns = dt.columns().header().toArray()
+            .slice(1) // Saltar checkbox
+            .map((th: HTMLElement) => th.getAttribute('data-field') || '');
+
+        // Crear CSV
+        const csvLines: string[] = [
+            columns.map(col => titleize(col)).join(',')
+        ];
+
+        rows.forEach(row => {
+            const line = columns.map(col => {
+                const value = (row as any)[col];
+                const str = value == null ? '' : String(value).replace(/"/g, '""');
+                return /[",\n]/.test(str) ? `"${str}"` : str;
+            }).join(',');
+            csvLines.push(line);
+        });
+
+        // Descargar archivo
+        const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = d.createElement('a');
+        const fileName = `Proyectos_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        link.href = url;
+        link.download = fileName;
+        link.style.visibility = 'hidden';
+        d.body.appendChild(link);
+        link.click();
+        d.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    /**
+     * Eliminar proyecto
+     */
+    const deleteProject = async (recId: string): Promise<void> => {
+        const url = `${apiBase}/Projects/${recId}`;
+        const headers: Record<string, string> = {
+            'Authorization': `Bearer ${token}`
+        };
+
+        const response = await fetch(url, { method: 'DELETE', headers });
+
+        if (!response.ok) {
+            throw new Error(`Error al eliminar proyecto: ${response.status}`);
+        }
+    };
+
+    // ========================================================================
+    // EVENT HANDLERS
+    // ========================================================================
+
+    /**
+     * Checkbox "Seleccionar todos"
+     */
+    $(document).on('ifChanged', '#check-all', function (this: HTMLInputElement) {
+        const isChecked = $(this).is(':checked');
+        $table.find('tbody input.row-check').iCheck(isChecked ? 'check' : 'uncheck');
+    });
+
+    /**
+     * Checkboxes individuales
+     */
+    $(document).on('ifChanged', '.row-check', function () {
+        const total = $table.find('tbody input.row-check').length;
+        const checked = $table.find('tbody input.row-check:checked').length;
+
+        if (checked === total && total > 0) {
+            $('#check-all').iCheck('check');
+        } else {
+            $('#check-all').iCheck('uncheck');
+        }
+
+        updateButtonStates();
+    });
+
+    /**
+     * Botón Nuevo
+     */
+    $('#btn-new').on('click', () => {
+        window.location.href = '/Project/NewEdit';
+    });
+
+    /**
+     * Botón Editar
+     */
+    $('#btn-edit').on('click', () => {
+        const $checked = $table.find('tbody input.row-check:checked').first();
+        if ($checked.length) {
+            const recId = $checked.data('recid');
+            window.location.href = `/Project/NewEdit?recId=${recId}`;
+        }
+    });
+
+    /**
+     * Botón Eliminar
+     */
+    $('#btn-delete').on('click', async () => {
+        const $checked = $table.find('tbody input.row-check:checked');
+        const count = $checked.length;
+
+        if (count === 0) return;
+
+        const message = count === 1
+            ? '¿Está seguro de eliminar este proyecto?'
+            : `¿Está seguro de eliminar ${count} proyectos?`;
+
+        if (!confirm(message)) return;
+
+        try {
+            const promises: Promise<void>[] = [];
+            $checked.each(function () {
+                const recId = $(this).data('recid');
+                if (recId) {
+                    promises.push(deleteProject(recId));
                 }
             });
 
-            // 6) Acciones de selecci�n
-            const updateActions = (): void => {
-                const any = $table.find("tbody input.row-chk:checked").length > 0;
-                $("#btn-prj-edit").prop("disabled", !any);
-                $("#btn-prj-delete").prop("disabled", !any);
-            };
-            $table.on("change", "tbody input.row-chk", updateActions);
-            $table.on("click", "tbody tr", (e: any) => {
-                if ($(e.target).is("input.row-chk")) return;
-                const $chk = $(e.currentTarget).find("input.row-chk");
-                $chk.prop("checked", !$chk.prop("checked"));
-                updateActions();
-            });
+            await Promise.all(promises);
+            alert('Proyecto(s) eliminado(s) correctamente');
 
-        } catch (err) {
-            console.error("Error general:", err);
+            // Recargar tabla
+            $table.DataTable().ajax.reload();
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            alert('Error al eliminar proyecto(s)');
         }
     });
+
+    /**
+     * Botón Exportar
+     */
+    $('#btn-export').on('click', exportToCSV);
+
+    /**
+     * Botón Importar
+     */
+    $('#btn-import').on('click', () => {
+        alert('Funcionalidad de importación próximamente');
+    });
+
+    /**
+     * Click en fila (toggle checkbox)
+     */
+    $table.on('click', 'tbody tr', function (e: any) {
+        if ($(e.target).is('input.row-check') || $(e.target).closest('.icheckbox_flat-green').length) {
+            return;
+        }
+
+        const $row = $(this);
+        const $checkbox = $row.find('input.row-check');
+
+        if ($checkbox.length) {
+            const isChecked = $checkbox.is(':checked');
+            $checkbox.iCheck(isChecked ? 'uncheck' : 'check');
+        }
+    });
+
+    /**
+     * Evento personalizado para recargar
+     */
+    d.addEventListener('projects:list:reload', () => {
+        $table.DataTable().ajax.reload();
+    });
+
+    // ========================================================================
+    // INICIALIZACIÓN
+    // ========================================================================
+
+    $(async function () {
+        try {
+            console.log('Inicializando lista de proyectos...');
+            console.log('Token:', token ? '✓' : '✗');
+            console.log('DataareaID:', dataareaId);
+
+            // Hacer una petición de prueba para obtener estructura
+            const probeUrl = `${apiBase}/Projects?pageNumber=1&pageSize=1`;
+            const probe: ProjectResponse = await fetchJson(probeUrl);
+
+            let columns: string[] = [];
+
+            if (probe?.Data?.length) {
+                columns = getColumnsFromData(probe.Data[0]);
+            } else {
+                // Columnas por defecto si no hay datos
+                columns = ['ID', 'ProjectCode', 'Name', 'LedgerAccount', 'ProjectStatus', 'CreatedOn'];
+            }
+
+            console.log('Columnas detectadas:', columns);
+
+            // Inicializar DataTable con columnas dinámicas
+            initializeDataTable(columns);
+
+        } catch (error) {
+            console.error('Error en inicialización:', error);
+            showError('Error al cargar la configuración de la tabla');
+        }
+    });
+
 })();

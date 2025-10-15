@@ -1,377 +1,246 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// ============================================================================
+// Archivo: UrlsServices.cs
+// Proyecto: RH365.Infrastructure
+// Ruta: RH365.Infrastructure/Services/UrlsServices.cs
+// Descripción:
+//   - Servicio centralizado de URLs para todos los endpoints del API
+//   - URL base configurable desde appsettings.json
+//   - Punto único de mantenimiento para cambios de endpoints
+// ============================================================================
+
+using Microsoft.Extensions.Configuration;
 
 namespace RH365.Infrastructure.Services
 {
-    public class UrlsServices
+    /// <summary>
+    /// Servicio centralizado para gestión de URLs del API
+    /// </summary>
+    public interface IUrlsService
     {
-        #region Url
-        public string urlBaseOne = "http://localhost:9595/api"; // local
+        string GetUrl(string endpoint);
+        string BaseUrl { get; }
+    }
 
-        #endregion
+    public class UrlsService : IUrlsService
+    {
+        private readonly IConfiguration _configuration;
 
-        public string GetUrl(string _type)
+        public UrlsService(IConfiguration configuration)
         {
-            string UrlResponse = string.Empty;
+            _configuration = configuration;
+        }
 
-            switch (_type)
+        /// <summary>
+        /// URL base del API desde configuración
+        /// </summary>
+        public string BaseUrl => _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:9595/api";
+
+        /// <summary>
+        /// Obtiene la URL completa de un endpoint
+        /// </summary>
+        public string GetUrl(string endpoint)
+        {
+            var urls = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                //Historial de empleados
-                case "CalendarHoliday":
-                    UrlResponse = $"{urlBaseOne}calendarholidays";
-                    break;
-                //GeneralConfig
-                case "GeneralConfig":
-                    UrlResponse = $"{urlBaseOne}generalconfigs";
-                    break;
+                // Auth
+                ["Auth"] = $"{BaseUrl}/Auth",
+                ["Auth.Login"] = $"{BaseUrl}/Auth/login",
+                ["Auth.ChangePassword"] = $"{BaseUrl}/Auth/change-password",
+                ["Auth.Me"] = $"{BaseUrl}/Auth/me",
+                ["Auth.TestHash"] = $"{BaseUrl}/Auth/test-hash",
 
-                //Historial de empleados
-                case "HorarioEmpleado":
-                    UrlResponse = $"{urlBaseOne}employeeworkcalendars";
-                    break;
+                // Calendar Holidays
+                ["CalendarHolidays"] = $"{BaseUrl}/CalendarHolidays",
 
-                //Historial de empleados
-                case "Employeehistories":
-                    UrlResponse = $"{urlBaseOne}employeehistories";
-                    break;
+                // ClassRooms
+                ["ClassRooms"] = $"{BaseUrl}/ClassRooms",
 
-                //Configuración reportes
-                case "ReportConfig":
-                    UrlResponse = $"{urlBaseOne}reportconfig";
-                    break;
+                // Companies
+                ["Companies"] = $"{BaseUrl}/Companies",
+                ["CompaniesAssignedToUsers"] = $"{BaseUrl}/CompaniesAssignedToUsers",
 
-                //Contratar empleado
-                case "HireEmployee":
-                    UrlResponse = $"{urlBaseOne}employees";
-                    break;
+                // Countries
+                ["Countries"] = $"{BaseUrl}/Countries",
 
-                //BatchHistory
-                case "BatchHistory":
-                    UrlResponse = $"{urlBaseOne}importbatch";
-                    break;
+                // Course Employees
+                ["CourseEmployees"] = $"{BaseUrl}/CourseEmployees",
 
-                //Lista de candidatos a empleados
-                case "Candidate":
-                    UrlResponse = $"{urlBaseOne}employees/candidate";
-                    break;
+                // Course Locations
+                ["CourseLocations"] = $"{BaseUrl}/CourseLocations",
 
-                //Lista empleados dados de baja
-                case "Dissmis":
-                    UrlResponse = $"{urlBaseOne}employees/dissmis";
-                    break;
-                //Lista de monedas
-                case "Currency":
-                    UrlResponse = $"{urlBaseOne}currencys";
-                    break;
-                //validar usuario del sistema
-                case "ValidateUser":
-                    //UrlResponse = $"{urlBase}api/login";
-                    UrlResponse = $"{urlBaseOne}login";
-                    break;
-                //menu del sistema
-                case "Menu":
-                    UrlResponse = $"{urlBaseOne}menusapp";
-                    break;
-                //roles
-                case "Roles":
-                    UrlResponse = $"{urlBaseOne}roles";
-                    break;
-                //Lista de departamentos inactivos
-                case "Departmentdisabled":
-                    UrlResponse = $"{urlBaseOne}departaments/disabled";
-                    break;
-                //Lista de departamentos activos 
-                case "Departments":
-                    UrlResponse = $"{urlBaseOne}departaments/enabled";
-                    break;
-                //Lista de usuarios del sistema
-                case "User":
-                    //UrlResponse = $"{urlBase}api/users";
-                    UrlResponse = $"{urlBaseOne}users";
-                    break;
-                //Formato de codigo para numero y fechas
-                case "FormatCode":
-                    UrlResponse = $"{urlBaseOne}regionalcodes";
-                    break;
-                //Todas las empresas
-                case "Company":
-                    UrlResponse = $"{urlBaseOne}companies";
-                    break;
+                // Courses
+                ["Courses"] = $"{BaseUrl}/Courses",
 
-                //Opciones del menu de un usuario
-                case "MenuAssigned":
-                    UrlResponse = $"{urlBaseOne}menustouser";
-                    break;
-                //Empresas de un usuario
-                case "Companiestouser":
-                    UrlResponse = $"{urlBaseOne}companiestouser";
-                    break;
+                // Course Types
+                ["CourseTypes"] = $"{BaseUrl}/CourseTypes",
 
-                //cargar imagen de usuario
-                case "Uploadimageuser":
-                    UrlResponse = $"{urlBaseOne}users/uploadimageuser";
-                    break;
-                //descargar imagen de usuario
-                case "Downloadimageuser":
-                    UrlResponse = $"{urlBaseOne}users/downloadimageuser";
-                    break;
-                //Solicitud de contraseña temporal
-                case "Requestchangepassword":
-                    UrlResponse = $"{urlBaseOne}requestchangepassword";
-                    break;
+                // Currencies
+                ["Currencies"] = $"{BaseUrl}/Currencies",
 
-                //Envio de contraseña
-                case "Sendnewpassword":
-                    //UrlResponse = $"{urlBase}api/sendnewpassword";
-                    UrlResponse = $"{urlBaseOne}sendnewpassword";
-                    break;
-                //Tipo de cursos
-                case "Coursetypes":
-                    UrlResponse = $"{urlBaseOne}coursetypes";
-                    break;
-                //Instructor de cursos
-                case "Instructors":
-                    UrlResponse = $"{urlBaseOne}instructors";
-                    break;
-                //ubicación de cursos
-                case "CourseLocation":
-                    UrlResponse = $"{urlBaseOne}courselocations";
-                    break;
-                //salon de cursos
-                case "ClassRoom":
-                    UrlResponse = $"{urlBaseOne}classrooms";
-                    break;
+                // Deduction Codes
+                ["DeductionCodes"] = $"{BaseUrl}/DeductionCodes",
+                ["DeductionCodes.Enabled"] = $"{BaseUrl}/DeductionCodes/enabled",
+                ["DeductionCodes.Disabled"] = $"{BaseUrl}/DeductionCodes/disabled",
 
-                //para cambiar las opciones por defecto de un usuario
-                case "UserOptions":
-                    //UrlResponse = $"{urlBase}api/users/options";
-                    UrlResponse = $"{urlBaseOne}users/options";
-                    break;
+                // Departments
+                ["Departments"] = $"{BaseUrl}/Departments",
+                ["Departments.Enabled"] = $"{BaseUrl}/Departments/enabled",
+                ["Departments.Disabled"] = $"{BaseUrl}/Departments/disabled",
 
-                //Cursos
-                case "Course":
-                    UrlResponse = $"{urlBaseOne}courses";
-                    break;
+                // Disability Types
+                ["DisabilityTypes"] = $"{BaseUrl}/DisabilityTypes",
 
-                //Puestos activos
-                case "PositionsEnabled":
-                    UrlResponse = $"{urlBaseOne}positions/enabled";
-                    break;
+                // Earning Codes
+                ["EarningCodes"] = $"{BaseUrl}/EarningCodes",
+                ["EarningCodes.Enabled"] = $"{BaseUrl}/EarningCodes/enabled",
+                ["EarningCodes.Disabled"] = $"{BaseUrl}/EarningCodes/disabled",
+                ["EarningCodes.Version"] = $"{BaseUrl}/EarningCodes/version",
 
-                //Puestos inactivos
-                case "PositionsDisabled":
-                    UrlResponse = $"{urlBaseOne}positions/disabled";
-                    break;
+                // Education Levels
+                ["EducationLevels"] = $"{BaseUrl}/EducationLevels",
 
+                // Employee Bank Accounts
+                ["EmployeeBankAccounts"] = $"{BaseUrl}/EmployeeBankAccounts",
 
-                //Cargos activos
-                case "JobsEnabled":
-                    UrlResponse = $"{urlBaseOne}jobs/enabled";
-                    break;
+                // Employee Contacts Inf
+                ["EmployeeContactsInf"] = $"{BaseUrl}/EmployeeContactsInf",
 
-                //Cargos inactivos
-                case "JobsDisabled":
-                    UrlResponse = $"{urlBaseOne}jobs/disabled";
-                    break;
+                // Employee Deduction Codes
+                ["EmployeeDeductionCodes"] = $"{BaseUrl}/EmployeeDeductionCodes",
 
-                //Lista de vacantes
-                case "Vacants":
-                    UrlResponse = $"{urlBaseOne}positions/vacants";
-                    break;
+                // Employee Departments
+                ["EmployeeDepartments"] = $"{BaseUrl}/EmployeeDepartments",
 
-                //Lista de requisitos de departamentos
-                case "Positionrequirements":
-                    UrlResponse = $"{urlBaseOne}positionrequirements";
-                    break;
+                // Employee Documents
+                ["EmployeeDocuments"] = $"{BaseUrl}/EmployeeDocuments",
 
-                //Lista de empleados activos
-                case "EmployeesEnabled":
-                    UrlResponse = $"{urlBaseOne}employees/enabled";
-                    break;
+                // Employee Earning Codes
+                ["EmployeeEarningCodes"] = $"{BaseUrl}/EmployeeEarningCodes",
 
-                //Lista de empleados inactivos
-                case "EmployeesDisabled":
-                    UrlResponse = $"{urlBaseOne}employees/disabled";
-                    break;
+                // Employee Extra Hours
+                ["EmployeeExtraHours"] = $"{BaseUrl}/EmployeeExtraHours",
 
-                //Lista de empleados inactivos
-                case "Employees":
-                    UrlResponse = $"{urlBaseOne}employees";
-                    break;
+                // Employee Histories
+                ["EmployeeHistories"] = $"{BaseUrl}/EmployeeHistories",
 
-                //Direcciones de empleados
-                case "Employeeaddress":
-                    UrlResponse = $"{urlBaseOne}employeeaddress";
-                    break;
+                // Employee Images
+                ["EmployeeImages"] = $"{BaseUrl}/EmployeeImages",
 
-                //Información de contacto de empleados
-                case "EmployeeContacts":
-                    UrlResponse = $"{urlBaseOne}employeecontactinfs";
-                    break;
+                // Employee Loan Histories
+                ["EmployeeLoanHistories"] = $"{BaseUrl}/EmployeeLoanHistories",
 
-                //Información de cuentas bancarias de empleados
-                case "EmployeeBankAccount":
-                    UrlResponse = $"{urlBaseOne}employeebankaccounts";
-                    break;
+                // Employee Loans
+                ["EmployeeLoans"] = $"{BaseUrl}/EmployeeLoans",
 
-                //Lista de paises
-                case "Countries":
-                    UrlResponse = $"{urlBaseOne}countries";
-                    break;
+                // Employee Positions
+                ["EmployeePositions"] = $"{BaseUrl}/EmployeePositions",
 
-                //Lista codigos de ganancias
-                case "Earningcodes":
-                    UrlResponse = $"{urlBaseOne}earningcodes/enabled";
-                    break;
+                // Employees
+                ["Employees"] = $"{BaseUrl}/Employees",
+                ["Employees.Enabled"] = $"{BaseUrl}/Employees/enabled",
+                ["Employees.Disabled"] = $"{BaseUrl}/Employees/disabled",
+                ["Employees.Candidate"] = $"{BaseUrl}/Employees/candidate",
+                ["Employees.Dissmis"] = $"{BaseUrl}/Employees/dissmis",
 
-                //codigos de ganancias para versiones
-                case "EarningcodesVersion":
-                    UrlResponse = $"{urlBaseOne}earningcodes/version";
-                    break;
+                // Employees Address
+                ["EmployeesAddress"] = $"{BaseUrl}/EmployeesAddress",
 
-                //Lista codigos de ganancias deshabilitados
-                case "Earningcodedisabled":
-                    UrlResponse = $"{urlBaseOne}earningcodes/disabled";
-                    break;
+                // Employee Taxes
+                ["EmployeeTaxes"] = $"{BaseUrl}/EmployeeTaxes",
 
-                //Lista codigos de deducciones activos
-                case "Deductioncodes":
-                    UrlResponse = $"{urlBaseOne}deductioncodes/enabled";
-                    break;
+                // Employee Work Calendars
+                ["EmployeeWorkCalendars"] = $"{BaseUrl}/EmployeeWorkCalendars",
 
-                //Lista codigos de deducciones inactivos
-                case "DeductioncodeDisabled":
-                    UrlResponse = $"{urlBaseOne}deductioncodes/disabled";
-                    break;
+                // Employee Work Control Calendars
+                ["EmployeeWorkControlCalendars"] = $"{BaseUrl}/EmployeeWorkControlCalendars",
 
-                //Codigos de ganancias por empleados
-                case "Employeeearningcodes":
-                    UrlResponse = $"{urlBaseOne}employeeearningcodes";
-                    break;
+                // General Configs
+                ["GeneralConfigs"] = $"{BaseUrl}/GeneralConfigs",
 
-                //Codigos de deduciones por empleados
-                case "Employeedeductioncodes":
-                    UrlResponse = $"{urlBaseOne}employeedeductioncodes";
-                    break;
+                // Jobs
+                ["Jobs"] = $"{BaseUrl}/Jobs",
+                ["Jobs.Enabled"] = $"{BaseUrl}/Jobs/enabled",
+                ["Jobs.Disabled"] = $"{BaseUrl}/Jobs/disabled",
 
-                //Departamentos por empleados
-                case "Employeedepartments":
-                    UrlResponse = $"{urlBaseOne}employeedepartments";
-                    break;
+                // Loans
+                ["Loans"] = $"{BaseUrl}/Loans",
+                ["Loans.Enabled"] = $"{BaseUrl}/Loans/enabled",
+                ["Loans.Disabled"] = $"{BaseUrl}/Loans/disabled",
 
-                //Puesto por empleados
-                case "Employeepositions":
-                    UrlResponse = $"{urlBaseOne}employeepositions";
-                    break;
+                // Menu Assigned To Users
+                ["MenuAssignedToUsers"] = $"{BaseUrl}/MenuAssignedToUsers",
 
-                //Documentos de empleado
-                case "EmployeeDocument":
-                    UrlResponse = $"{urlBaseOne}employeedocuments";
-                    break;
+                // Menus Apps
+                ["MenusApps"] = $"{BaseUrl}/MenusApps",
 
-                //Nominas activas
-                case "Payroll":
-                    UrlResponse = $"{urlBaseOne}payrolls/enabled";
-                    break;
+                // Occupations
+                ["Occupations"] = $"{BaseUrl}/Occupations",
 
-                //Nominas inactivas
-                case "PayrollDisabled":
-                    UrlResponse = $"{urlBaseOne}payrolls/disabled";
-                    break;
+                // Pay Cycles
+                ["PayCycles"] = $"{BaseUrl}/PayCycles",
 
-                //Monedas
-                case "Currencies":
-                    UrlResponse = $"{urlBaseOne}currencies";
-                    break;
+                // Payroll Process Actions
+                ["PayrollProcessActions"] = $"{BaseUrl}/PayrollProcessActions",
 
-                //Dashboard
-                case "Dashboard":
-                    UrlResponse = $"{urlBaseOne}dashboard";
-                    break;
+                // Payroll Process Details
+                ["PayrollProcessDetails"] = $"{BaseUrl}/PayrollProcessDetails",
 
-                //Proyectos 
-                //Ajustar la URL desde la api 
-                case "ProjectsEnabled":
-                    UrlResponse = $"{urlBaseOne}projects/enabled";
-                    break;
+                // Payrolls
+                ["Payrolls"] = $"{BaseUrl}/Payrolls",
+                ["Payrolls.Enabled"] = $"{BaseUrl}/Payrolls/enabled",
+                ["Payrolls.Disabled"] = $"{BaseUrl}/Payrolls/disabled",
 
-                //Categoría de proyectos activa
-                case "ProjCategoryEnabled":
-                    UrlResponse = $"{urlBaseOne}projcategories/enabled";
-                    break;
+                // Payrolls Processes
+                ["PayrollsProcesses"] = $"{BaseUrl}/PayrollsProcesses",
 
-                //Categoría de proyectos inactiva
-                case "ProjCategoryDisabled":
-                    UrlResponse = $"{urlBaseOne}projcategories/disabled";
-                    break;
+                // Position Requirements
+                ["PositionRequirements"] = $"{BaseUrl}/PositionRequirements",
 
-                //PayCycle
-                case "PayCycle":
-                    UrlResponse = $"{urlBaseOne}paycycle";
-                    break;
+                // Positions
+                ["Positions"] = $"{BaseUrl}/Positions",
+                ["Positions.Enabled"] = $"{BaseUrl}/Positions/enabled",
+                ["Positions.Disabled"] = $"{BaseUrl}/Positions/disabled",
+                ["Positions.Vacants"] = $"{BaseUrl}/Positions/vacants",
 
-                //Proceso de nómina
-                case "PayrollProcess":
-                    UrlResponse = $"{urlBaseOne}payrollprocess";
-                    break;
-                //detalle de proceso de nomina
-                case "Payrollprocessdetails":
-                    UrlResponse = $"{urlBaseOne}payrollprocessdetails​";
-                    break;
+                // Project Categories
+                ["ProjectCategories"] = $"{BaseUrl}/ProjectCategories",
+                ["ProjectCategories.Enabled"] = $"{BaseUrl}/ProjectCategories/enabled",
+                ["ProjectCategories.Disabled"] = $"{BaseUrl}/ProjectCategories/disabled",
 
-                //Novedades empleados
-                case "Payrollprocessactions":
-                    UrlResponse = $"{urlBaseOne}payrollprocessactions";
-                    break;
+                // Projects
+                ["Projects"] = $"{BaseUrl}/Projects",
+                ["Projects.Enabled"] = $"{BaseUrl}/Projects/enabled",
 
-                //Prestamos de empleado
-                case "Employeeloans":
-                    UrlResponse = $"{urlBaseOne}employeeloans";
-                    break;
+                // Provinces
+                ["Provinces"] = $"{BaseUrl}/Provinces",
 
-                //Prestamos activos
-                case "Loans":
-                    UrlResponse = $"{urlBaseOne}loans/enabled";
-                    break;
+                // Tax Details
+                ["TaxDetails"] = $"{BaseUrl}/TaxDetails",
 
-                //Prestamos inactivos
-                case "DisabledLoands":
-                    UrlResponse = $"{urlBaseOne}loans/disabled";
-                    break;
+                // Taxis (Taxes)
+                ["Taxis"] = $"{BaseUrl}/Taxis",
+                ["Taxis.Enabled"] = $"{BaseUrl}/Taxis/enabled",
+                ["Taxis.Disabled"] = $"{BaseUrl}/Taxis/disabled",
 
-                //Impuesto
-                case "Taxes​Enabled":
-                    UrlResponse = $"{urlBaseOne}taxes/enabled";
-                    break;
+                // User Grid Views
+                ["UserGridViews"] = $"{BaseUrl}/UserGridViews",
 
-                //Impuesto inactivos
-                case "Taxes​Disabled":
-                    UrlResponse = $"{urlBaseOne}taxes/disabled";
-                    break;
+                // User Images
+                ["UserImages"] = $"{BaseUrl}/UserImages",
+                ["UserImages.Upload"] = $"{BaseUrl}/UserImages/upload",
+                ["UserImages.Download"] = $"{BaseUrl}/UserImages/download",
 
-                //Impuesto
-                case "Taxdetails":
-                    UrlResponse = $"{urlBaseOne}taxdetails";
-                    break;
+                // Users
+                ["Users"] = $"{BaseUrl}/Users",
+                ["Users.Options"] = $"{BaseUrl}/Users/options",
 
-                //Impuestos de empleados
-                case "EmployeeTax":
-                    UrlResponse = $"{urlBaseOne}employeetaxes";
-                    break;
+                // Dashboard
+                ["Dashboard"] = $"{BaseUrl}/Dashboard",
+            };
 
-                //Hora extras empleados
-                case "hora":
-                    UrlResponse = $"{urlBaseOne}​employeeextrahours";
-                    break;
-
-                case "Provinces":
-                    UrlResponse = $"{urlBaseOne}​provinces";
-                    break;
-            }
-
-            return UrlResponse;
-
+            return urls.TryGetValue(endpoint, out var url)
+                ? url
+                : throw new ArgumentException($"Endpoint '{endpoint}' no encontrado en UrlsService", nameof(endpoint));
         }
     }
 }

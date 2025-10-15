@@ -28,27 +28,42 @@ namespace RH365.Configuration
             var apiUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:9595/api";
             var timeout = configuration.GetValue<int>("ApiSettings:Timeout", 30);
 
-            // HttpClient para AuthService
+            // ================================================================
+            // Servicios básicos (sin HttpClient)
+            // ================================================================
+            services.AddScoped<IUrlsService, UrlsService>();
+            services.AddScoped<IUserContext, UserContext>();
+
+            // ================================================================
+            // Servicios con HttpClient
+            // ================================================================
+
+            // AuthService
             services.AddHttpClient<AuthService>(client =>
             {
                 client.BaseAddress = new Uri(apiUrl);
                 client.Timeout = TimeSpan.FromSeconds(timeout);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
+            services.AddScoped<AuthService>();
 
-            // HttpClient para MenuService
+            // MenuService
             services.AddHttpClient<MenuService>(client =>
             {
                 client.BaseAddress = new Uri(apiUrl);
                 client.Timeout = TimeSpan.FromSeconds(timeout);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
-
-            // Registrar servicios como Scoped
-            services.AddScoped<AuthService>();
             services.AddScoped<MenuService>();
 
-            // Agregar más servicios aquí conforme se necesiten
+            // ProjectService
+            services.AddHttpClient<IProjectService, ProjectService>(client =>
+            {
+                client.BaseAddress = new Uri(apiUrl);
+                client.Timeout = TimeSpan.FromSeconds(timeout);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+            services.AddScoped<IProjectService, ProjectService>();
         }
 
         /// <summary>

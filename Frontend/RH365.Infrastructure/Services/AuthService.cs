@@ -4,6 +4,7 @@
 // Ruta: RH365.Infrastructure/Services/AuthService.cs
 // Descripción:
 //   - Servicio para comunicación con API de autenticación
+//   - Usa UrlsService centralizado
 //   - Manejo de tokens JWT y sesiones
 // ============================================================================
 
@@ -13,7 +14,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using AuthModels = RH365.Core.Domain.Models.Auth;
 
 namespace RH365.Infrastructure.Services
@@ -24,14 +24,12 @@ namespace RH365.Infrastructure.Services
     public class AuthService
     {
         private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration;
-        private readonly string _baseUrl;
+        private readonly IUrlsService _urlsService;
 
-        public AuthService(HttpClient httpClient, IConfiguration configuration)
+        public AuthService(HttpClient httpClient, IUrlsService urlsService)
         {
             _httpClient = httpClient;
-            _configuration = configuration;
-            _baseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:9595/api";
+            _urlsService = urlsService;
         }
 
         /// <summary>
@@ -41,20 +39,18 @@ namespace RH365.Infrastructure.Services
         {
             try
             {
-                // Serializar request
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8);
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-                // Headers para multiempresa
                 if (!string.IsNullOrEmpty(request.CompanyId))
                 {
                     _httpClient.DefaultRequestHeaders.Remove("X-Company-Id");
                     _httpClient.DefaultRequestHeaders.Add("X-Company-Id", request.CompanyId);
                 }
 
-                // Llamar al API
-                var response = await _httpClient.PostAsync($"{_baseUrl}/Auth/login", content);
+                var url = _urlsService.GetUrl("Auth.Login");
+                var response = await _httpClient.PostAsync(url, content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -65,7 +61,6 @@ namespace RH365.Infrastructure.Services
                     return loginResponse ?? throw new Exception("Respuesta inválida del servidor");
                 }
 
-                // Manejar errores
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new Exception($"Error de autenticación: {errorContent}");
             }
@@ -90,11 +85,12 @@ namespace RH365.Infrastructure.Services
                 var content = new StringContent(json, Encoding.UTF8);
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-                // Limpiar headers anteriores y agregar token
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.PostAsync($"{_baseUrl}/Auth/change-password", content);
+                var url = _urlsService.GetUrl("Auth.ChangePassword");
+                var response = await _httpClient.PostAsync(url, content);
+
                 return response.IsSuccessStatusCode;
             }
             catch (Exception)
@@ -113,7 +109,8 @@ namespace RH365.Infrastructure.Services
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.GetAsync($"{_baseUrl}/Auth/me");
+                var url = _urlsService.GetUrl("Auth.Me");
+                var response = await _httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -137,7 +134,6 @@ namespace RH365.Infrastructure.Services
         /// </summary>
         public Task LogoutAsync()
         {
-            // Limpiar headers
             _httpClient.DefaultRequestHeaders.Authorization = null;
             _httpClient.DefaultRequestHeaders.Remove("X-Company-Id");
             return Task.CompletedTask;
@@ -153,7 +149,9 @@ namespace RH365.Infrastructure.Services
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.GetAsync($"{_baseUrl}/Auth/test-hash");
+                var url = _urlsService.GetUrl("Auth.TestHash");
+                var response = await _httpClient.GetAsync(url);
+
                 return response.IsSuccessStatusCode;
             }
             catch
