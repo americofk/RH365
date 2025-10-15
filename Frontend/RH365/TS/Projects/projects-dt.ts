@@ -109,14 +109,17 @@ interface ProjectResponse {
 
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
+            console.log('Token enviado:', token.substring(0, 50) + '...'); // Primeros 50 caracteres
+        } else {
+            console.error('⚠️ No hay token disponible');
         }
 
-        const response = await fetch(url, { headers });
+        console.log('Headers enviados:', headers);
 
+        const response = await fetch(url, { headers });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status} @ ${url}`);
         }
-
         return response.json();
     };
 
@@ -226,7 +229,7 @@ interface ProjectResponse {
      * Cargar proyectos desde API
      */
     const loadProjects = async (): Promise<ProjectRow[]> => {
-        const url = `${apiBase}/Projects?pageNumber=1&pageSize=1000`;
+        const url = `${apiBase}/Projects?pageNumber=1&pageSize=100`;
         console.log('Cargando proyectos desde:', url);
 
         const response: ProjectResponse = await fetchJson(url);

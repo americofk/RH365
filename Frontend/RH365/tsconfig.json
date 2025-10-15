@@ -4,7 +4,7 @@
         "target": "ES2015",
         "module": "ES2015",
         "lib": [ "ES2015", "DOM", "DOM.Iterable" ],
-        "outDir": "./JS",
+        "outDir": "./wwwroot/js",
         "rootDir": "./TS",
         "sourceMap": true,
         "removeComments": false,

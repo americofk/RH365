@@ -95,7 +95,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         };
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
+            console.log('Token enviado:', token.substring(0, 50) + '...'); // Primeros 50 caracteres
         }
+        else {
+            console.error('⚠️ No hay token disponible');
+        }
+        console.log('Headers enviados:', headers);
         const response = yield fetch(url, { headers });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status} @ ${url}`);
@@ -201,7 +206,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
      * Cargar proyectos desde API
      */
     const loadProjects = () => __awaiter(this, void 0, void 0, function* () {
-        const url = `${apiBase}/Projects?pageNumber=1&pageSize=1000`;
+        const url = `${apiBase}/Projects?pageNumber=1&pageSize=100`;
         console.log('Cargando proyectos desde:', url);
         const response = yield fetchJson(url);
         if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
