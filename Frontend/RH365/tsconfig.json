@@ -1,9 +1,9 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "ES2015",
+        "target": "ES2016",
         "module": "ES2015",
-        "lib": [ "ES2015", "DOM", "DOM.Iterable" ],
+        "lib": [ "ES2016", "DOM", "DOM.Iterable" ],
         "outDir": "./wwwroot/js",
         "rootDir": "./TS",
         "sourceMap": true,
@@ -20,7 +20,8 @@
         "declarationMap": false,
         "inlineSources": true,
         "preserveConstEnums": true,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "types": [ "jquery", "jqueryui", "bootstrap" ]
     },
     "include": [
         "TS/**/*.ts"

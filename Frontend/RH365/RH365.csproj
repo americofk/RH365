@@ -43,6 +43,7 @@
 
 	<ItemGroup>
 		<Folder Include="Models\" />
+		<Folder Include="TS\GridViews\" />
 		<Folder Include="TS\Projects\" />
 		<Folder Include="wwwroot\html\" />
 	</ItemGroup>
@@ -205,6 +206,10 @@
 		<None Include="wwwroot\vendors\parsleyjs\bower_components\uwidget\LICENSE" />
 		<None Include="wwwroot\vendors\parsleyjs\bower_components\uwidget\uwidget.js" />
 		<None Include="wwwroot\vendors\parsleyjs\bower_components\uwidget\uwidget.less" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
 	</ItemGroup>
 
 	<ItemGroup>

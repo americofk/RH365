@@ -1,0 +1,463 @@
+﻿/* ============================================================================
+   Archivo: tables.css
+   Proyecto: RH365.WebMVC
+   Ruta: wwwroot/css/tables.css
+   Descripción: Estilos centralizados para todas las tablas del sistema
+   ============================================================================ */
+
+/* =============================================================================
+   TABLAS BASE
+   ============================================================================= */
+
+.rh365-table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+    .rh365-table thead {
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 2px solid #2A3F54;
+    }
+
+        .rh365-table thead th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: #2A3F54;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-right: 1px solid #dee2e6;
+            position: relative;
+        }
+
+            .rh365-table thead th:last-child {
+                border-right: none;
+            }
+
+            .rh365-table thead th.sortable {
+                cursor: pointer;
+                user-select: none;
+            }
+
+                .rh365-table thead th.sortable:hover {
+                    background-color: #e2e6ea;
+                }
+
+            .rh365-table thead th.sorted-asc::after {
+                content: " ▲";
+                font-size: 10px;
+                color: #2A3F54;
+            }
+
+            .rh365-table thead th.sorted-desc::after {
+                content: " ▼";
+                font-size: 10px;
+                color: #2A3F54;
+            }
+
+    .rh365-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: background-color 0.15s ease;
+    }
+
+        .rh365-table tbody tr:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .rh365-table tbody tr.selected {
+            background-color: #D4E4F7 !important;
+        }
+
+    .rh365-table tbody td {
+        padding: 12px 15px;
+        font-size: 14px;
+        color: #495057;
+        vertical-align: middle;
+        border-right: 1px solid #f0f0f0;
+    }
+
+        .rh365-table tbody td:last-child {
+            border-right: none;
+        }
+
+    /* Columna de checkbox */
+    .rh365-table .col-checkbox {
+        width: 40px;
+        text-align: center;
+        padding: 8px !important;
+    }
+
+    /* Estados */
+    .rh365-table tbody tr.row-active {
+        border-left: 3px solid #28a745;
+    }
+
+    .rh365-table tbody tr.row-inactive {
+        border-left: 3px solid #dc3545;
+        opacity: 0.7;
+    }
+
+    .rh365-table tbody tr.row-warning {
+        border-left: 3px solid #ffc107;
+    }
+
+/* =============================================================================
+   BADGES Y LABELS EN TABLAS
+   ============================================================================= */
+
+.rh365-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 3px;
+}
+
+.rh365-badge-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.rh365-badge-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.rh365-badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.rh365-badge-info {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.rh365-badge-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.rh365-badge-primary {
+    background-color: #2A3F54;
+    color: #fff;
+}
+
+/* =============================================================================
+   TOOLBAR DE TABLAS
+   ============================================================================= */
+
+.rh365-table-toolbar {
+    background-color: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .rh365-table-toolbar .toolbar-left,
+    .rh365-table-toolbar .toolbar-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .rh365-table-toolbar .btn-group {
+        margin-right: 5px;
+    }
+
+/* =============================================================================
+   SELECTOR DE VISTAS
+   ============================================================================= */
+
+.rh365-view-selector {
+    background-color: #fff;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .rh365-view-selector .view-dropdown {
+        min-width: 200px;
+    }
+
+    .rh365-view-selector .view-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+/* =============================================================================
+   PAGINACIÓN
+   ============================================================================= */
+
+.rh365-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+    .rh365-pagination .pagination-info {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .rh365-pagination .pagination-controls {
+        display: flex;
+        gap: 5px;
+    }
+
+/* =============================================================================
+   FILTROS Y BÚSQUEDA
+   ============================================================================= */
+
+.rh365-search-box {
+    position: relative;
+    max-width: 300px;
+}
+
+    .rh365-search-box input {
+        padding-right: 35px;
+    }
+
+    .rh365-search-box .search-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        pointer-events: none;
+    }
+
+/* =============================================================================
+   COLUMNAS RESPONSIVAS
+   ============================================================================= */
+
+@media (max-width: 768px) {
+    .rh365-table {
+        font-size: 12px;
+    }
+
+        .rh365-table thead th,
+        .rh365-table tbody td {
+            padding: 8px 10px;
+        }
+
+    .rh365-table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .rh365-table-toolbar .toolbar-left,
+        .rh365-table-toolbar .toolbar-right {
+            justify-content: center;
+        }
+}
+
+/* =============================================================================
+   GESTIÓN DE COLUMNAS (Modal)
+   ============================================================================= */
+
+.rh365-columns-manager {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.rh365-column-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    cursor: move;
+    transition: all 0.2s;
+}
+
+    .rh365-column-item:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .rh365-column-item.dragging {
+        opacity: 0.5;
+    }
+
+    .rh365-column-item .drag-handle {
+        margin-right: 10px;
+        color: #6c757d;
+        cursor: grab;
+    }
+
+        .rh365-column-item .drag-handle:active {
+            cursor: grabbing;
+        }
+
+    .rh365-column-item .column-checkbox {
+        margin-right: 10px;
+    }
+
+    .rh365-column-item .column-name {
+        flex: 1;
+        font-weight: 500;
+        color: #2A3F54;
+    }
+
+    .rh365-column-item.column-hidden {
+        opacity: 0.5;
+    }
+
+/* =============================================================================
+   LOADING STATE
+   ============================================================================= */
+
+.rh365-table-loading {
+    position: relative;
+}
+
+    .rh365-table-loading::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+.rh365-loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2A3F54;
+    border-radius: 50%;
+    animation: rh365-spin 1s linear infinite;
+}
+
+@keyframes rh365-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* =============================================================================
+   EMPTY STATE
+   ============================================================================= */
+
+.rh365-table-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+    .rh365-table-empty .empty-icon {
+        font-size: 48px;
+        color: #dee2e6;
+        margin-bottom: 15px;
+    }
+
+    .rh365-table-empty .empty-message {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .rh365-table-empty .empty-hint {
+        font-size: 14px;
+        color: #adb5bd;
+    }
+
+/* =============================================================================
+   ACCIONES EN FILA (Botones inline)
+   ============================================================================= */
+
+.rh365-row-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+    .rh365-row-actions .btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+/* =============================================================================
+   INTEGRACIÓN CON DATATABLES (si lo usas)
+   ============================================================================= */
+
+.rh365-table.dataTable {
+    border-collapse: collapse !important;
+}
+
+    .rh365-table.dataTable thead .sorting,
+    .rh365-table.dataTable thead .sorting_asc,
+    .rh365-table.dataTable thead .sorting_desc {
+        background-image: none !important;
+    }
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    color: #2A3F54;
+}
+
+/* =============================================================================
+   COLUMNAS CON TIPOS ESPECÍFICOS
+   ============================================================================= */
+
+.rh365-table .col-id {
+    font-family: 'Courier New', monospace;
+    color: #6c757d;
+    font-size: 12px;
+}
+
+.rh365-table .col-date {
+    white-space: nowrap;
+    color: #6c757d;
+}
+
+.rh365-table .col-number {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+}
+
+.rh365-table .col-currency {
+    text-align: right;
+    font-weight: 500;
+}
+
+.rh365-table .col-actions {
+    text-align: right;
+    white-space: nowrap;
+}

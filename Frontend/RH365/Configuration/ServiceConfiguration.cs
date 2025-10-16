@@ -64,6 +64,15 @@ namespace RH365.Configuration
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
             services.AddScoped<IProjectService, ProjectService>();
+
+            // UserGridViewsService
+            services.AddHttpClient<IUserGridViewsService, UserGridViewsService>(client =>
+            {
+                client.BaseAddress = new Uri(apiUrl);
+                client.Timeout = TimeSpan.FromSeconds(timeout);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+            services.AddScoped<IUserGridViewsService, UserGridViewsService>();
         }
 
         /// <summary>

@@ -5,29 +5,29 @@
 // Descripción:
 //   - Servicio para comunicación con API de Proyectos
 //   - Maneja CRUD completo y exportación de datos
-//   - Usa UrlsService centralizado
+//   - Usa modelos de RH365.Core
 // ============================================================================
 
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RH365.Core.Domain.Models.Project;
 
 namespace RH365.Infrastructure.Services
 {
     public interface IProjectService
     {
         Task<ProjectListResponse> GetAllAsync(int pageNumber = 1, int pageSize = 100, CancellationToken ct = default);
-        Task<ProjectDto> GetByIdAsync(long recId, CancellationToken ct = default);
-        Task<ProjectDto> CreateAsync(CreateProjectRequest request, CancellationToken ct = default);
-        Task<ProjectDto> UpdateAsync(long recId, UpdateProjectRequest request, CancellationToken ct = default);
+        Task<ProjectResponse> GetByIdAsync(long recId, CancellationToken ct = default);
+        Task<ProjectResponse> CreateAsync(CreateProjectRequest request, CancellationToken ct = default);
+        Task<ProjectResponse> UpdateAsync(long recId, UpdateProjectRequest request, CancellationToken ct = default);
         Task<bool> DeleteAsync(long recId, CancellationToken ct = default);
-        Task<List<ProjectDto>> GetEnabledAsync(CancellationToken ct = default);
+        Task<List<ProjectResponse>> GetEnabledAsync(CancellationToken ct = default);
     }
 
     public class ProjectService : IProjectService
@@ -44,18 +44,6 @@ namespace RH365.Infrastructure.Services
             _httpClient = httpClient;
             _urlsService = urlsService;
             _logger = logger;
-        }
-
-        /// <summary>
-        /// Configurar headers con token
-        /// </summary>
-        private void SetAuthorizationHeader(string token)
-        {
-            if (!string.IsNullOrEmpty(token))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
-            }
         }
 
         /// <summary>
@@ -93,7 +81,7 @@ namespace RH365.Infrastructure.Services
         /// <summary>
         /// Obtener proyecto por RecID
         /// </summary>
-        public async Task<ProjectDto> GetByIdAsync(long recId, CancellationToken ct = default)
+        public async Task<ProjectResponse> GetByIdAsync(long recId, CancellationToken ct = default)
         {
             try
             {
@@ -103,7 +91,7 @@ namespace RH365.Infrastructure.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync(ct);
-                    return JsonSerializer.Deserialize<ProjectDto>(json,
+                    return JsonSerializer.Deserialize<ProjectResponse>(json,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
 
@@ -119,7 +107,7 @@ namespace RH365.Infrastructure.Services
         /// <summary>
         /// Crear nuevo proyecto
         /// </summary>
-        public async Task<ProjectDto> CreateAsync(CreateProjectRequest request, CancellationToken ct = default)
+        public async Task<ProjectResponse> CreateAsync(CreateProjectRequest request, CancellationToken ct = default)
         {
             try
             {
@@ -132,7 +120,7 @@ namespace RH365.Infrastructure.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var responseJson = await response.Content.ReadAsStringAsync(ct);
-                    return JsonSerializer.Deserialize<ProjectDto>(responseJson,
+                    return JsonSerializer.Deserialize<ProjectResponse>(responseJson,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
 
@@ -148,7 +136,7 @@ namespace RH365.Infrastructure.Services
         /// <summary>
         /// Actualizar proyecto existente
         /// </summary>
-        public async Task<ProjectDto> UpdateAsync(
+        public async Task<ProjectResponse> UpdateAsync(
             long recId,
             UpdateProjectRequest request,
             CancellationToken ct = default)
@@ -164,7 +152,7 @@ namespace RH365.Infrastructure.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var responseJson = await response.Content.ReadAsStringAsync(ct);
-                    return JsonSerializer.Deserialize<ProjectDto>(responseJson,
+                    return JsonSerializer.Deserialize<ProjectResponse>(responseJson,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
 
@@ -199,7 +187,7 @@ namespace RH365.Infrastructure.Services
         /// <summary>
         /// Obtener proyectos activos
         /// </summary>
-        public async Task<List<ProjectDto>> GetEnabledAsync(CancellationToken ct = default)
+        public async Task<List<ProjectResponse>> GetEnabledAsync(CancellationToken ct = default)
         {
             try
             {
@@ -209,63 +197,18 @@ namespace RH365.Infrastructure.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync(ct);
-                    return JsonSerializer.Deserialize<List<ProjectDto>>(json,
+                    return JsonSerializer.Deserialize<List<ProjectResponse>>(json,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                        ?? new List<ProjectDto>();
+                        ?? new List<ProjectResponse>();
                 }
 
-                return new List<ProjectDto>();
+                return new List<ProjectResponse>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener proyectos activos");
-                return new List<ProjectDto>();
+                return new List<ProjectResponse>();
             }
         }
     }
-
-    #region DTOs
-
-    public class ProjectListResponse
-    {
-        public List<ProjectDto> Data { get; set; } = new();
-        public int TotalCount { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
-    }
-
-    public class ProjectDto
-    {
-        public long RecID { get; set; }
-        public string ID { get; set; }
-        public string ProjectCode { get; set; }
-        public string Name { get; set; }
-        public string LedgerAccount { get; set; }
-        public bool ProjectStatus { get; set; }
-        public string DataareaID { get; set; }
-        public string CreatedBy { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public string ModifiedBy { get; set; }
-        public DateTime? ModifiedOn { get; set; }
-    }
-
-    public class CreateProjectRequest
-    {
-        public string ProjectCode { get; set; }
-        public string Name { get; set; }
-        public string LedgerAccount { get; set; }
-        public bool ProjectStatus { get; set; }
-        public string Observations { get; set; }
-    }
-
-    public class UpdateProjectRequest
-    {
-        public string ProjectCode { get; set; }
-        public string Name { get; set; }
-        public string LedgerAccount { get; set; }
-        public bool? ProjectStatus { get; set; }
-        public string Observations { get; set; }
-    }
-
-    #endregion
 }
