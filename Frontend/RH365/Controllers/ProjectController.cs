@@ -3,7 +3,6 @@
 // Proyecto: RH365.WebMVC
 // Ruta: RH365/Controllers/ProjectController.cs
 // ============================================================================
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -34,6 +33,7 @@ namespace RH365.Controllers
             // Usar ViewBag en lugar de modelo anónimo
             ViewBag.DataareaID = _userContext.DataareaID;
             ViewBag.UserRefRecID = _userContext.UserRefRecID;
+            ViewBag.CompanyName = _userContext.CompanyName ?? "RH-365";
 
             return View("~/Views/Project/LP_Projects.cshtml");
         }
@@ -49,6 +49,7 @@ namespace RH365.Controllers
 
             ViewBag.DataareaID = _userContext.DataareaID;
             ViewBag.UserRefRecID = _userContext.UserRefRecID;
+            ViewBag.CompanyName = _userContext.CompanyName ?? "RH-365";
             ViewBag.RecID = recId ?? 0L;
             ViewBag.IsNew = !recId.HasValue || recId.Value <= 0;
 

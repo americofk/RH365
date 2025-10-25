@@ -74,17 +74,14 @@ class GridColumnsManager {
      */
     private initializeSortable(container: JQuery): void {
         if (typeof ($ as any).ui === 'undefined') {
-            console.warn('jQuery UI no está cargado. Drag & drop no disponible.');
+            (window as any).ALERTS.warn('jQuery UI no está disponible. Drag & drop deshabilitado.', 'Advertencia');
             return;
         }
 
         container.sortable({
             handle: '.drag-handle',
             cursor: 'move',
-            opacity: 0.6,
-            update: () => {
-                console.log('Orden de columnas actualizado');
-            }
+            opacity: 0.6
         });
     }
 

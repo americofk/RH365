@@ -46,13 +46,6 @@ class GridViewsManager {
         this.entityName = entityName;
         this.userRefRecID = userRefRecID;
         this.dataareaId = dataareaId;
-
-        console.log('GridViewsManager constructor:');
-        console.log('  - apiBase:', apiBase);
-        console.log('  - token:', token ? '✓ Presente' : '❌ VACÍO');
-        console.log('  - entityName:', entityName);
-        console.log('  - userRefRecID:', userRefRecID);
-        console.log('  - dataareaId:', dataareaId);
     }
 
     async initialize(): Promise<ColumnConfig[]> {
@@ -71,14 +64,9 @@ class GridViewsManager {
                 v.UserRefRecID === this.userRefRecID &&
                 v.IsDefault === true
             );
-            if (defaultView) {
-                console.log(`✓ Vista por defecto encontrada: "${defaultView.ViewName}"`);
-                return defaultView;
-            }
-            console.log('ℹ No hay vista por defecto configurada');
-            return null;
+            return defaultView || null;
         } catch (error) {
-            console.error('Error cargando vista por defecto:', error);
+            (window as any).ALERTS.error('Error al cargar vista predeterminada', 'Error');
             return null;
         }
     }
@@ -86,7 +74,7 @@ class GridViewsManager {
     private async loadAvailableViews(): Promise<void> {
         try {
             const url = `${this.apiBase}/UserGridViews?entityName=${this.entityName}&dataareaId=${this.dataareaId}`;
-            console.log('Cargando vistas desde:', url);
+
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
@@ -94,35 +82,29 @@ class GridViewsManager {
                     'Content-Type': 'application/json'
                 }
             });
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Error en respuesta:', errorText);
                 throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
+
             const result = await response.json();
             let views: UserGridView[] = [];
+
             if (result.items && Array.isArray(result.items)) {
                 views = result.items;
             } else if (result.Data && Array.isArray(result.Data)) {
                 views = result.Data;
             } else if (Array.isArray(result)) {
                 views = result;
-            } else {
-                console.warn('Formato de respuesta inesperado:', result);
-                views = [];
             }
-            console.log(`✓ ${views.length} vistas recibidas del API`);
+
             this.availableViews = views.filter(v =>
                 v.UserRefRecID === this.userRefRecID || v.IsPublic
             );
-            console.log(`✓ ${this.availableViews.length} vistas disponibles para el usuario`);
-            if (this.availableViews.length > 0) {
-                this.availableViews.forEach(v => {
-                    console.log(`  - ${v.ViewName}${v.IsDefault ? ' (Predeterminada)' : ''}`);
-                });
-            }
+
         } catch (error) {
-            console.error('Error cargando vistas disponibles:', error);
+            (window as any).ALERTS.error('Error al cargar las vistas disponibles', 'Error');
             this.availableViews = [];
         }
     }
@@ -151,28 +133,31 @@ class GridViewsManager {
                     IsLocked: false
                 })
             });
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Error guardando vista:', errorText);
                 throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
+
             const savedView = await response.json();
             this.currentView = savedView;
             await this.loadAvailableViews();
-            console.log(`✓ Vista "${viewName}" guardada exitosamente`);
+
+            (window as any).ALERTS.ok(`Vista "${viewName}" guardada exitosamente`, 'Éxito');
             return true;
+
         } catch (error) {
-            console.error('Error guardando vista:', error);
-            alert('Error al guardar la vista. Por favor intenta nuevamente.');
+            (window as any).ALERTS.error('Error al guardar la vista', 'Error');
             return false;
         }
     }
 
     async updateView(columns: ColumnConfig[]): Promise<boolean> {
         if (!this.currentView) {
-            console.warn('No hay vista actual para actualizar');
+            (window as any).ALERTS.warn('No hay vista seleccionada para actualizar', 'Advertencia');
             return false;
         }
+
         try {
             const viewConfig: ViewConfig = { columns };
             const response = await fetch(`${this.apiBase}/UserGridViews`, {
@@ -202,18 +187,20 @@ class GridViewsManager {
                     ConcurrencyToken: null
                 })
             });
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Error actualizando vista:', errorText);
                 throw new Error(`HTTP ${response.status}`);
             }
+
             const updated = await response.json();
             this.currentView = updated;
-            console.log(`✓ Vista "${this.currentView.ViewName}" actualizada`);
+
+            (window as any).ALERTS.ok(`Vista "${this.currentView.ViewName}" actualizada`, 'Éxito');
             return true;
+
         } catch (error) {
-            console.error('Error actualizando vista:', error);
-            alert('Error al actualizar la vista.');
+            (window as any).ALERTS.error('Error al actualizar la vista', 'Error');
             return false;
         }
     }
@@ -229,17 +216,18 @@ class GridViewsManager {
                     'Content-Type': 'application/json'
                 }
             });
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Error estableciendo vista por defecto:', errorText);
                 throw new Error(`HTTP ${response.status}`);
             }
+
             await this.loadAvailableViews();
-            console.log('✓ Vista establecida como predeterminada');
+            (window as any).ALERTS.ok('Vista establecida como predeterminada', 'Éxito');
             return true;
+
         } catch (error) {
-            console.error('Error estableciendo vista por defecto:', error);
-            alert('Error al establecer vista predeterminada.');
+            (window as any).ALERTS.error('Error al establecer vista predeterminada', 'Error');
             return false;
         }
     }
@@ -255,32 +243,36 @@ class GridViewsManager {
                     'Content-Type': 'application/json'
                 }
             });
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Error eliminando vista:', errorText);
                 throw new Error(`HTTP ${response.status}`);
             }
+
             await this.loadAvailableViews();
+
             if (this.currentView && this.currentView.RecID === recId) {
                 this.currentView = null;
             }
-            console.log('✓ Vista eliminada exitosamente');
+
+            (window as any).ALERTS.ok('Vista eliminada exitosamente', 'Éxito');
             return true;
+
         } catch (error) {
-            console.error('Error eliminando vista:', error);
-            alert('Error al eliminar la vista.');
+            (window as any).ALERTS.error('Error al eliminar la vista', 'Error');
             return false;
         }
     }
 
     async loadView(recId: number): Promise<ColumnConfig[]> {
         const view = this.availableViews.find(v => v.RecID === recId);
+
         if (!view) {
-            console.warn(`Vista con RecID ${recId} no encontrada`);
+            (window as any).ALERTS.warn('Vista no encontrada', 'Advertencia');
             return [];
         }
+
         this.currentView = view;
-        console.log(`✓ Vista "${view.ViewName}" cargada`);
         return this.parseViewConfig(view.ViewConfig);
     }
 
@@ -289,7 +281,7 @@ class GridViewsManager {
             const config: ViewConfig = JSON.parse(configJson);
             return config.columns || [];
         } catch (error) {
-            console.error('Error parseando configuración de vista:', error);
+            (window as any).ALERTS.error('Error al cargar configuración de vista', 'Error');
             return [];
         }
     }

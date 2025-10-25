@@ -3,10 +3,9 @@
 // Proyecto: RH365.Infrastructure
 // Ruta: RH365.Infrastructure/Services/UserContext.cs
 // Descripción:
-//   - Obtiene DataareaID y UserRefRecID del usuario autenticado
+//   - Obtiene DataareaID, UserRefRecID y CompanyName del usuario autenticado
 //   - Usa los nombres correctos de sesión que establece LoginController
 // ============================================================================
-
 using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +17,7 @@ namespace RH365.Infrastructure.Services
         bool IsAuthenticated { get; }
         string DataareaID { get; }
         long UserRefRecID { get; }
+        string CompanyName { get; }
     }
 
     public class UserContext : IUserContext
@@ -80,6 +80,32 @@ namespace RH365.Infrastructure.Services
 
                 // Fallback
                 return 0L;
+            }
+        }
+
+        public string CompanyName
+        {
+            get
+            {
+                var ctx = _http.HttpContext;
+                if (ctx == null) return "RH-365";
+
+                // Primero intentar Items
+                if (ctx.Items.TryGetValue("CompanyName", out var item) && item is string cn1 && !string.IsNullOrWhiteSpace(cn1))
+                    return cn1;
+
+                // Segundo intentar Session
+                var companyName = ctx.Session?.GetString("CompanyName");
+                if (!string.IsNullOrWhiteSpace(companyName))
+                    return companyName;
+
+                // Tercero intentar Claims
+                var cn3 = ctx.User?.FindFirst("CompanyName")?.Value;
+                if (!string.IsNullOrWhiteSpace(cn3))
+                    return cn3;
+
+                // Fallback
+                return "RH-365";
             }
         }
     }
