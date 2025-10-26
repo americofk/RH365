@@ -143,14 +143,14 @@
 
                                                                     <div class="ln_solid"></div>
 
-                                                                    <!-- Botones de acción -->
+                                                                    <!-- Botones de Acción -->
                                                                     <div class="form-group">
-                                                                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
-                                                                            <a href="/ProjectCategory/LP_ProjectCategories" class="btn btn-default">
+                                                                        <div class="col-md-12 text-center">
+                                                                            <button type="button" class="btn btn-default" onclick="window.location.href='/ProjectCategory/LP_ProjectCategories'">
                                                                                 <i class="fa fa-times"></i> Cancelar
-                                                                            </a>
-                                                                            <button type="button" class="btn btn-success" id="btn-save">
-                                                                                <i class="fa fa-floppy-o"></i> Guardar
+                                                                            </button>
+                                                                            <button type="button" id="btn-save" class="btn btn-primary">
+                                                                                <i class="fa fa-save"></i> Guardar
                                                                             </button>
                                                                         </div>
                                                                     </div>
@@ -286,6 +286,7 @@
 
     <!-- Sistema de Alertas -->
     @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
+    @await Html.PartialAsync("~/Views/Generic/_Modal.cshtml")
 
     <!-- Script del formulario de categorías -->
     <script src="~/js/ProjectCategories/project-category-form.js"></script>

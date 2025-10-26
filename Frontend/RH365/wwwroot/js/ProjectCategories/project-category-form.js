@@ -150,9 +150,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     const loadProjects = () => __awaiter(this, void 0, void 0, function* () {
         try {
-            const url = `${apiBase}/Projects/enabled`;
-            const projects = yield fetchJson(url);
-            projectsOptions = projects.map((p) => ({
+            const url = `${apiBase}/Projects?pageNumber=1&pageSize=100`;
+            const response = yield fetchJson(url);
+            // Si viene paginado, extraer Data
+            const projects = (response === null || response === void 0 ? void 0 : response.Data) || response || [];
+            projectsOptions = projects
+                .filter((p) => p.ProjectStatus === true) // Solo proyectos activos
+                .map((p) => ({
                 value: p.RecID.toString(),
                 text: `${p.ProjectCode} - ${p.Name}`
             }));
@@ -163,7 +167,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
         }
         catch (error) {
-            console.error('Error al cargar proyectos:', error);
             w.ALERTS.error('Error al cargar lista de proyectos', 'Error');
         }
     });

@@ -174,13 +174,18 @@
 
     const loadProjects = async (): Promise<void> => {
         try {
-            const url = `${apiBase}/Projects/enabled`;
-            const projects = await fetchJson(url);
+            const url = `${apiBase}/Projects?pageNumber=1&pageSize=100`;
+            const response = await fetchJson(url);
+            
+            // Si viene paginado, extraer Data
+            const projects = response?.Data || response || [];
 
-            projectsOptions = projects.map((p: any) => ({
-                value: p.RecID.toString(),
-                text: `${p.ProjectCode} - ${p.Name}`
-            }));
+            projectsOptions = projects
+                .filter((p: any) => p.ProjectStatus === true) // Solo proyectos activos
+                .map((p: any) => ({
+                    value: p.RecID.toString(),
+                    text: `${p.ProjectCode} - ${p.Name}`
+                }));
 
             // Actualizar opciones del campo ProjectRefRecID
             const projectField = businessFields.find(f => f.field === 'ProjectRefRecID');
@@ -188,7 +193,6 @@
                 projectField.options = projectsOptions;
             }
         } catch (error) {
-            console.error('Error al cargar proyectos:', error);
             (w as any).ALERTS.error('Error al cargar lista de proyectos', 'Error');
         }
     };
