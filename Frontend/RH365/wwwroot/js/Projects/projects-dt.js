@@ -188,13 +188,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     };
     const exportToCSV = () => {
         if (!projectsData.length) {
-            alert('No hay datos para exportar');
+            w.ALERTS.warn('No hay datos para exportar', 'Advertencia');
             return;
         }
         const dt = $table.DataTable();
         const rows = dt.rows({ search: 'applied' }).data().toArray();
         if (!rows.length) {
-            alert('No hay datos visibles para exportar');
+            w.ALERTS.warn('No hay datos visibles para exportar', 'Advertencia');
             return;
         }
         const columns = visibleColumns;
@@ -269,13 +269,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 return __awaiter(this, void 0, void 0, function* () {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (confirm(`¿Establecer "${view.ViewName}" como vista predeterminada?`)) {
-                        const success = yield gridViewsManager.setDefaultView(view.RecID);
-                        if (success) {
-                            updateViewsDropdown();
-                            alert(`Vista "${view.ViewName}" establecida como predeterminada`);
+                    w.ALERTS.confirm(`¿Establecer "${view.ViewName}" como vista predeterminada?`, 'Confirmar', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+                        if (confirmed) {
+                            const success = yield gridViewsManager.setDefaultView(view.RecID);
+                            if (success) {
+                                updateViewsDropdown();
+                            }
                         }
-                    }
+                    }));
                 });
             });
             container.append(item);
@@ -291,12 +292,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 const viewName = gridViewsManager.getCurrentViewName();
                 $('#current-view-name').text(viewName);
                 $('#btn-save-view-changes').hide();
-                //console.log(`✓ Vista "${viewName}" cargada`);
             }
         }
         catch (error) {
-            //console.error('Error cargando vista:', error);
-            //alert('Error al cargar la vista');
+            console.error('Error cargando vista:', error);
         }
     });
     $(document).on('ifChanged', '#check-all', function () {
@@ -327,28 +326,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const count = $checked.length;
         if (count === 0)
             return;
-        const message = count === 1 ? '¿Está seguro de eliminar este proyecto?' : `¿Está seguro de eliminar ${count} proyectos?`;
-        if (!confirm(message))
-            return;
-        try {
-            const promises = [];
-            $checked.each(function () {
-                const recId = $(this).data('recid');
-                if (recId) {
-                    promises.push(deleteProject(recId));
-                }
-            });
-            yield Promise.all(promises);
-            alert('Proyecto(s) eliminado(s) correctamente');
-            $table.DataTable().ajax.reload();
-        }
-        catch (error) {
-            console.error('Error al eliminar:', error);
-            alert('Error al eliminar proyecto(s)');
-        }
+        const message = count === 1
+            ? '¿Está seguro de eliminar este proyecto?'
+            : `¿Está seguro de eliminar ${count} proyectos?`;
+        w.ALERTS.confirm(message, 'Confirmar Eliminación', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+            if (!confirmed)
+                return;
+            try {
+                const promises = [];
+                $checked.each(function () {
+                    const recId = $(this).data('recid');
+                    if (recId) {
+                        promises.push(deleteProject(recId));
+                    }
+                });
+                yield Promise.all(promises);
+                w.ALERTS.ok('Proyecto(s) eliminado(s) correctamente', 'Éxito');
+                $table.DataTable().ajax.reload();
+            }
+            catch (error) {
+                console.error('Error al eliminar:', error);
+                w.ALERTS.error('Error al eliminar proyecto(s)', 'Error');
+            }
+        }), { type: 'danger' });
     }));
     $('#btn-export').on('click', exportToCSV);
-    $('#btn-import').on('click', () => { alert('Funcionalidad de importación próximamente'); });
+    $('#btn-import').on('click', () => {
+        w.ALERTS.info('Funcionalidad de importación próximamente', 'Información');
+    });
     $table.on('click', 'tbody tr', function (e) {
         if ($(e.target).is('input.row-check') || $(e.target).closest('.icheckbox_flat-green').length) {
             return;
@@ -379,7 +384,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const isDefault = $('#view-is-default').is(':checked');
         const isPublic = $('#view-is-public').is(':checked');
         if (!viewName) {
-            alert('Por favor ingrese un nombre para la vista');
+            w.ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
             return;
         }
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
@@ -389,7 +394,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             $('#current-view-name').text(viewName);
             $('#btn-save-view-changes').hide();
             updateViewsDropdown();
-            alert(`Vista "${viewName}" guardada exitosamente`);
         }
     }));
     $('#btn-save-as-view').on('click', () => {
@@ -403,7 +407,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const isDefault = $('#view-is-default-saveas').is(':checked');
         const isPublic = $('#view-is-public-saveas').is(':checked');
         if (!viewName) {
-            alert('Por favor ingrese un nombre para la vista');
+            w.ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
             return;
         }
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
@@ -413,28 +417,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             $('#current-view-name').text(viewName);
             $('#btn-save-view-changes').hide();
             updateViewsDropdown();
-            alert(`Vista "${viewName}" guardada exitosamente`);
         }
     }));
     $('#btn-save-view-changes').on('click', () => __awaiter(this, void 0, void 0, function* () {
         if (!gridViewsManager.hasCurrentView()) {
-            alert('No hay vista activa para actualizar');
+            w.ALERTS.warn('No hay vista activa para actualizar', 'Advertencia');
             return;
         }
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
         const success = yield gridViewsManager.updateView(columnConfigs);
         if (success) {
             $('#btn-save-view-changes').hide();
-            alert('Vista actualizada exitosamente');
         }
     }));
     $('#btn-reset-view').on('click', () => {
-        if (confirm('¿Desea restablecer a la vista por defecto?')) {
-            gridColumnsManager.resetToDefault(defaultColumns);
-            applyColumnChanges(defaultColumns);
-            $('#current-view-name').text('Vista por defecto');
-            $('#btn-save-view-changes').hide();
-        }
+        w.ALERTS.confirm('¿Desea restablecer a la vista por defecto?', 'Confirmar', (confirmed) => {
+            if (confirmed) {
+                gridColumnsManager.resetToDefault(defaultColumns);
+                applyColumnChanges(defaultColumns);
+                $('#current-view-name').text('Vista por defecto');
+                $('#btn-save-view-changes').hide();
+            }
+        });
     });
     $(document).on('click', '[data-view="default"]', (e) => {
         e.preventDefault();
