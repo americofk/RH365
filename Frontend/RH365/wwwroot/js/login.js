@@ -2,7 +2,7 @@
 // Archivo: login.ts
 // Proyecto: RH365.WebMVC
 // Ruta: RH365/TS/login.ts
-// Descripci�n:
+// Descripción:
 //   - Script TypeScript para manejo del formulario de login
 //   - Validaciones client-side y llamadas AJAX al controller
 // ============================================================================
@@ -52,7 +52,7 @@ class LoginManager {
         // Enter en campos
         this.elements.email.addEventListener('keypress', (e) => this.handleEnterKey(e));
         this.elements.password.addEventListener('keypress', (e) => this.handleEnterKey(e));
-        // Validaci�n en tiempo real
+        // Validación en tiempo real
         this.elements.email.addEventListener('blur', () => this.validateEmail());
         this.elements.password.addEventListener('blur', () => this.validatePassword());
     }
@@ -91,8 +91,8 @@ class LoginManager {
                 if (response.ok) {
                     // Si la respuesta es redirect (login exitoso)
                     if (response.redirected) {
-                        // Mostrar mensaje de �xito
-                        this.showSuccess('Autenticaci�n exitosa. Cargando sistema...');
+                        // Mostrar mensaje de éxito
+                        this.showSuccess('Autenticación exitosa. Cargando sistema...');
                         // Fade out del formulario
                         this.elements.form.style.transition = 'opacity 0.5s ease';
                         this.elements.form.style.opacity = '0.5';
@@ -112,28 +112,28 @@ class LoginManager {
                         if (contentType && contentType.includes('application/json')) {
                             const data = yield response.json();
                             if (data.success) {
-                                this.showSuccess('Autenticaci�n exitosa. Cargando...');
+                                this.showSuccess('Autenticación exitosa. Cargando...');
                                 setTimeout(() => {
                                     window.location.href = data.redirectUrl || '/Home';
                                 }, 1000);
                             }
                             else {
-                                this.showError(data.message || 'Credenciales inv�lidas');
+                                this.showError(data.message || 'Credenciales inválidas');
                             }
                         }
                         else {
-                            // Si es HTML, recargar la p�gina para mostrar errores del servidor
+                            // Si es HTML, recargar la página para mostrar errores del servidor
                             window.location.reload();
                         }
                     }
                 }
                 else {
-                    this.showError('Error al iniciar sesi�n. Por favor intente nuevamente.');
+                    this.showError('Error al iniciar sesión. Por favor intente nuevamente.');
                 }
             }
             catch (error) {
                 console.error('Error:', error);
-                this.showError('Error de conexi�n. Por favor verifique su conexi�n a internet.');
+                this.showError('Error de conexión. Por favor verifique su conexión a internet.');
             }
             finally {
                 this.isSubmitting = false;
@@ -165,27 +165,27 @@ class LoginManager {
         const email = this.elements.email.value.trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email) {
-            this.showFieldError(this.elements.email, 'El correo electr�nico es requerido');
+            this.showFieldError(this.elements.email, 'El correo electrónico es requerido');
             return false;
         }
         if (!emailRegex.test(email)) {
-            this.showFieldError(this.elements.email, 'Ingrese un correo electr�nico v�lido');
+            this.showFieldError(this.elements.email, 'Ingrese un correo electrónico válido');
             return false;
         }
         this.clearFieldError(this.elements.email);
         return true;
     }
     /**
-     * Validar contrase�a
+     * Validar contraseña
      */
     validatePassword() {
         const password = this.elements.password.value;
         if (!password) {
-            this.showFieldError(this.elements.password, 'La contrase�a es requerida');
+            this.showFieldError(this.elements.password, 'La contraseña es requerida');
             return false;
         }
         if (password.length < 6) {
-            this.showFieldError(this.elements.password, 'La contrase�a debe tener al menos 6 caracteres');
+            this.showFieldError(this.elements.password, 'La contraseña debe tener al menos 6 caracteres');
             return false;
         }
         this.clearFieldError(this.elements.password);
@@ -241,13 +241,13 @@ class LoginManager {
                 messageElement.textContent = message;
             }
         }
-        // Auto-ocultar despu�s de 5 segundos
+        // Auto-ocultar después de 5 segundos
         setTimeout(() => {
             alertElement.remove();
         }, 5000);
     }
     /**
-     * Mostrar mensaje de �xito
+     * Mostrar mensaje de éxito
      */
     showSuccess(message) {
         var _a;
@@ -255,7 +255,7 @@ class LoginManager {
         const existingError = document.querySelector('.alert-danger');
         if (existingError)
             existingError.remove();
-        // Crear alert de �xito
+        // Crear alert de éxito
         const alertElement = document.createElement('div');
         alertElement.className = 'alert alert-success fade-in';
         alertElement.style.cssText = 'animation: fadeIn 0.5s ease; margin-bottom: 20px;';
@@ -285,7 +285,7 @@ class LoginManager {
         }
     }
 }
-// Inicializar cuando el DOM est� listo
+// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     new LoginManager();
 });

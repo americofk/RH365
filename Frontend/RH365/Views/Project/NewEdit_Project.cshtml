@@ -2,7 +2,12 @@
    Archivo: NewEdit_Project.cshtml
    Proyecto: RH365.WebMVC
    Ruta: RH365/Views/Project/NewEdit_Project.cshtml
-   Descripción: Formulario para Crear/Editar Proyectos con estilo Gentelella
+   Descripción: 
+       - Formulario para Crear/Editar Proyectos con estilo Gentelella
+       - Layout de 2 COLUMNAS en Tab General
+       - Tab Auditoría: Campos de trazabilidad ISO 27001
+       - Renderizado dinámico de campos desde TypeScript
+       - URLs del API centralizadas desde backend
    ============================================================================ *@
 @{
     ViewData["Title"] = "Proyecto";
@@ -72,57 +77,147 @@
 
                     <div class="clearfix"></div>
 
-                    <!-- Form -->
+                    <!-- Panel con Tabs -->
                     <div class="row">
                         <div class="col-md-12 col-sm-12 col-xs-12">
                             <div class="x_panel">
-                                <div class="x_title">
-                                    <h2>Información del Proyecto</h2>
-                                    <ul class="nav navbar-right panel_toolbox">
-                                        <li>
-                                            <a href="/Project/LP_Projects" class="btn btn-default btn-sm">
-                                                <i class="fa fa-arrow-left"></i> Volver
-                                            </a>
-                                        </li>
-                                    </ul>
-                                    <div class="clearfix"></div>
-                                </div>
                                 <div class="x_content">
-                                    <br />
-                                    <form id="frm-project" class="form-horizontal form-label-left">
-                                        @Html.AntiForgeryToken()
+                                    <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                                        <!-- Navegación de Tabs -->
+                                        <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                                            <li role="presentation" class="active">
+                                                <a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">
+                                                    <i class="fa fa-folder-open"></i> General
+                                                </a>
+                                            </li>
+                                            <li role="presentation" class="">
+                                                <a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">
+                                                    <i class="fa fa-history"></i> Auditoría
+                                                </a>
+                                            </li>
+                                        </ul>
 
-                                        <!-- Hidden fields -->
-                                        <input type="hidden" id="RecID" name="RecID" value="@recId" />
-                                        <input type="hidden" id="DataareaID" name="DataareaID" value="@dataareaId" />
+                                        <div id="myTabContent" class="tab-content">
+                                            <!-- ========================================== -->
+                                            <!-- TAB 1: GENERAL (Campos de Negocio - 2 COLUMNAS)  -->
+                                            <!-- ========================================== -->
+                                            <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>Información del Proyecto</h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <a href="/Project/LP_Projects" class="btn btn-default btn-sm">
+                                                                            <i class="fa fa-arrow-left"></i> Volver
+                                                                        </a>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <br />
+                                                                <form id="frm-project" class="form-horizontal form-label-left">
+                                                                    @Html.AntiForgeryToken()
 
-                                        <!-- Los campos se cargarán dinámicamente aquí -->
-                                        <div id="dynamic-fields-container">
-                                            <!-- Loading spinner mientras carga -->
-                                            <div class="text-center" style="padding: 40px;">
-                                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
-                                                <p class="text-muted">Cargando formulario...</p>
+                                                                    <!-- Hidden fields -->
+                                                                    <input type="hidden" id="RecID" name="RecID" value="@recId" />
+                                                                    <input type="hidden" id="DataareaID" name="DataareaID" value="@dataareaId" />
+
+                                                                    <!-- Contenedor para campos en 2 COLUMNAS -->
+                                                                    <div class="row">
+                                                                        <!-- COLUMNA IZQUIERDA -->
+                                                                        <div class="col-md-6" id="dynamic-fields-col-left">
+                                                                            <div class="text-center" style="padding: 40px;">
+                                                                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                                                                <p class="text-muted">Cargando...</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- COLUMNA DERECHA -->
+                                                                        <div class="col-md-6" id="dynamic-fields-col-right">
+                                                                            <div class="text-center" style="padding: 40px;">
+                                                                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                                                                <p class="text-muted">Cargando...</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="ln_solid"></div>
+
+                                                                    <!-- Botones de Acción -->
+                                                                    <div class="form-group">
+                                                                        <div class="col-md-12 text-center">
+                                                                            <button type="button" class="btn btn-default" onclick="window.location.href='/Project/LP_Projects'">
+                                                                                <i class="fa fa-times"></i> Cancelar
+                                                                            </button>
+                                                                            <button type="button" id="btn-save" class="btn btn-primary">
+                                                                                <i class="fa fa-save"></i> Guardar
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                            <!-- /TAB 1: GENERAL -->
+                                            <!-- ========================================== -->
+                                            <!-- TAB 2: AUDITORÍA (Campos ISO 27001)       -->
+                                            <!-- ========================================== -->
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>
+                                                                    <i class="fa fa-shield"></i> Información de Auditoría (ISO 27001)
+                                                                </h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <span class="label label-info">
+                                                                            <i class="fa fa-lock"></i> Solo Lectura
+                                                                        </span>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <br />
+                                                                <form class="form-horizontal form-label-left">
+                                                                    <!-- Contenedor para campos de auditoría (dinámicos) -->
+                                                                    <div id="audit-fields-container">
+                                                                        <div class="text-center" style="padding: 40px;">
+                                                                            <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                                                            <p class="text-muted">Cargando datos de auditoría...</p>
+                                                                        </div>
+                                                                    </div>
 
-                                        <div class="ln_solid"></div>
+                                                                    <div class="ln_solid"></div>
 
-                                        <div class="form-group">
-                                            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
-                                                <button type="button" class="btn btn-default" onclick="window.location.href='/Project/LP_Projects'">
-                                                    Cancelar
-                                                </button>
-                                                <button type="button" id="btn-save" class="btn btn-primary">
-                                                    <i class="fa fa-save"></i> Guardar
-                                                </button>
+                                                                    <!-- Info adicional sobre auditoría -->
+                                                                    <div class="alert alert-info" role="alert">
+                                                                        <strong><i class="fa fa-info-circle"></i> Nota:</strong>
+                                                                        Los campos de auditoría son generados automáticamente por el sistema
+                                                                        y no pueden ser modificados manualmente. Estos datos garantizan la
+                                                                        trazabilidad completa según el estándar ISO 27001.
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <!-- /TAB 2: AUDITORÍA -->
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- /Form -->
+                    <!-- /Panel con Tabs -->
                 </div>
             </div>
             <!-- /page content -->
@@ -151,6 +246,7 @@
     <script src="~/vendors/pnotify/dist/pnotify.js"></script>
     <script src="~/vendors/pnotify/dist/pnotify.buttons.js"></script>
     <script src="~/vendors/pnotify/dist/pnotify.nonblock.js"></script>
+
     <!-- Deshabilitar notificaciones de demo de PNotify -->
     <script>
         (function() {
@@ -191,8 +287,14 @@
             }
         })();
     </script>
+
     <!-- Custom Theme Scripts -->
     <script src="~/build/js/custom.min.js"></script>
+
+    <!-- ============================================================ -->
+    <!-- CRÍTICO: API URLs - DEBE IR ANTES DE CUALQUIER SCRIPT PERSONALIZADO -->
+    <!-- ============================================================ -->
+    @await Html.PartialAsync("~/Views/Layout/_ApiUrls.cshtml")
 
     <!-- Sistema de Alertas -->
     @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")

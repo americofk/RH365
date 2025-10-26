@@ -1,0 +1,21 @@
+﻿@* ============================================================================
+   Archivo: _ApiUrls.cshtml
+   Proyecto: RH365.WebMVC
+   Ruta: Views/Layout/_ApiUrls.cshtml
+   Descripción:
+       - Inyecta la URL base del API desde IUrlsService al frontend
+       - Crea objeto global window.RH365.urls.apiBase
+       - Punto único de configuración para todos los TypeScript
+   ============================================================================ *@
+@inject RH365.Infrastructure.Services.IUrlsService UrlsService
+
+<script>
+    (function() {
+        // Crear namespace global RH365 si no existe
+        window.RH365 = window.RH365 || {};
+        window.RH365.urls = window.RH365.urls || {};
+
+        // Inyectar URL base del API desde el backend
+        window.RH365.urls.apiBase = '@UrlsService.BaseUrl';
+    })();
+</script>

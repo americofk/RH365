@@ -320,11 +320,11 @@ interface ColumnConfig {
                 const viewName = gridViewsManager.getCurrentViewName();
                 $('#current-view-name').text(viewName);
                 $('#btn-save-view-changes').hide();
-                console.log(`✓ Vista "${viewName}" cargada`);
+                //console.log(`✓ Vista "${viewName}" cargada`);
             }
         } catch (error) {
-            console.error('Error cargando vista:', error);
-            alert('Error al cargar la vista');
+            //console.error('Error cargando vista:', error);
+            //alert('Error al cargar la vista');
         }
     };
 

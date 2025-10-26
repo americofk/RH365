@@ -1,8 +1,8 @@
-// ============================================================================
+Ôªø// ============================================================================
 // Archivo: login.ts
 // Proyecto: RH365.WebMVC
 // Ruta: RH365/TS/login.ts
-// DescripciÛn:
+// Descripci√≥n:
 //   - Script TypeScript para manejo del formulario de login
 //   - Validaciones client-side y llamadas AJAX al controller
 // ============================================================================
@@ -59,7 +59,7 @@ class LoginManager {
         this.elements.email.addEventListener('keypress', (e) => this.handleEnterKey(e));
         this.elements.password.addEventListener('keypress', (e) => this.handleEnterKey(e));
 
-        // ValidaciÛn en tiempo real
+        // Validaci√≥n en tiempo real
         this.elements.email.addEventListener('blur', () => this.validateEmail());
         this.elements.password.addEventListener('blur', () => this.validatePassword());
     }
@@ -104,8 +104,8 @@ class LoginManager {
             if (response.ok) {
                 // Si la respuesta es redirect (login exitoso)
                 if (response.redirected) {
-                    // Mostrar mensaje de Èxito
-                    this.showSuccess('AutenticaciÛn exitosa. Cargando sistema...');
+                    // Mostrar mensaje de √©xito
+                    this.showSuccess('Autenticaci√≥n exitosa. Cargando sistema...');
 
                     // Fade out del formulario
                     this.elements.form.style.transition = 'opacity 0.5s ease';
@@ -127,24 +127,24 @@ class LoginManager {
                     if (contentType && contentType.includes('application/json')) {
                         const data = await response.json();
                         if (data.success) {
-                            this.showSuccess('AutenticaciÛn exitosa. Cargando...');
+                            this.showSuccess('Autenticaci√≥n exitosa. Cargando...');
                             setTimeout(() => {
                                 window.location.href = data.redirectUrl || '/Home';
                             }, 1000);
                         } else {
-                            this.showError(data.message || 'Credenciales inv·lidas');
+                            this.showError(data.message || 'Credenciales inv√°lidas');
                         }
                     } else {
-                        // Si es HTML, recargar la p·gina para mostrar errores del servidor
+                        // Si es HTML, recargar la p√°gina para mostrar errores del servidor
                         window.location.reload();
                     }
                 }
             } else {
-                this.showError('Error al iniciar sesiÛn. Por favor intente nuevamente.');
+                this.showError('Error al iniciar sesi√≥n. Por favor intente nuevamente.');
             }
         } catch (error) {
             console.error('Error:', error);
-            this.showError('Error de conexiÛn. Por favor verifique su conexiÛn a internet.');
+            this.showError('Error de conexi√≥n. Por favor verifique su conexi√≥n a internet.');
         } finally {
             this.isSubmitting = false;
             this.setLoadingState(false);
@@ -178,12 +178,12 @@ class LoginManager {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!email) {
-            this.showFieldError(this.elements.email, 'El correo electrÛnico es requerido');
+            this.showFieldError(this.elements.email, 'El correo electr√≥nico es requerido');
             return false;
         }
 
         if (!emailRegex.test(email)) {
-            this.showFieldError(this.elements.email, 'Ingrese un correo electrÛnico v·lido');
+            this.showFieldError(this.elements.email, 'Ingrese un correo electr√≥nico v√°lido');
             return false;
         }
 
@@ -192,18 +192,18 @@ class LoginManager {
     }
 
     /**
-     * Validar contraseÒa
+     * Validar contrase√±a
      */
     private validatePassword(): boolean {
         const password = this.elements.password.value;
 
         if (!password) {
-            this.showFieldError(this.elements.password, 'La contraseÒa es requerida');
+            this.showFieldError(this.elements.password, 'La contrase√±a es requerida');
             return false;
         }
 
         if (password.length < 6) {
-            this.showFieldError(this.elements.password, 'La contraseÒa debe tener al menos 6 caracteres');
+            this.showFieldError(this.elements.password, 'La contrase√±a debe tener al menos 6 caracteres');
             return false;
         }
 
@@ -261,21 +261,21 @@ class LoginManager {
             }
         }
 
-        // Auto-ocultar despuÈs de 5 segundos
+        // Auto-ocultar despu√©s de 5 segundos
         setTimeout(() => {
             alertElement.remove();
         }, 5000);
     }
 
     /**
-     * Mostrar mensaje de Èxito
+     * Mostrar mensaje de √©xito
      */
     private showSuccess(message: string): void {
         // Remover errores previos
         const existingError = document.querySelector('.alert-danger');
         if (existingError) existingError.remove();
 
-        // Crear alert de Èxito
+        // Crear alert de √©xito
         const alertElement = document.createElement('div');
         alertElement.className = 'alert alert-success fade-in';
         alertElement.style.cssText = 'animation: fadeIn 0.5s ease; margin-bottom: 20px;';
@@ -306,7 +306,7 @@ class LoginManager {
     }
 }
 
-// Inicializar cuando el DOM estÈ listo
+// Inicializar cuando el DOM est√© listo
 document.addEventListener('DOMContentLoaded', () => {
     new LoginManager();
 });

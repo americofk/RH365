@@ -1,84 +1,209 @@
 ﻿@* ============================================================================
    Archivo: _Modal.cshtml
-   Proyecto: RH365 (Front-End MVC .NET 8)
-   Ruta: Views/Generic/Partials/_Modal.cshtml
-   Descripción: Modal genérico (Bootstrap) reutilizable para ListPage/FormPage.
-     - Soporta tamaño (sm/md/lg/xl), título dinámico y contenido inyectado.
-     - Emite eventos JS para que el TS controle submit/cancel.
-   Notas:
-     - Incluir este partial donde se necesite: @await Html.PartialAsync("Generic/Partials/_Modal")
-     - El contenido dinámico se monta en #glp-modal-body vía JS.
+   Proyecto: RH365.WebMVC
+   Ruta: Views/Generic/_Modal.cshtml
+   Descripción: 
+       - Modal genérico reutilizable (Bootstrap 3 - Gentelella)
+       - Soporta confirmaciones, formularios, y contenido dinámico
+       - API: window.GLP_MODAL.open() y window.ALERTS.confirm()
    ============================================================================ *@
-<div class="modal fade" id="glp-modal" tabindex="-1" aria-hidden="true" aria-labelledby="glp-modal-title" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-scrollable modal-lg" id="glp-modal-dialog">
+
+<!-- Modal Genérico -->
+<div class="modal fade" id="glp-modal" tabindex="-1" role="dialog" aria-labelledby="glp-modal-title">
+    <div class="modal-dialog modal-lg" id="glp-modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title mb-0" id="glp-modal-title">Título</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="glp-modal-title">Título</h4>
             </div>
 
             <div class="modal-body" id="glp-modal-body">
-                @* El contenido (formulario/confirmación) se inyecta por JS *@
+                <!-- El contenido se inyecta dinámicamente por JavaScript -->
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" id="glp-modal-cancel" data-bs-dismiss="modal">
-                    Cancelar
+                <button type="button" class="btn btn-default" id="glp-modal-cancel" data-dismiss="modal">
+                    <i class="fa fa-times"></i> Cancelar
                 </button>
                 <button type="button" class="btn btn-primary" id="glp-modal-accept">
-                    Aceptar
+                    <i class="fa fa-check"></i> Aceptar
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // =========================================================================
-        // Bootstrap básico del modal genérico
-        // - window.GLP_MODAL.open({ title, size, html, onAccept, onCancel })
-        // - size: 'sm' | 'md' | 'lg' | 'xl'  (por defecto 'lg')
-        // =========================================================================
-        (function(){
-          const $el = document.getElementById('glp-modal');
-          const $dialog = document.getElementById('glp-modal-dialog');
-          const $title = document.getElementById('glp-modal-title');
-          const $body  = document.getElementById('glp-modal-body');
-          const $btnOk = document.getElementById('glp-modal-accept');
-          const $btnCancel = document.getElementById('glp-modal-cancel');
-          let bsModal = null, onAccept = null, onCancel = null;
+<script>
+    // =========================================================================
+    // Sistema de Modal Genérico (Bootstrap 3 - Gentelella)
+    // API: window.GLP_MODAL.open({ title, size, html, onAccept, onCancel })
+    // =========================================================================
+    (function () {
+        const $el = $('#glp-modal');
+        const $dialog = $('#glp-modal-dialog');
+        const $title = $('#glp-modal-title');
+        const $body = $('#glp-modal-body');
+        const $btnOk = $('#glp-modal-accept');
+        const $btnCancel = $('#glp-modal-cancel');
 
-          function setSize(sz){
-            $dialog.classList.remove('modal-sm','modal-lg','modal-xl');
-            if (sz === 'sm') $dialog.classList.add('modal-sm');
-            else if (sz === 'lg') $dialog.classList.add('modal-lg');
-            else if (sz === 'xl') $dialog.classList.add('modal-xl');
-          }
+        let onAcceptCallback = null;
+        let onCancelCallback = null;
 
-          window.GLP_MODAL = {
-            open: ({ title = 'Acción', size = 'lg', html = '', onAccept:ok, onCancel:ko } = {}) => {
-              $title.textContent = title;
-              $body.innerHTML = html;
-              setSize(size);
-              onAccept = typeof ok === 'function' ? ok : null;
-              onCancel = typeof ko === 'function' ? ko : null;
-              bsModal = bsModal || new bootstrap.Modal($el);
-              bsModal.show();
+        // Cambiar tamaño del modal
+        function setSize(size) {
+            $dialog.removeClass('modal-sm modal-lg');
+            if (size === 'sm') {
+                $dialog.addClass('modal-sm');
+            } else if (size === 'lg') {
+                $dialog.addClass('modal-lg');
+            }
+        }
+
+        // API pública del modal
+        window.GLP_MODAL = {
+            // Abre el modal con configuración personalizada
+            // opts: { title, size, html, onAccept, onCancel, acceptText, cancelText, acceptClass }
+            open: function (opts) {
+                opts = opts || {};
+                const title = opts.title || 'Acción';
+                const size = opts.size || 'lg';
+                const html = opts.html || '';
+                const acceptText = opts.acceptText || '<i class="fa fa-check"></i> Aceptar';
+                const cancelText = opts.cancelText || '<i class="fa fa-times"></i> Cancelar';
+                const acceptClass = opts.acceptClass || 'btn-primary';
+
+                // Configurar contenido
+                $title.text(title);
+                $body.html(html);
+                setSize(size);
+
+                // Configurar botones
+                $btnOk.html(acceptText);
+                $btnOk.removeClass('btn-primary btn-success btn-danger btn-warning').addClass(acceptClass);
+                $btnCancel.html(cancelText);
+
+                // Guardar callbacks
+                onAcceptCallback = typeof opts.onAccept === 'function' ? opts.onAccept : null;
+                onCancelCallback = typeof opts.onCancel === 'function' ? opts.onCancel : null;
+
+                // Mostrar modal (Bootstrap 3)
+                $el.modal('show');
             },
-            close: () => { if (bsModal) bsModal.hide(); }
-          };
 
-          $btnOk.addEventListener('click', () => {
-            if (onAccept) { if (onAccept() !== false) window.GLP_MODAL.close(); }
-            else window.GLP_MODAL.close();
-          });
-          $btnCancel.addEventListener('click', () => { if (onCancel) onCancel(); });
-          $el.addEventListener('hidden.bs.modal', () => {
-            // Limpieza mínima
-            $body.innerHTML = '';
-            onAccept = onCancel = null;
-          });
-        })();
-    </script>
-}
+            // Cierra el modal
+            close: function () {
+                $el.modal('hide');
+            }
+        };
+
+        // Event handler para botón Aceptar
+        $btnOk.off('click').on('click', function () {
+            if (onAcceptCallback) {
+                const result = onAcceptCallback();
+                // Si el callback retorna false, no cerrar el modal
+                if (result !== false) {
+                    window.GLP_MODAL.close();
+                }
+            } else {
+                window.GLP_MODAL.close();
+            }
+        });
+
+        // Event handler para botón Cancelar
+        $btnCancel.off('click').on('click', function () {
+            if (onCancelCallback) {
+                onCancelCallback();
+            }
+        });
+
+        // Limpiar al cerrar el modal
+        $el.on('hidden.bs.modal', function () {
+            $body.html('');
+            onAcceptCallback = null;
+            onCancelCallback = null;
+        });
+    })();
+
+    // =========================================================================
+    // Extensión de ALERTS para usar el modal como confirmación
+    // API: window.ALERTS.confirm(message, title, callback, opts)
+    // =========================================================================
+    (function () {
+        if (typeof window.ALERTS === 'undefined') {
+            window.ALERTS = {};
+        }
+
+        // Muestra un diálogo de confirmación
+        // callback recibe: callback(confirmed) donde confirmed es boolean
+        window.ALERTS.confirm = function (message, title, callback, opts) {
+            opts = opts || {};
+            title = title || 'Confirmación';
+            const type = opts.type || 'warning';
+            const confirmText = opts.confirmText || '<i class="fa fa-check"></i> Aceptar';
+            const cancelText = opts.cancelText || '<i class="fa fa-times"></i> Cancelar';
+
+            // Icono según el tipo
+            let icon = 'fa-question-circle';
+            let iconClass = 'text-warning';
+            let btnClass = 'btn-primary';
+
+            if (type === 'danger') {
+                icon = 'fa-exclamation-triangle';
+                iconClass = 'text-danger';
+                btnClass = 'btn-danger';
+            } else if (type === 'warning') {
+                icon = 'fa-exclamation-circle';
+                iconClass = 'text-warning';
+                btnClass = 'btn-warning';
+            } else if (type === 'info') {
+                icon = 'fa-info-circle';
+                iconClass = 'text-info';
+                btnClass = 'btn-info';
+            }
+
+            const html = '<div class="text-center" style="padding: 20px;">' +
+                         '<i class="fa ' + icon + ' ' + iconClass + '" style="font-size: 64px; margin-bottom: 20px;"></i>' +
+                         '<p style="font-size: 16px;">' + message + '</p>' +
+                         '</div>';
+
+            window.GLP_MODAL.open({
+                title: title,
+                size: 'sm',
+                html: html,
+                acceptText: confirmText,
+                cancelText: cancelText,
+                acceptClass: btnClass,
+                onAccept: function () {
+                    if (typeof callback === 'function') {
+                        callback(true);
+                    }
+                },
+                onCancel: function () {
+                    if (typeof callback === 'function') {
+                        callback(false);
+                    }
+                }
+            });
+        };
+
+        // Confirmación de eliminación (atajo)
+        // callback recibe: callback(confirmed) donde confirmed es boolean
+        window.ALERTS.confirmDelete = function (itemName, callback) {
+            const msg = '¿Está seguro que desea eliminar <strong>' + itemName + '</strong>?<br>' +
+                       '<small class="text-muted">Esta acción no se puede deshacer.</small>';
+
+            window.ALERTS.confirm(
+                msg,
+                'Confirmar Eliminación',
+                callback,
+                {
+                    type: 'danger',
+                    confirmText: '<i class="fa fa-trash"></i> Eliminar',
+                    cancelText: '<i class="fa fa-times"></i> Cancelar'
+                }
+            );
+        };
+    })();
+</script>
