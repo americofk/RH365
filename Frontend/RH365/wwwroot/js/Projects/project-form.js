@@ -9,6 +9,7 @@
 //   - Renderizado separado para cada tab
 //   - Validación cliente + servidor
 //   - Integración con API REST (/api/Projects)
+//   - Labels a la izquierda de los campos
 // ============================================================================
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -167,7 +168,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     /**
      * Genera el HTML de un campo según su configuración.
-     * NOTA: Para layout de 2 columnas, las clases de labels/inputs se ajustan.
+     * Labels siempre a la izquierda del campo.
      * @param config Configuración del campo
      * @param value Valor actual del campo
      * @param is2Column Si es true, ajusta las clases para layout de 2 columnas
@@ -176,12 +177,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     const renderField = (config, value, is2Column = false) => {
         const fieldId = config.field;
         const fieldName = config.field;
-        // Clases ajustadas para layout de 2 columnas (labels más anchos)
+        // Labels SIEMPRE a la izquierda
+        // Para layout de 2 columnas: label más ancho (col-md-4)
+        // Para layout de 1 columna: label estándar (col-md-3)
         const labelClass = is2Column
-            ? 'control-label col-md-12 col-sm-12 col-xs-12'
+            ? 'control-label col-md-4 col-sm-4 col-xs-12'
             : 'control-label col-md-3 col-sm-3 col-xs-12';
         const inputContainerClass = is2Column
-            ? 'col-md-12 col-sm-12 col-xs-12'
+            ? 'col-md-8 col-sm-8 col-xs-12'
             : 'col-md-6 col-sm-6 col-xs-12';
         const requiredMark = config.required ? '<span class="required">*</span>' : '';
         const readonlyAttr = config.readonly ? 'readonly' : '';
@@ -392,7 +395,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             const url = isNew ? `${apiBase}/Projects` : `${apiBase}/Projects/${recId}`;
             const method = isNew ? 'POST' : 'PUT';
             // Construir payload con los campos necesarios
-            // IMPORTANTE: Enviar payload directo sin wrapper "request"
             const payload = {
                 ProjectCode: formData.ProjectCode,
                 Name: formData.Name,
@@ -400,7 +402,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 ProjectStatus: formData.ProjectStatus,
                 Observations: formData.Observations || null
             };
-            // Debug en consola para verificar datos
+            // Debug en consola
             console.log('FormData capturado:', formData);
             console.log('Enviando payload:', payload);
             // Enviar petición al API
