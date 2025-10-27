@@ -410,6 +410,15 @@ interface ColumnConfig {
         }
     });
 
+    $table.on('dblclick', 'tbody tr', function () {
+        const $row = $(this);
+        const $checkbox = $row.find('input.row-check');
+        const recId = $checkbox.data('recid');
+        if (recId) {
+            window.location.href = `/Project/NewEdit?recId=${recId}`;
+        }
+    });
+
     $('#btn-manage-columns').on('click', () => { gridColumnsManager.showColumnsModal(); });
 
     $('#btn-apply-columns').on('click', () => {

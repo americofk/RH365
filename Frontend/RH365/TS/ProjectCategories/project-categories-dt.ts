@@ -358,8 +358,8 @@ interface ColumnConfig {
         const count = $checked.length;
         if (count === 0) return;
 
-        const message = count === 1
-            ? '¿Está seguro de eliminar esta categoría?'
+        const message = count === 1 
+            ? '¿Está seguro de eliminar esta categoría?' 
             : `¿Está seguro de eliminar ${count} categorías?`;
 
         (w as any).ALERTS.confirm(
@@ -401,6 +401,15 @@ interface ColumnConfig {
         }
     });
 
+    $table.on('dblclick', 'tbody tr', function () {
+        const $row = $(this);
+        const $checkbox = $row.find('input.row-check');
+        const recId = $checkbox.data('recid');
+        if (recId) {
+            window.location.href = `/ProjectCategory/NewEdit?recId=${recId}`;
+        }
+    });
+
     $('#btn-manage-columns').on('click', () => { gridColumnsManager.showColumnsModal(); });
 
     $('#btn-apply-columns').on('click', () => {
@@ -422,15 +431,15 @@ interface ColumnConfig {
         const viewName = ($('#view-name').val() as string).trim();
         const isDefault = $('#view-is-default').is(':checked');
         const isPublic = $('#view-is-public').is(':checked');
-
+        
         if (!viewName) {
             (w as any).ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
             return;
         }
-
+        
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
         const success = await gridViewsManager.saveView(viewName, columnConfigs, isDefault, isPublic);
-
+        
         if (success) {
             ($ as any)('#modal-save-view').modal('hide');
             $('#current-view-name').text(viewName);
@@ -450,15 +459,15 @@ interface ColumnConfig {
         const viewName = ($('#view-name-saveas').val() as string).trim();
         const isDefault = $('#view-is-default-saveas').is(':checked');
         const isPublic = $('#view-is-public-saveas').is(':checked');
-
+        
         if (!viewName) {
             (w as any).ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
             return;
         }
-
+        
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
         const success = await gridViewsManager.saveView(viewName, columnConfigs, isDefault, isPublic);
-
+        
         if (success) {
             ($ as any)('#modal-save-as-view').modal('hide');
             $('#current-view-name').text(viewName);
@@ -472,10 +481,10 @@ interface ColumnConfig {
             (w as any).ALERTS.warn('No hay vista activa para actualizar', 'Advertencia');
             return;
         }
-
+        
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
         const success = await gridViewsManager.updateView(columnConfigs);
-
+        
         if (success) {
             $('#btn-save-view-changes').hide();
         }

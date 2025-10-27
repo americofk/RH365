@@ -356,6 +356,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             $checkbox.iCheck(isChecked ? 'uncheck' : 'check');
         }
     });
+    $table.on('dblclick', 'tbody tr', function () {
+        const $row = $(this);
+        const $checkbox = $row.find('input.row-check');
+        const recId = $checkbox.data('recid');
+        if (recId) {
+            window.location.href = `/ProjectCategory/NewEdit?recId=${recId}`;
+        }
+    });
     $('#btn-manage-columns').on('click', () => { gridColumnsManager.showColumnsModal(); });
     $('#btn-apply-columns').on('click', () => {
         const columnConfigs = gridColumnsManager.applyColumns();
