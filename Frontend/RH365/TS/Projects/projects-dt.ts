@@ -32,7 +32,7 @@ interface ColumnConfig {
     const d: Document = document;
     const $: any = w.jQuery || w.$;
 
-    const apiBase: string = (w.RH365?.urls?.apiBase) || "http://localhost:9595/api";
+    const apiBase: string = w.RH365.urls.apiBase;
     const pageContainer = d.querySelector("#projects-page");
 
     if (!pageContainer) return;
@@ -171,15 +171,15 @@ interface ColumnConfig {
             }
         };
         $table.DataTable(dtConfig);
-        console.log('✓ DataTable inicializado con columnas:', columns);
+        //console.log('✓ DataTable inicializado con columnas:', columns);
     };
 
     const loadProjects = async (): Promise<ProjectRow[]> => {
         const url = `${apiBase}/Projects?pageNumber=1&pageSize=100`;
-        console.log('Cargando proyectos desde:', url);
+        //console.log('Cargando proyectos desde:', url);
         const response: ProjectResponse = await fetchJson(url);
         if (response?.Data && Array.isArray(response.Data)) {
-            console.log(`✓ ${response.Data.length} proyectos cargados`);
+            //console.log(`✓ ${response.Data.length} proyectos cargados`);
             return response.Data;
         }
         throw new Error('Respuesta del API inválida');
@@ -524,9 +524,9 @@ interface ColumnConfig {
 
     $(async function () {
         try {
-            console.log('Inicializando lista de proyectos...');
-            console.log('Token:', token ? '✓' : '✗');
-            console.log('UserRefRecID:', userRefRecID);
+            //console.log('Inicializando lista de proyectos...');
+            //console.log('Token:', token ? '✓' : '✗');
+            //console.log('UserRefRecID:', userRefRecID);
             const probeUrl = `${apiBase}/Projects?pageNumber=1&pageSize=1`;
             const probe: ProjectResponse = await fetchJson(probeUrl);
             if (probe?.Data?.length) {
@@ -534,7 +534,7 @@ interface ColumnConfig {
             } else {
                 allColumns = [...defaultColumns];
             }
-            console.log('Columnas detectadas:', allColumns);
+            //console.log('Columnas detectadas:', allColumns);
             const GridViewsManagerClass = (w as any).GridViewsManager;
             const GridColumnsManagerClass = (w as any).GridColumnsManager;
             if (!GridViewsManagerClass || !GridColumnsManagerClass) {

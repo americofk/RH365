@@ -1,62 +1,86 @@
-// ============================================================================
-// Archivo: projects-dt.ts
-// Proyecto: RH365.WebMVC
-// Ruta: TS/Projects/projects-dt.ts
+﻿// ============================================================================
+// Archivo: loans-dt.ts
+// Préstamo: RH365.WebMVC
+// Ruta: TS/Loans/loans-dt.ts
 // Descripción:
-//   - Lista de Proyectos con DataTables
+//   - Lista de Préstamos con DataTables
 //   - Gestión de vistas de usuario (UserGridViews)
 //   - Genera columnas y filas dinámicamente desde API
 // ============================================================================
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+
+type LoanRow = Record<string, unknown>;
+
+interface LoanResponse {
+    Data: ProjectRow[];
+    TotalCount: number;
+    PageNumber: number;
+    PageSize: number;
+    TotalPages: number;
+    HasNextPage: boolean;
+    HasPreviousPage: boolean;
+}
+
+interface ColumnConfig {
+    field: string;
+    visible: boolean;
+    order: number;
+    width?: number;
+}
+
 (function () {
-    const w = window;
-    const d = document;
-    const $ = w.jQuery || w.$;
-    const apiBase = w.RH365.urls.apiBase;
-    const pageContainer = d.querySelector("#projects-page");
-    if (!pageContainer)
-        return;
-    const token = pageContainer.getAttribute("data-token") || "";
-    const dataareaId = pageContainer.getAttribute("data-dataarea") || "DAT";
-    const userRefRecID = parseInt(pageContainer.getAttribute("data-user") || "0", 10);
-    const $table = $("#projects-table");
-    if (!$table.length)
-        return;
-    let projectsData = [];
-    let allColumns = [];
-    let visibleColumns = [];
-    const defaultColumns = ['ID', 'ProjectCode', 'Name', 'LedgerAccount', 'ProjectStatus', 'CreatedOn'];
-    let gridViewsManager;
-    let gridColumnsManager;
-    const titleize = (field) => {
-        const translations = {
+    const w: any = window;
+    const d: Document = document;
+    const $: any = w.jQuery || w.$;
+
+    const apiBase: string = (w.RH365?.urls?.apiBase) || "http://localhost:9595/api";
+    const pageContainer = d.querySelector("#loans-page");
+
+    if (!pageContainer) return;
+
+    const token: string = pageContainer.getAttribute("data-token") || "";
+    const dataareaId: string = pageContainer.getAttribute("data-dataarea") || "DAT";
+    const userRefRecID: number = parseInt(pageContainer.getAttribute("data-user") || "0", 10);
+
+    const $table: any = $("#loans-table");
+    if (!$table.length) return;
+
+    let loansData: LoanRow[] = [];
+    let allColumns: string[] = [];
+    let visibleColumns: string[] = [];
+    const defaultColumns: string[] = ['ID', 'LoanCode', 'Name', 'LedgerAccount', 'LoanStatus', 'CreatedOn'];
+
+    let gridViewsManager: any;
+    let gridColumnsManager: any;
+
+    const titleize = (field: string): string => {
+        const translations: Record<string, string> = {
             'RecID': 'ID Registro',
             'ID': 'ID',
-            'ProjectCode': 'Código Proyecto',
+            'LoanCode': 'Código Préstamo',
             'Name': 'Nombre',
             'LedgerAccount': 'Cuenta Contable',
-            'ProjectStatus': 'Estado',
+            'LoanStatus': 'Estado',
             'CreatedOn': 'Fecha Creación',
             'CreatedBy': 'Creado Por',
             'ModifiedOn': 'Modificado',
             'ModifiedBy': 'Modificado Por',
-            'Observations': 'Observaciones'
+            'ValidFrom': 'Válido Desde',
+            'ValidTo': 'Válido Hasta',
+            'MultiplyAmount': 'Monto Multiplicador',
+            'Description': 'Descripción',
+            'PayFrecuency': 'Frecuencia de Pago',
+            'IndexBase': 'Base de Índice',
+            'DepartmentRefRecID': 'Departamento',
+            'ProjCategoryRefRecID': 'Categoría Proyecto',
+            'ProjectRefRecID': 'Proyecto'
         };
         return translations[field] || field.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
     };
-    const formatCell = (value, field) => {
-        if (value == null)
-            return "";
+
+    const formatCell = (value: unknown, field: string): string => {
+        if (value == null) return "";
         if (typeof value === "boolean") {
-            if (field === "ProjectStatus") {
+            if (field === "LoanStatus") {
                 return value ? '<span class="label label-success">Activo</span>' : '<span class="label label-danger">Inactivo</span>';
             }
             return value ? "Sí" : "No";
@@ -69,28 +93,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         return String(value);
     };
-    const fetchJson = (url) => __awaiter(this, void 0, void 0, function* () {
-        const headers = {
+
+    const fetchJson = async (url: string): Promise<any> => {
+        const headers: Record<string, string> = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         };
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
-        const response = yield fetch(url, { headers });
+        const response = await fetch(url, { headers });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status} @ ${url}`);
         }
         return response.json();
-    });
-    const getColumnsFromData = (sample) => {
+    };
+
+    const getColumnsFromData = (sample: ProjectRow): string[] => {
         if (!sample || typeof sample !== 'object') {
             return [...defaultColumns];
         }
         const excluded = new Set(['RecID', 'RowVersion', 'DataareaID']);
         return Object.keys(sample).filter(col => !excluded.has(col));
     };
-    const initializeDataTable = (columns) => {
+
+    const initializeDataTable = (columns: string[]): void => {
         if ($.fn.DataTable.isDataTable($table)) {
             $table.DataTable().destroy();
         }
@@ -104,7 +131,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         if ($.fn.iCheck) {
             $('.flat').iCheck({ checkboxClass: 'icheckbox_flat-green' });
         }
-        const dtConfig = {
+        const dtConfig: any = {
             processing: true,
             serverSide: false,
             responsive: true,
@@ -128,19 +155,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     orderable: false,
                     searchable: false,
                     className: 'text-center',
-                    render: (_data, _type, row) => {
+                    render: (_data: any, _type: string, row: ProjectRow) => {
                         return `<input type="checkbox" class="flat row-check" data-recid="${row.RecID || ''}"/>`;
                     }
                 },
-                ...columns.map(col => ({ data: col, name: col, render: (data) => formatCell(data, col) }))
+                ...columns.map(col => ({ data: col, name: col, render: (data: unknown) => formatCell(data, col) }))
             ],
-            ajax: (_data, callback) => {
-                loadProjects().then(items => {
-                    projectsData = items;
+            ajax: (_data: any, callback: (result: { data: ProjectRow[] }) => void) => {
+                loadLoans().then(items => {
+                    loansData = items;
                     callback({ data: items });
                     updateSummary(items.length);
                 }).catch(err => {
-                    console.error('Error cargando proyectos:', err);
+                    console.error('Error cargando préstamos:', err);
                     showError(err.message);
                     callback({ data: [] });
                 });
@@ -152,25 +179,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
         };
         $table.DataTable(dtConfig);
-        //console.log('✓ DataTable inicializado con columnas:', columns);
+        console.log('✓ DataTable inicializado con columnas:', columns);
     };
-    const loadProjects = () => __awaiter(this, void 0, void 0, function* () {
-        const url = `${apiBase}/Projects?pageNumber=1&pageSize=100`;
-        //console.log('Cargando proyectos desde:', url);
-        const response = yield fetchJson(url);
-        if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
-            //console.log(`✓ ${response.Data.length} proyectos cargados`);
+
+    const loadLoans = async (): Promise<ProjectRow[]> => {
+        const url = `${apiBase}/Loans?pageNumber=1&pageSize=100`;
+        console.log('Cargando préstamos desde:', url);
+        const response: ProjectResponse = await fetchJson(url);
+        if (response?.Data && Array.isArray(response.Data)) {
+            console.log(`✓ ${response.Data.length} préstamos cargados`);
             return response.Data;
         }
         throw new Error('Respuesta del API inválida');
-    });
-    const updateSummary = (count) => {
-        const summary = d.getElementById('projects-summary');
+    };
+
+    const updateSummary = (count: number): void => {
+        const summary = d.getElementById('loans-summary');
         if (summary) {
-            summary.textContent = `${count} proyecto${count !== 1 ? 's' : ''}`;
+            summary.textContent = `${count} préstamo${count !== 1 ? 's' : ''}`;
         }
     };
-    const showError = (message) => {
+
+    const showError = (message: string): void => {
         const errorHtml = `
             <tr>
                 <td colspan="10" class="text-center text-danger">
@@ -180,27 +210,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         `;
         $table.find('tbody').html(errorHtml);
     };
-    const updateButtonStates = () => {
+
+    const updateButtonStates = (): void => {
         const checkedCount = $table.find('tbody input.row-check:checked').length;
         $('#btn-edit').prop('disabled', checkedCount !== 1);
         $('#btn-delete').prop('disabled', checkedCount === 0);
     };
-    const exportToCSV = () => {
-        if (!projectsData.length) {
-            w.ALERTS.warn('No hay datos para exportar', 'Advertencia');
+
+    const exportToCSV = (): void => {
+        if (!loansData.length) {
+            (w as any).ALERTS.warn('No hay datos para exportar', 'Advertencia');
             return;
         }
-        const dt = $table.DataTable();
-        const rows = dt.rows({ search: 'applied' }).data().toArray();
+        const dt: any = $table.DataTable();
+        const rows: ProjectRow[] = dt.rows({ search: 'applied' }).data().toArray();
         if (!rows.length) {
-            w.ALERTS.warn('No hay datos visibles para exportar', 'Advertencia');
+            (w as any).ALERTS.warn('No hay datos visibles para exportar', 'Advertencia');
             return;
         }
         const columns = visibleColumns;
-        const csvLines = [columns.map(col => titleize(col)).join(',')];
+        const csvLines: string[] = [columns.map(col => titleize(col)).join(',')];
         rows.forEach(row => {
             const line = columns.map(col => {
-                const value = row[col];
+                const value = (row as any)[col];
                 const str = value == null ? '' : String(value).replace(/"/g, '""');
                 return /[",\n]/.test(str) ? `"${str}"` : str;
             }).join(',');
@@ -209,7 +241,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = d.createElement('a');
-        const fileName = `Proyectos_${new Date().toISOString().slice(0, 10)}.csv`;
+        const fileName = `Préstamos_${new Date().toISOString().slice(0, 10)}.csv`;
         link.href = url;
         link.download = fileName;
         link.style.visibility = 'hidden';
@@ -218,30 +250,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         d.body.removeChild(link);
         URL.revokeObjectURL(url);
     };
-    const deleteProject = (recId) => __awaiter(this, void 0, void 0, function* () {
-        const url = `${apiBase}/Projects/${recId}`;
-        const headers = { 'Authorization': `Bearer ${token}` };
-        const response = yield fetch(url, { method: 'DELETE', headers });
+
+    const deleteProject = async (recId: string): Promise<void> => {
+        const url = `${apiBase}/Loans/${recId}`;
+        const headers: Record<string, string> = { 'Authorization': `Bearer ${token}` };
+        const response = await fetch(url, { method: 'DELETE', headers });
         if (!response.ok) {
-            throw new Error(`Error al eliminar proyecto: ${response.status}`);
+            throw new Error(`Error al eliminar préstamo: ${response.status}`);
         }
-    });
-    const applyColumnChanges = (newColumns) => {
+    };
+
+    const applyColumnChanges = (newColumns: string[]): void => {
         visibleColumns = newColumns;
         initializeDataTable(newColumns);
         if (gridViewsManager && gridViewsManager.hasCurrentView()) {
             $('#btn-save-view-changes').show();
         }
     };
-    const updateViewsDropdown = () => {
+
+    const updateViewsDropdown = (): void => {
         const views = gridViewsManager.getAvailableViews();
         const container = $('#saved-views-container');
         container.empty();
+
         if (views.length === 0) {
             container.append('<li class="text-muted" style="padding: 5px 20px;">No hay vistas guardadas</li>');
             return;
         }
-        views.forEach((view) => {
+
+        views.forEach((view: any) => {
             const icon = view.IsDefault ? '<i class="fa fa-star text-warning"></i>' : '<i class="fa fa-file-o"></i>';
             const item = $(`
             <li style="position: relative;">
@@ -258,32 +295,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 ` : ''}
             </li>
         `);
-            item.find('a[data-view-id]').first().on('click', function (e) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    e.preventDefault();
-                    yield loadViewById(view.RecID);
-                });
+
+            item.find('a[data-view-id]').first().on('click', async function (e) {
+                e.preventDefault();
+                await loadViewById(view.RecID);
             });
-            item.find('.btn-set-default').on('click', function (e) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    w.ALERTS.confirm(`¿Establecer "${view.ViewName}" como vista predeterminada?`, 'Confirmar', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+
+            item.find('.btn-set-default').on('click', async function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                (w as any).ALERTS.confirm(
+                    `¿Establecer "${view.ViewName}" como vista predeterminada?`,
+                    'Confirmar',
+                    async (confirmed: boolean) => {
                         if (confirmed) {
-                            const success = yield gridViewsManager.setDefaultView(view.RecID);
+                            const success = await gridViewsManager.setDefaultView(view.RecID);
                             if (success) {
                                 updateViewsDropdown();
                             }
                         }
-                    }));
-                });
+                    }
+                );
             });
+
             container.append(item);
         });
     };
-    const loadViewById = (viewId) => __awaiter(this, void 0, void 0, function* () {
+
+    const loadViewById = async (viewId: number): Promise<void> => {
         try {
-            const columnConfigs = yield gridViewsManager.loadView(viewId);
+            const columnConfigs: ColumnConfig[] = await gridViewsManager.loadView(viewId);
             if (columnConfigs.length > 0) {
                 gridColumnsManager.applyColumnConfig(columnConfigs);
                 const newColumns = columnConfigs.filter(c => c.visible).sort((a, b) => a.order - b.order).map(c => c.field);
@@ -292,27 +334,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 $('#current-view-name').text(viewName);
                 $('#btn-save-view-changes').hide();
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Error cargando vista:', error);
         }
-    });
-    $(document).on('ifChanged', '#check-all', function () {
+    };
+
+    $(document).on('ifChanged', '#check-all', function (this: HTMLInputElement) {
         const isChecked = $(this).is(':checked');
         $table.find('tbody input.row-check').iCheck(isChecked ? 'check' : 'uncheck');
     });
+
     $(document).on('ifChanged', '.row-check', function () {
         const total = $table.find('tbody input.row-check').length;
         const checked = $table.find('tbody input.row-check:checked').length;
         if (checked === total && total > 0) {
             $('#check-all').iCheck('check');
-        }
-        else {
+        } else {
             $('#check-all').iCheck('uncheck');
         }
         updateButtonStates();
     });
+
     $('#btn-new').on('click', () => { window.location.href = '/Project/NewEdit'; });
+
     $('#btn-edit').on('click', () => {
         const $checked = $table.find('tbody input.row-check:checked').first();
         if ($checked.length) {
@@ -320,40 +364,49 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             window.location.href = `/Project/NewEdit?recId=${recId}`;
         }
     });
-    $('#btn-delete').on('click', () => __awaiter(this, void 0, void 0, function* () {
+
+    $('#btn-delete').on('click', async () => {
         const $checked = $table.find('tbody input.row-check:checked');
         const count = $checked.length;
-        if (count === 0)
-            return;
+        if (count === 0) return;
+
         const message = count === 1
-            ? '¿Está seguro de eliminar este proyecto?'
-            : `¿Está seguro de eliminar ${count} proyectos?`;
-        w.ALERTS.confirm(message, 'Confirmar Eliminación', (confirmed) => __awaiter(this, void 0, void 0, function* () {
-            if (!confirmed)
-                return;
-            try {
-                const promises = [];
-                $checked.each(function () {
-                    const recId = $(this).data('recid');
-                    if (recId) {
-                        promises.push(deleteProject(recId));
-                    }
-                });
-                yield Promise.all(promises);
-                w.ALERTS.ok('Proyecto(s) eliminado(s) correctamente', 'Éxito');
-                $table.DataTable().ajax.reload();
-            }
-            catch (error) {
-                console.error('Error al eliminar:', error);
-                w.ALERTS.error('Error al eliminar proyecto(s)', 'Error');
-            }
-        }), { type: 'danger' });
-    }));
-    $('#btn-export').on('click', exportToCSV);
-    $('#btn-import').on('click', () => {
-        w.ALERTS.info('Funcionalidad de importación próximamente', 'Información');
+            ? '¿Está seguro de eliminar este préstamo?'
+            : `¿Está seguro de eliminar ${count} préstamos?`;
+
+        (w as any).ALERTS.confirm(
+            message,
+            'Confirmar Eliminación',
+            async (confirmed: boolean) => {
+                if (!confirmed) return;
+
+                try {
+                    const promises: Promise<void>[] = [];
+                    $checked.each(function () {
+                        const recId = $(this).data('recid');
+                        if (recId) {
+                            promises.push(deleteProject(recId));
+                        }
+                    });
+                    await Promise.all(promises);
+                    (w as any).ALERTS.ok('Préstamo(s) eliminado(s) correctamente', 'Éxito');
+                    $table.DataTable().ajax.reload();
+                } catch (error) {
+                    console.error('Error al eliminar:', error);
+                    (w as any).ALERTS.error('Error al eliminar préstamo(s)', 'Error');
+                }
+            },
+            { type: 'danger' }
+        );
     });
-    $table.on('click', 'tbody tr', function (e) {
+
+    $('#btn-export').on('click', exportToCSV);
+
+    $('#btn-import').on('click', () => {
+        (w as any).ALERTS.info('Funcionalidad de importación próximamente', 'Información');
+    });
+
+    $table.on('click', 'tbody tr', function (e: any) {
         if ($(e.target).is('input.row-check') || $(e.target).closest('.icheckbox_flat-green').length) {
             return;
         }
@@ -364,6 +417,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             $checkbox.iCheck(isChecked ? 'uncheck' : 'check');
         }
     });
+
     $table.on('dblclick', 'tbody tr', function () {
         const $row = $(this);
         const $checkbox = $row.find('input.row-check');
@@ -372,81 +426,102 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             window.location.href = `/Project/NewEdit?recId=${recId}`;
         }
     });
+
     $('#btn-manage-columns').on('click', () => { gridColumnsManager.showColumnsModal(); });
+
     $('#btn-apply-columns').on('click', () => {
         const columnConfigs = gridColumnsManager.applyColumns();
         const newColumns = columnConfigs.filter(c => c.visible).sort((a, b) => a.order - b.order).map(c => c.field);
         applyColumnChanges(newColumns);
-        $('#modal-manage-columns').modal('hide');
+        ($ as any)('#modal-manage-columns').modal('hide');
     });
+
     $('#btn-new-view').on('click', (e) => {
         e.preventDefault();
         $('#view-name').val('');
         $('#view-is-default').prop('checked', false);
         $('#view-is-public').prop('checked', false);
-        $('#modal-save-view').modal('show');
+        ($ as any)('#modal-save-view').modal('show');
     });
-    $('#btn-confirm-save-view').on('click', () => __awaiter(this, void 0, void 0, function* () {
-        const viewName = $('#view-name').val().trim();
+
+    $('#btn-confirm-save-view').on('click', async () => {
+        const viewName = ($('#view-name').val() as string).trim();
         const isDefault = $('#view-is-default').is(':checked');
         const isPublic = $('#view-is-public').is(':checked');
+
         if (!viewName) {
-            w.ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
+            (w as any).ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
             return;
         }
+
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
-        const success = yield gridViewsManager.saveView(viewName, columnConfigs, isDefault, isPublic);
+        const success = await gridViewsManager.saveView(viewName, columnConfigs, isDefault, isPublic);
+
         if (success) {
-            $('#modal-save-view').modal('hide');
+            ($ as any)('#modal-save-view').modal('hide');
             $('#current-view-name').text(viewName);
             $('#btn-save-view-changes').hide();
             updateViewsDropdown();
         }
-    }));
+    });
+
     $('#btn-save-as-view').on('click', () => {
         $('#view-name-saveas').val('');
         $('#view-is-default-saveas').prop('checked', false);
         $('#view-is-public-saveas').prop('checked', false);
-        $('#modal-save-as-view').modal('show');
+        ($ as any)('#modal-save-as-view').modal('show');
     });
-    $('#btn-confirm-save-as').on('click', () => __awaiter(this, void 0, void 0, function* () {
-        const viewName = $('#view-name-saveas').val().trim();
+
+    $('#btn-confirm-save-as').on('click', async () => {
+        const viewName = ($('#view-name-saveas').val() as string).trim();
         const isDefault = $('#view-is-default-saveas').is(':checked');
         const isPublic = $('#view-is-public-saveas').is(':checked');
+
         if (!viewName) {
-            w.ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
+            (w as any).ALERTS.warn('Por favor ingrese un nombre para la vista', 'Advertencia');
             return;
         }
+
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
-        const success = yield gridViewsManager.saveView(viewName, columnConfigs, isDefault, isPublic);
+        const success = await gridViewsManager.saveView(viewName, columnConfigs, isDefault, isPublic);
+
         if (success) {
-            $('#modal-save-as-view').modal('hide');
+            ($ as any)('#modal-save-as-view').modal('hide');
             $('#current-view-name').text(viewName);
             $('#btn-save-view-changes').hide();
             updateViewsDropdown();
         }
-    }));
-    $('#btn-save-view-changes').on('click', () => __awaiter(this, void 0, void 0, function* () {
+    });
+
+    $('#btn-save-view-changes').on('click', async () => {
         if (!gridViewsManager.hasCurrentView()) {
-            w.ALERTS.warn('No hay vista activa para actualizar', 'Advertencia');
+            (w as any).ALERTS.warn('No hay vista activa para actualizar', 'Advertencia');
             return;
         }
+
         const columnConfigs = gridColumnsManager.getCurrentColumnConfig();
-        const success = yield gridViewsManager.updateView(columnConfigs);
+        const success = await gridViewsManager.updateView(columnConfigs);
+
         if (success) {
             $('#btn-save-view-changes').hide();
         }
-    }));
-    $('#btn-reset-view').on('click', () => {
-        w.ALERTS.confirm('¿Desea restablecer a la vista por defecto?', 'Confirmar', (confirmed) => {
-            if (confirmed) {
-                gridColumnsManager.resetToDefault(defaultColumns);
-                applyColumnChanges(defaultColumns);
-                $('#current-view-name').text('Vista por defecto');
-                $('#btn-save-view-changes').hide();
-            }
-        });
     });
+
+    $('#btn-reset-view').on('click', () => {
+        (w as any).ALERTS.confirm(
+            '¿Desea restablecer a la vista por defecto?',
+            'Confirmar',
+            (confirmed: boolean) => {
+                if (confirmed) {
+                    gridColumnsManager.resetToDefault(defaultColumns);
+                    applyColumnChanges(defaultColumns);
+                    $('#current-view-name').text('Vista por defecto');
+                    $('#btn-save-view-changes').hide();
+                }
+            }
+        );
+    });
+
     $(document).on('click', '[data-view="default"]', (e) => {
         e.preventDefault();
         gridColumnsManager.resetToDefault(defaultColumns);
@@ -454,55 +529,49 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         $('#current-view-name').text('Vista por defecto');
         $('#btn-save-view-changes').hide();
     });
-    $(function () {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            try {
-                //console.log('Inicializando lista de proyectos...');
-                //console.log('Token:', token ? '✓' : '✗');
-                //console.log('UserRefRecID:', userRefRecID);
-                const probeUrl = `${apiBase}/Projects?pageNumber=1&pageSize=1`;
-                const probe = yield fetchJson(probeUrl);
-                if ((_a = probe === null || probe === void 0 ? void 0 : probe.Data) === null || _a === void 0 ? void 0 : _a.length) {
-                    allColumns = getColumnsFromData(probe.Data[0]);
-                }
-                else {
-                    allColumns = [...defaultColumns];
-                }
-                //console.log('Columnas detectadas:', allColumns);
-                const GridViewsManagerClass = w.GridViewsManager;
-                const GridColumnsManagerClass = w.GridColumnsManager;
-                if (!GridViewsManagerClass || !GridColumnsManagerClass) {
-                    console.error('GridViewsManager o GridColumnsManager no están disponibles');
-                    visibleColumns = [...defaultColumns];
-                    initializeDataTable(visibleColumns);
-                    return;
-                }
-                gridViewsManager = new GridViewsManagerClass(apiBase, token, "Projects", userRefRecID, dataareaId);
-                const savedColumns = yield gridViewsManager.initialize();
-                if (savedColumns.length > 0) {
-                    visibleColumns = savedColumns.filter(c => c.visible).sort((a, b) => a.order - b.order).map(c => c.field);
-                    const viewName = gridViewsManager.getCurrentViewName();
-                    $('#current-view-name').text(viewName);
-                    console.log(`✓ Vista "${viewName}" cargada desde BD`);
-                }
-                else {
-                    visibleColumns = [...defaultColumns];
-                    console.log('✓ Usando vista por defecto');
-                }
-                gridColumnsManager = new GridColumnsManagerClass(allColumns, visibleColumns, (newColumns) => {
-                    applyColumnChanges(newColumns);
-                });
-                updateViewsDropdown();
-                initializeDataTable(visibleColumns);
+
+    $(async function () {
+        try {
+            console.log('Inicializando lista de préstamos...');
+            console.log('Token:', token ? '✓' : '✗');
+            console.log('UserRefRecID:', userRefRecID);
+            const probeUrl = `${apiBase}/Loans?pageNumber=1&pageSize=1`;
+            const probe: ProjectResponse = await fetchJson(probeUrl);
+            if (probe?.Data?.length) {
+                allColumns = getColumnsFromData(probe.Data[0]);
+            } else {
+                allColumns = [...defaultColumns];
             }
-            catch (error) {
-                console.error('Error en inicialización:', error);
+            console.log('Columnas detectadas:', allColumns);
+            const GridViewsManagerClass = (w as any).GridViewsManager;
+            const GridColumnsManagerClass = (w as any).GridColumnsManager;
+            if (!GridViewsManagerClass || !GridColumnsManagerClass) {
+                console.error('GridViewsManager o GridColumnsManager no están disponibles');
                 visibleColumns = [...defaultColumns];
                 initializeDataTable(visibleColumns);
-                showError('Error al cargar la configuración');
+                return;
             }
-        });
+            gridViewsManager = new GridViewsManagerClass(apiBase, token, "Loans", userRefRecID, dataareaId);
+            const savedColumns: ColumnConfig[] = await gridViewsManager.initialize();
+            if (savedColumns.length > 0) {
+                visibleColumns = savedColumns.filter(c => c.visible).sort((a, b) => a.order - b.order).map(c => c.field);
+                const viewName = gridViewsManager.getCurrentViewName();
+                $('#current-view-name').text(viewName);
+                console.log(`✓ Vista "${viewName}" cargada desde BD`);
+            } else {
+                visibleColumns = [...defaultColumns];
+                console.log('✓ Usando vista por defecto');
+            }
+            gridColumnsManager = new GridColumnsManagerClass(allColumns, visibleColumns, (newColumns: string[]) => {
+                applyColumnChanges(newColumns);
+            });
+            updateViewsDropdown();
+            initializeDataTable(visibleColumns);
+        } catch (error) {
+            console.error('Error en inicialización:', error);
+            visibleColumns = [...defaultColumns];
+            initializeDataTable(visibleColumns);
+            showError('Error al cargar la configuración');
+        }
     });
 })();
-//# sourceMappingURL=projects-dt.js.map
