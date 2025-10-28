@@ -45,6 +45,7 @@
 		<Folder Include="Models\" />
 		<Folder Include="TS\GridViews\" />
 		<Folder Include="TS\Loans\" />
+		<Folder Include="TS\Educationlevels\" />
 		<Folder Include="TS\ProjectCategories\" />
 		<Folder Include="TS\Projects\" />
 		<Folder Include="wwwroot\html\" />
