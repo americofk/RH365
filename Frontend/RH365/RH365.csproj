@@ -42,7 +42,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Models\" />
 		<Folder Include="TS\GridViews\" />
 		<Folder Include="TS\Loans\" />
 		<Folder Include="TS\Educationlevels\" />
@@ -52,6 +51,7 @@
 		<Folder Include="TS\Projects\" />
 		<Folder Include="Views\DisabilityType\" />
 		<Folder Include="Views\CourseLocation\" />
+		<Folder Include="Views\CalendarHoliday\" />
 		<Folder Include="Views\Occupation\" />
 		<Folder Include="wwwroot\html\" />
 	</ItemGroup>
