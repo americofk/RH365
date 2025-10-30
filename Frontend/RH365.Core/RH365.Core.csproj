@@ -9,6 +9,7 @@
   <ItemGroup>
     <Folder Include="Application\Services\" />
     <Folder Include="Domain\Models\Loan\" />
+    <Folder Include="Domain\Models\CourseLocation\" />
   </ItemGroup>
 
 </Project>

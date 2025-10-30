@@ -203,7 +203,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         $('#btn-delete').prop('disabled', n === 0);
     };
     const exportToCSV = () => {
-        var _a, _b, _c, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f;
         if (!loansData.length) {
             (_b = (_a = w.ALERTS) === null || _a === void 0 ? void 0 : _a.warn) === null || _b === void 0 ? void 0 : _b.call(_a, 'No hay datos para exportar', 'Advertencia');
             return;
@@ -211,7 +211,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const dt = $table.DataTable();
         const rows = dt.rows({ search: 'applied' }).data().toArray();
         if (!rows.length) {
-            (_e = (_c = w.ALERTS) === null || _c === void 0 ? void 0 : _c.warn) === null || _e === void 0 ? void 0 : _e.call(_c, 'No hay datos visibles para exportar', 'Advertencia');
+            (_d = (_c = w.ALERTS) === null || _c === void 0 ? void 0 : _c.warn) === null || _d === void 0 ? void 0 : _d.call(_c, 'No hay datos visibles para exportar', 'Advertencia');
             return;
         }
         const cols = visibleColumns.filter(c => allColumns.includes(c));
@@ -232,7 +232,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         a.click();
         d.body.removeChild(a);
         URL.revokeObjectURL(url);
-        (_g = (_f = w.ALERTS) === null || _f === void 0 ? void 0 : _f.ok) === null || _g === void 0 ? void 0 : _g.call(_f, 'Datos exportados correctamente', 'Éxito');
+        (_f = (_e = w.ALERTS) === null || _e === void 0 ? void 0 : _e.ok) === null || _f === void 0 ? void 0 : _f.call(_e, 'Datos exportados correctamente', 'Éxito');
     };
     const deleteLoan = (recId) => __awaiter(this, void 0, void 0, function* () {
         const url = `${apiBase}/Loans/${recId}`;
@@ -331,7 +331,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             return;
         const msg = count === 1 ? '¿Está seguro de eliminar este préstamo?' : `¿Está seguro de eliminar ${count} préstamos?`;
         (_b = (_a = w.ALERTS) === null || _a === void 0 ? void 0 : _a.confirm) === null || _b === void 0 ? void 0 : _b.call(_a, msg, 'Confirmar Eliminación', (ok) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _e;
+            var _a, _b, _c, _d;
             if (!ok)
                 return;
             try {
@@ -347,7 +347,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
             catch (err) {
                 console.error('Error al eliminar:', err);
-                (_e = (_c = w.ALERTS) === null || _c === void 0 ? void 0 : _c.error) === null || _e === void 0 ? void 0 : _e.call(_c, 'Error al eliminar préstamo(s)', 'Error');
+                (_d = (_c = w.ALERTS) === null || _c === void 0 ? void 0 : _c.error) === null || _d === void 0 ? void 0 : _d.call(_c, 'Error al eliminar préstamo(s)', 'Error');
             }
         }), { type: 'danger' });
     }));

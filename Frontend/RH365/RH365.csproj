@@ -46,8 +46,13 @@
 		<Folder Include="TS\GridViews\" />
 		<Folder Include="TS\Loans\" />
 		<Folder Include="TS\Educationlevels\" />
+		<Folder Include="TS\DisabilityType\" />
+		<Folder Include="TS\Occupation\" />
 		<Folder Include="TS\ProjectCategories\" />
 		<Folder Include="TS\Projects\" />
+		<Folder Include="Views\DisabilityType\" />
+		<Folder Include="Views\CourseLocation\" />
+		<Folder Include="Views\Occupation\" />
 		<Folder Include="wwwroot\html\" />
 	</ItemGroup>
 
