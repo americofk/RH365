@@ -2,6 +2,9 @@
 // Archivo: UpdateCourseRequest.cs
 // Proyecto: RH365.Core
 // Ruta: RH365.Core/Application/Features/DTOs/Course/UpdateCourseRequest.cs
+// Descripción: DTO para actualizar un curso existente.
+//   - Todos los campos son opcionales (nullable)
+//   - Solo se actualizan los campos enviados
 // ============================================================================
 using System;
 
@@ -12,7 +15,7 @@ namespace RH365.Core.Application.Features.DTOs.Course
         public string? CourseCode { get; set; }
         public string? Name { get; set; }
         public long? CourseTypeRefRecID { get; set; }
-        public int? ClassRoomRefRecID { get; set; }
+        public long? ClassRoomRefRecID { get; set; }
         public string? Description { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }

@@ -2,20 +2,17 @@
 // Archivo: Course.cs
 // Proyecto: RH365.Core
 // Ruta: RH365.Core/Domain/Entities/Training/Course.cs
-// Descripción: Entidad que representa los cursos de capacitación dentro del sistema.
-//   - Relacionada con CourseType, CourseEmployee e Instructor
-//   - ClassRoomRefRecID como FK sin navegación (incompatibilidad int vs long)
-//   - Incluye herencia de AuditableCompanyEntity para cumplir con ISO 27001
+// Descripción: Entidad que representa un curso de capacitación.
+//   - Hereda de AuditableCompanyEntity para cumplir ISO 27001
+//   - Relaciones con CourseType, ClassRoom y otras entidades relacionadas
 // ============================================================================
+
 using RH365.Core.Domain.Common;
-using RH365.Core.Domain.Entities;
-using System;
-using System.Collections.Generic;
 
 namespace RH365.Core.Domain.Entities
 {
     /// <summary>
-    /// Representa un curso de capacitación.
+    /// Representa un curso de capacitación en el sistema.
     /// </summary>
     public class Course : AuditableCompanyEntity
     {
@@ -30,19 +27,17 @@ namespace RH365.Core.Domain.Entities
         public string Name { get; set; } = null!;
 
         /// <summary>
-        /// FK al tipo de curso.
+        /// FK al tipo de curso (CourseType.RecID).
         /// </summary>
         public long CourseTypeRefRecID { get; set; }
 
         /// <summary>
-        /// FK al aula donde se imparte el curso.
-        /// NOTA: Es int? porque ClassRooms.RecID es int en la BD actual.
-        /// No tiene propiedad de navegación por incompatibilidad de tipos (int vs long).
+        /// FK al aula/salón donde se imparte el curso (ClassRoom.RecID). Opcional.
         /// </summary>
-        public int? ClassRoomRefRecID { get; set; }
+        public long? ClassRoomRefRecID { get; set; }
 
         /// <summary>
-        /// Descripción detallada del curso.
+        /// Descripción del curso.
         /// </summary>
         public string? Description { get; set; }
 
@@ -57,17 +52,17 @@ namespace RH365.Core.Domain.Entities
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Indica si el curso corresponde a entrenamiento matricial.
+        /// Indica si es un curso de capacitación matricial.
         /// </summary>
         public bool IsMatrixTraining { get; set; }
 
         /// <summary>
-        /// Define si el curso es interno o externo.
+        /// Tipo interno/externo del curso (0 = Interno, 1 = Externo, etc.).
         /// </summary>
         public int InternalExternal { get; set; }
 
         /// <summary>
-        /// Curso padre, en caso de ser una sub-asignación.
+        /// ID del curso padre si forma parte de una jerarquía.
         /// </summary>
         public string? CourseParentId { get; set; }
 
@@ -82,7 +77,7 @@ namespace RH365.Core.Domain.Entities
         public int MaxStudents { get; set; }
 
         /// <summary>
-        /// Periodicidad del curso.
+        /// Periodicidad del curso (días, semanas, meses, etc.).
         /// </summary>
         public int Periodicity { get; set; }
 
@@ -92,22 +87,22 @@ namespace RH365.Core.Domain.Entities
         public int QtySessions { get; set; }
 
         /// <summary>
-        /// Objetivos principales del curso.
+        /// Objetivos del curso.
         /// </summary>
         public string Objetives { get; set; } = null!;
 
         /// <summary>
-        /// Temas que se cubrirán en el curso.
+        /// Temas cubiertos en el curso.
         /// </summary>
         public string Topics { get; set; } = null!;
 
         /// <summary>
-        /// Estado actual del curso.
+        /// Estado actual del curso (0 = Planificado, 1 = En progreso, 2 = Completado, etc.).
         /// </summary>
         public int CourseStatus { get; set; }
 
         /// <summary>
-        /// URL de documentos de soporte.
+        /// URL donde se almacenan los documentos relacionados al curso.
         /// </summary>
         public string? UrlDocuments { get; set; }
 
@@ -116,18 +111,13 @@ namespace RH365.Core.Domain.Entities
         // -----------------------------
 
         /// <summary>
-        /// Empleados inscritos en el curso.
-        /// </summary>
-        public virtual ICollection<CourseEmployee> CourseEmployees { get; set; } = new List<CourseEmployee>();
-
-        /// <summary>
-        /// Instructores asignados al curso.
-        /// </summary>
-        public virtual ICollection<CourseInstructor> CourseInstructors { get; set; } = new List<CourseInstructor>();
-
-        /// <summary>
         /// Tipo de curso asociado.
         /// </summary>
-        public virtual CourseType CourseTypeRefRec { get; set; } = null!;
+        public virtual CourseType CourseType { get; set; } = null!;
+
+        /// <summary>
+        /// Aula/salón asociado al curso.
+        /// </summary>
+        public virtual ClassRoom? ClassRoom { get; set; }
     }
 }

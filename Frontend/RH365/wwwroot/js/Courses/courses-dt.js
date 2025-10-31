@@ -6,7 +6,8 @@
 //   - Lista de Cursos con DataTables
 //   - Gestión de vistas de usuario (UserGridViews)
 //   - Genera columnas y filas dinámicamente desde API
-// Estándar: ISO 27001 - Gestión segura de datos de formación
+//   - USA skip/take en lugar de pageNumber/pageSize
+// Estándar: ISO 27001 - Gestión de datos estructurados
 // ============================================================================
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -34,33 +35,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     let coursesData = [];
     let allColumns = [];
     let visibleColumns = [];
-    const defaultColumns = ['ID', 'CourseCode', 'Name', 'StartDate', 'EndDate', 'CourseStatus', 'CreatedOn'];
+    const defaultColumns = ['ID', 'CourseCode', 'Name', 'CourseTypeRefRecID', 'StartDate', 'EndDate'];
     let gridViewsManager;
     let gridColumnsManager;
-    // Cache de tipos de curso y salones
-    let courseTypesMap = new Map();
-    let classRoomsMap = new Map();
     const titleize = (field) => {
         const translations = {
             'RecID': 'ID Registro',
             'ID': 'ID',
             'CourseCode': 'Código Curso',
             'Name': 'Nombre',
+            'Description': 'Descripción',
             'CourseTypeRefRecID': 'Tipo de Curso',
             'ClassRoomRefRecID': 'Salón',
-            'Description': 'Descripción',
+            'CourseLocationRefRecID': 'Ubicación',
             'StartDate': 'Fecha Inicio',
             'EndDate': 'Fecha Fin',
-            'IsMatrixTraining': 'Matriz Formación',
-            'InternalExternal': 'Interno/Externo',
-            'MinStudents': 'Mín. Estudiantes',
-            'MaxStudents': 'Máx. Estudiantes',
-            'Periodicity': 'Periodicidad',
-            'QtySessions': 'Cant. Sesiones',
-            'Objetives': 'Objetivos',
-            'Topics': 'Temas',
+            'Duration': 'Duración (hrs)',
+            'Capacity': 'Capacidad',
             'CourseStatus': 'Estado',
-            'Observations': 'Observaciones',
             'CreatedOn': 'Fecha Creación',
             'CreatedBy': 'Creado Por',
             'ModifiedOn': 'Modificado',
@@ -72,31 +64,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         if (value == null)
             return "";
         if (typeof value === "boolean") {
-            if (field === "IsMatrixTraining") {
-                return value ? '<span class="label label-info">Sí</span>' : '<span class="label label-default">No</span>';
+            if (field === "CourseStatus") {
+                return value ? '<span class="label label-success">Activo</span>' : '<span class="label label-danger">Inactivo</span>';
             }
             return value ? "Sí" : "No";
-        }
-        if (field === "CourseTypeRefRecID" && typeof value === "number") {
-            const typeName = courseTypesMap.get(value);
-            return typeName || `ID: ${value}`;
-        }
-        if (field === "ClassRoomRefRecID" && typeof value === "number") {
-            const roomName = classRoomsMap.get(value);
-            return roomName || `ID: ${value}`;
-        }
-        if (field === "CourseStatus" && typeof value === "number") {
-            const statusMap = {
-                0: '<span class="label label-warning">Borrador</span>',
-                1: '<span class="label label-info">Planificado</span>',
-                2: '<span class="label label-success">En Curso</span>',
-                3: '<span class="label label-default">Finalizado</span>',
-                4: '<span class="label label-danger">Cancelado</span>'
-            };
-            return statusMap[value] || String(value);
-        }
-        if (field === "InternalExternal" && typeof value === "number") {
-            return value === 0 ? 'Interno' : 'Externo';
         }
         if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
             const dt = new Date(value);
@@ -177,7 +148,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     callback({ data: items });
                     updateSummary(items.length);
                 }).catch(err => {
-                    console.error('Error cargando cursos:', err);
+                    console.error('❌ Error en loadCourses:', err);
                     showError(err.message);
                     callback({ data: [] });
                 });
@@ -191,68 +162,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         $table.DataTable(dtConfig);
     };
     const loadCourses = () => __awaiter(this, void 0, void 0, function* () {
-        try {
-            const url = `${apiBase}/Courses?pageNumber=1&pageSize=100`;
-            const response = yield fetchJson(url);
-            // Manejar array directo
-            if (Array.isArray(response)) {
-                return response;
-            }
-            // Manejar objeto con propiedad Data
-            if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
-                return response.Data;
-            }
-            console.error('❌ Formato de respuesta no reconocido');
-            throw new Error('Respuesta del API inválida');
+        const url = `${apiBase}/Courses?skip=0&take=100`;
+        console.log('📡 Cargando cursos desde:', url);
+        const response = yield fetchJson(url);
+        // Manejar diferentes formatos de respuesta
+        if (Array.isArray(response)) {
+            console.log(`✅ ${response.length} cursos cargados (array directo)`);
+            return response;
         }
-        catch (error) {
-            console.error('❌ Error en loadCourses:', error);
-            throw error;
+        if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
+            console.log(`✅ ${response.Data.length} cursos cargados (Data)`);
+            return response.Data;
         }
-    });
-    const loadCourseTypes = () => __awaiter(this, void 0, void 0, function* () {
-        try {
-            const url = `${apiBase}/CourseTypes?pageNumber=1&pageSize=1000`;
-            const response = yield fetchJson(url);
-            let courseTypes = [];
-            if (Array.isArray(response)) {
-                courseTypes = response;
-            }
-            else if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
-                courseTypes = response.Data;
-            }
-            courseTypes.forEach((type) => {
-                if (type.RecID && type.Name) {
-                    courseTypesMap.set(type.RecID, type.Name);
-                }
-            });
-            console.log(`✅ ${courseTypesMap.size} tipos de curso cargados`);
+        if ((response === null || response === void 0 ? void 0 : response.data) && Array.isArray(response.data)) {
+            console.log(`✅ ${response.data.length} cursos cargados (data)`);
+            return response.data;
         }
-        catch (error) {
-            console.error('⚠️ Error cargando tipos de curso:', error);
-        }
-    });
-    const loadClassRooms = () => __awaiter(this, void 0, void 0, function* () {
-        try {
-            const url = `${apiBase}/ClassRooms?pageNumber=1&pageSize=1000`;
-            const response = yield fetchJson(url);
-            let classRooms = [];
-            if (Array.isArray(response)) {
-                classRooms = response;
-            }
-            else if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
-                classRooms = response.Data;
-            }
-            classRooms.forEach((room) => {
-                if (room.RecID && room.Name) {
-                    classRoomsMap.set(room.RecID, room.Name);
-                }
-            });
-            console.log(`✅ ${classRoomsMap.size} salones cargados`);
-        }
-        catch (error) {
-            console.error('⚠️ Error cargando salones:', error);
-        }
+        console.error('❌ Formato de respuesta inesperado:', response);
+        throw new Error('Respuesta del API inválida');
     });
     const updateSummary = (count) => {
         const summary = d.getElementById('courses-summary');
@@ -546,25 +473,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
     $(function () {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
             try {
-                // Cargar tipos de curso y salones en paralelo
-                yield Promise.all([
-                    loadCourseTypes(),
-                    loadClassRooms()
-                ]);
-                const probeUrl = `${apiBase}/Courses?pageNumber=1&pageSize=1`;
+                console.log('🚀 Inicializando lista de cursos...');
+                const probeUrl = `${apiBase}/Courses?skip=0&take=1`;
+                console.log('📡 Probe URL:', probeUrl);
                 const probe = yield fetchJson(probeUrl);
-                if ((_a = probe === null || probe === void 0 ? void 0 : probe.Data) === null || _a === void 0 ? void 0 : _a.length) {
-                    allColumns = getColumnsFromData(probe.Data[0]);
+                // Manejar diferentes formatos de respuesta
+                let sampleData = null;
+                if (Array.isArray(probe) && probe.length > 0) {
+                    sampleData = probe[0];
+                }
+                else if ((probe === null || probe === void 0 ? void 0 : probe.Data) && Array.isArray(probe.Data) && probe.Data.length > 0) {
+                    sampleData = probe.Data[0];
+                }
+                else if ((probe === null || probe === void 0 ? void 0 : probe.data) && Array.isArray(probe.data) && probe.data.length > 0) {
+                    sampleData = probe.data[0];
+                }
+                if (sampleData) {
+                    allColumns = getColumnsFromData(sampleData);
                 }
                 else {
                     allColumns = [...defaultColumns];
                 }
+                console.log('📊 Columnas detectadas:', allColumns);
                 const GridViewsManagerClass = w.GridViewsManager;
                 const GridColumnsManagerClass = w.GridColumnsManager;
                 if (!GridViewsManagerClass || !GridColumnsManagerClass) {
-                    console.error('GridViewsManager o GridColumnsManager no están disponibles');
+                    console.error('❌ GridViewsManager o GridColumnsManager no están disponibles');
                     visibleColumns = [...defaultColumns];
                     initializeDataTable(visibleColumns);
                     return;
@@ -575,9 +510,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     visibleColumns = savedColumns.filter(c => c.visible).sort((a, b) => a.order - b.order).map(c => c.field);
                     const viewName = gridViewsManager.getCurrentViewName();
                     $('#current-view-name').text(viewName);
+                    console.log(`✅ Vista "${viewName}" cargada desde BD`);
                 }
                 else {
                     visibleColumns = [...defaultColumns];
+                    console.log('✅ Usando vista por defecto');
                 }
                 gridColumnsManager = new GridColumnsManagerClass(allColumns, visibleColumns, (newColumns) => {
                     applyColumnChanges(newColumns);
@@ -586,7 +523,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 initializeDataTable(visibleColumns);
             }
             catch (error) {
-                console.error('Error en inicialización:', error);
+                console.error('❌ Error en inicialización:', error);
                 visibleColumns = [...defaultColumns];
                 initializeDataTable(visibleColumns);
                 showError('Error al cargar la configuración');
