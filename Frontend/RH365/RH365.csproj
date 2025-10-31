@@ -52,6 +52,7 @@
 		<Folder Include="Views\DisabilityType\" />
 		<Folder Include="Views\CourseLocation\" />
 		<Folder Include="Views\CalendarHoliday\" />
+		<Folder Include="Views\Country\" />
 		<Folder Include="Views\Occupation\" />
 		<Folder Include="wwwroot\html\" />
 		<Folder Include="wwwroot\js\ClassRoom\" />

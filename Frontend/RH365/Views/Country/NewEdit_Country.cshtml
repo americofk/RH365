@@ -1,0 +1,305 @@
+@* ============================================================================
+   Archivo: NewEdit_Country.cshtml
+   Proyecto: RH365.WebMVC
+   Ruta: RH365/Views/Country/NewEdit_Country.cshtml
+   Descripción: 
+       - Formulario para Crear/Editar Países con estilo Gentelella
+       - Layout de 2 COLUMNAS en Tab General
+       - Tab Auditoría: Campos de trazabilidad ISO 27001
+       - Renderizado dinámico de campos desde TypeScript
+       - URLs del API centralizadas desde backend
+   Estándar: ISO 27001 - Interfaz segura de gestión de datos
+   ============================================================================ *@
+@{
+    ViewData["Title"] = "País";
+    string dataareaId = ViewBag.DataareaID ?? "DAT";
+    long userRefRecID = ViewBag.UserRefRecID ?? 0L;
+    long recId = ViewBag.RecID ?? 0L;
+    bool isNew = ViewBag.IsNew ?? true;
+    string bearer = Context.Session.GetString("Token") ?? "";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RH365 - @(isNew ? "Nuevo País" : "Editar País")</title>
+
+    <!-- Bootstrap -->
+    <link href="~/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="~/vendors/iCheck/skins/flat/green.css" rel="stylesheet">
+    <!-- PNotify CSS -->
+    <link href="~/vendors/pnotify/dist/pnotify.css" rel="stylesheet">
+    <link href="~/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
+    <link href="~/vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="~/build/css/custom.min.css" rel="stylesheet">
+</head>
+
+<body class="nav-md footer_fixed">
+    <div class="container body">
+        <div class="main_container">
+            <!-- Menú Lateral -->
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    @await Html.PartialAsync("~/Views/Layout/TopMenuLogo.cshtml")
+                    <div class="clearfix"></div>
+                    @await Html.PartialAsync("~/Views/Layout/ProfileMenu.cshtml")
+                    <br />
+                    @await Html.PartialAsync("~/Views/Layout/MainMenu.cshtml")
+                    @await Html.PartialAsync("~/Views/Layout/FooterMenu.cshtml")
+                </div>
+            </div>
+
+            <!-- Top Navigation -->
+            @await Html.PartialAsync("~/Views/Layout/TopMenu.cshtml")
+
+            <!-- page content -->
+            <div class="right_col" role="main"
+                 id="country-form-page"
+                 data-dataarea="@dataareaId"
+                 data-user="@userRefRecID"
+                 data-recid="@recId"
+                 data-isnew="@isNew.ToString().ToLower()"
+                 data-token="@Html.Raw(bearer)">
+                <div class="">
+                    <div class="page-title">
+                        <div class="title_left">
+                            <h3>@(isNew ? "Nuevo País" : "Editar País")</h3>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <!-- Panel con Tabs -->
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_content">
+                                    <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                                        <!-- Navegación de Tabs -->
+                                        <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                                            <li role="presentation" class="active">
+                                                <a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">
+                                                    <i class="fa fa-globe"></i> General
+                                                </a>
+                                            </li>
+                                            <li role="presentation" class="">
+                                                <a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">
+                                                    <i class="fa fa-history"></i> Auditoría
+                                                </a>
+                                            </li>
+                                        </ul>
+
+                                        <div id="myTabContent" class="tab-content">
+                                            <!-- ========================================== -->
+                                            <!-- TAB 1: GENERAL (Campos de Negocio - 2 COLUMNAS)  -->
+                                            <!-- ========================================== -->
+                                            <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>Información del País</h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <a href="/Country/LP_Countries" class="btn btn-default btn-sm">
+                                                                            <i class="fa fa-arrow-left"></i> Volver
+                                                                        </a>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <br />
+                                                                <form id="frm-country" class="form-horizontal form-label-left">
+                                                                    @Html.AntiForgeryToken()
+
+                                                                    <!-- Hidden fields -->
+                                                                    <input type="hidden" id="RecID" name="RecID" value="@recId" />
+
+                                                                    <!-- Contenedor para campos en 2 COLUMNAS -->
+                                                                    <div class="row">
+                                                                        <!-- COLUMNA IZQUIERDA -->
+                                                                        <div class="col-md-6" id="dynamic-fields-col-left">
+                                                                            <div class="text-center" style="padding: 40px;">
+                                                                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                                                                <p class="text-muted">Cargando...</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- COLUMNA DERECHA -->
+                                                                        <div class="col-md-6" id="dynamic-fields-col-right">
+                                                                            <div class="text-center" style="padding: 40px;">
+                                                                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                                                                <p class="text-muted">Cargando...</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="ln_solid"></div>
+
+                                                                    <!-- Botones de Acción -->
+                                                                    <div class="form-group">
+                                                                        <div class="col-md-12 text-center">
+                                                                            <button type="button" class="btn btn-default" onclick="window.location.href='/Country/LP_Countries'">
+                                                                                <i class="fa fa-times"></i> Cancelar
+                                                                            </button>
+                                                                            <button type="button" id="btn-save" class="btn btn-primary">
+                                                                                <i class="fa fa-save"></i> Guardar
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /TAB 1: GENERAL -->
+                                            <!-- ========================================== -->
+                                            <!-- TAB 2: AUDITORÍA (Campos ISO 27001)       -->
+                                            <!-- ========================================== -->
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>
+                                                                    <i class="fa fa-shield"></i> Información de Auditoría (ISO 27001)
+                                                                </h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <span class="label label-info">
+                                                                            <i class="fa fa-lock"></i> Solo Lectura
+                                                                        </span>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <br />
+                                                                <form class="form-horizontal form-label-left">
+                                                                    <!-- Contenedor para campos de auditoría (dinámicos) -->
+                                                                    <div id="audit-fields-container">
+                                                                        <div class="text-center" style="padding: 40px;">
+                                                                            <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                                                            <p class="text-muted">Cargando datos de auditoría...</p>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="ln_solid"></div>
+
+                                                                    <!-- Info adicional sobre auditoría -->
+                                                                    <div class="alert alert-info" role="alert">
+                                                                        <strong><i class="fa fa-info-circle"></i> Nota:</strong>
+                                                                        Los campos de auditoría son generados automáticamente por el sistema
+                                                                        y no pueden ser modificados manualmente. Estos datos garantizan la
+                                                                        trazabilidad completa según el estándar ISO 27001.
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /TAB 2: AUDITORÍA -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Panel con Tabs -->
+                </div>
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            <footer>
+                <div class="pull-right">
+                    RH365 - Sistema de Recursos Humanos © @DateTime.Now.Year
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="~/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- FastClick -->
+    <script src="~/vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="~/vendors/nprogress/nprogress.js"></script>
+    <!-- iCheck -->
+    <script src="~/vendors/iCheck/icheck.min.js"></script>
+    <!-- PNotify JS -->
+    <script src="~/vendors/pnotify/dist/pnotify.js"></script>
+    <script src="~/vendors/pnotify/dist/pnotify.buttons.js"></script>
+    <script src="~/vendors/pnotify/dist/pnotify.nonblock.js"></script>
+
+    <!-- Deshabilitar notificaciones de demo de PNotify -->
+    <script>
+        (function() {
+            if (typeof PNotify !== 'undefined') {
+                // Configuración global para prevenir cualquier notificación automática
+                PNotify.prototype.options.desktop = { desktop: false };
+
+                // Remover todas las notificaciones inmediatamente
+                PNotify.removeAll();
+
+                // Observar el DOM para eliminar cualquier notificación que aparezca
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.classList &&
+                                (node.classList.contains('ui-pnotify') || node.classList.contains('pnotify'))) {
+                                // Si es una notificación de PNotify, eliminarla inmediatamente
+                                var text = node.textContent || '';
+                                if (text.includes('Welcome') || text.includes('hovering') || text.includes('non-blocking')) {
+                                    node.remove();
+                                }
+                            }
+                        });
+                    });
+                });
+
+                // Observar el body por notificaciones añadidas
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+
+                // Limpiar después de 3 segundos (cuando ya todo debería estar cargado)
+                setTimeout(function() {
+                    observer.disconnect();
+                    PNotify.removeAll();
+                }, 3000);
+            }
+        })();
+    </script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="~/build/js/custom.min.js"></script>
+
+    <!-- ============================================================ -->
+    <!-- CRÍTICO: API URLs - DEBE IR ANTES DE CUALQUIER SCRIPT PERSONALIZADO -->
+    <!-- ============================================================ -->
+    @await Html.PartialAsync("~/Views/Layout/_ApiUrls.cshtml")
+
+    <!-- Sistema de Alertas -->
+    @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
+
+    <!-- Script del formulario de países -->
+    <script src="~/js/Countries/country-form.js"></script>
+</body>
+</html>
