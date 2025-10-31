@@ -11,6 +11,7 @@
     <Folder Include="Domain\Models\Loan\" />
     <Folder Include="Domain\Models\CourseLocation\" />
     <Folder Include="Domain\Models\CalendarHoliday\" />
+    <Folder Include="Domain\Models\CourseType\" />
   </ItemGroup>
 
 </Project>
