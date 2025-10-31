@@ -22,18 +22,40 @@ namespace RH365.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<CoursePosition> builder)
         {
             // Mapeo a tabla
-            builder.ToTable("CoursePosition");
+            builder.ToTable("CoursePositions");
+
+            // Configuración del ID generado por BD
+            builder.Property(e => e.ID)
+                .HasMaxLength(50)
+                .HasColumnName("ID")
+                .ValueGeneratedOnAdd()
+                .Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
 
             // Configuración de propiedades
-            builder.Property(e => e.Comment).HasMaxLength(500).HasColumnName("Comment");
-            builder.Property(e => e.CourseRefRecID).HasColumnName("CourseRefRecID");
-            builder.Property(e => e.PositionRefRecID).HasColumnName("PositionRefRecID");
+            builder.Property(e => e.CourseRefRecID)
+                .HasColumnName("CourseRefRecID");
 
-            // Índices
+            builder.Property(e => e.PositionRefRecID)
+                .HasColumnName("PositionRefRecID");
+
+            builder.Property(e => e.Comment)
+                .HasMaxLength(300)
+                .HasColumnName("Comment");
+
+            builder.Property(e => e.Observations)
+                .HasMaxLength(500);
+            
+            // Índice único para lógica de negocio (un curso-posición solo una vez)
+            builder.HasIndex(e => new { e.CourseRefRecID, e.PositionRefRecID })
+                .IsUnique()
+                .HasDatabaseName("UQ_CoursePositions_CourseRef_PositionRef");
+
+            // Índices para búsquedas
             builder.HasIndex(e => e.CourseRefRecID)
-                .HasDatabaseName("IX_CoursePosition_CourseRefRecID");
+                .HasDatabaseName("IX_CoursePositions_CourseRefRecID");
+
             builder.HasIndex(e => e.PositionRefRecID)
-                .HasDatabaseName("IX_CoursePosition_PositionRefRecID");
+                .HasDatabaseName("IX_CoursePositions_PositionRefRecID");
         }
     }
 }
