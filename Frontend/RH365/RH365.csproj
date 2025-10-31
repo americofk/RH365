@@ -48,6 +48,7 @@
 		<Folder Include="TS\DisabilityType\" />
 		<Folder Include="TS\CourseTypes\" />
 		<Folder Include="TS\Courses\" />
+		<Folder Include="TS\CourseInstructors\" />
 		<Folder Include="TS\Occupation\" />
 		<Folder Include="TS\ProjectCategories\" />
 		<Folder Include="TS\Projects\" />
@@ -55,6 +56,7 @@
 		<Folder Include="Views\CourseLocation\" />
 		<Folder Include="Views\CalendarHoliday\" />
 		<Folder Include="Views\Country\" />
+		<Folder Include="Views\CourseInstructor\" />
 		<Folder Include="Views\Occupation\" />
 		<Folder Include="wwwroot\html\" />
 		<Folder Include="wwwroot\js\ClassRoom\" />

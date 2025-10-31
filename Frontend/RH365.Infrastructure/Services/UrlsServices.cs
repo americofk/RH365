@@ -74,6 +74,12 @@ namespace RH365.Infrastructure.Services
                 // Course Types
                 ["CourseTypes"] = $"{BaseUrl}/CourseTypes",
 
+                // Course Instructor
+                ["CourseTypes"] = $"{BaseUrl}/CourseInstructors",
+
+                // Course Position
+                ["CourseTypes"] = $"{BaseUrl}/CoursePositions",
+
                 // Currencies
                 ["Currencies"] = $"{BaseUrl}/Currencies",
 
