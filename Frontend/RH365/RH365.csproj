@@ -47,6 +47,7 @@
 		<Folder Include="TS\Educationlevels\" />
 		<Folder Include="TS\DisabilityType\" />
 		<Folder Include="TS\CourseTypes\" />
+		<Folder Include="TS\Courses\" />
 		<Folder Include="TS\Occupation\" />
 		<Folder Include="TS\ProjectCategories\" />
 		<Folder Include="TS\Projects\" />
