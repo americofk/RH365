@@ -8,7 +8,6 @@
 // ============================================================================
 
 using RH365.Core.Domain.Common;
-using RH365.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
 
@@ -20,12 +19,12 @@ namespace RH365.Core.Domain.Entities
     public class Department : AuditableCompanyEntity
     {
         /// <summary>
-        /// Código único del departamento.
+        /// Código único del departamento (máx 20 caracteres).
         /// </summary>
         public string DepartmentCode { get; set; } = null!;
 
         /// <summary>
-        /// Nombre del departamento.
+        /// Nombre del departamento (máx 60 caracteres).
         /// </summary>
         public string Name { get; set; } = null!;
 
@@ -45,7 +44,7 @@ namespace RH365.Core.Domain.Entities
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Descripción opcional del departamento.
+        /// Descripción opcional del departamento (máx 100 caracteres).
         /// </summary>
         public string? Description { get; set; }
 
@@ -54,6 +53,11 @@ namespace RH365.Core.Domain.Entities
         /// </summary>
         public bool DepartmentStatus { get; set; }
 
+        // Observations heredado de AuditableCompanyEntity (500 caracteres)
+
+        // -----------------------------
+        // Propiedades de navegación
+        // -----------------------------
         public virtual ICollection<EarningCode> EarningCodes { get; set; } = new List<EarningCode>();
         public virtual ICollection<EmployeeDepartment> EmployeeDepartments { get; set; } = new List<EmployeeDepartment>();
         public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();

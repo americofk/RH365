@@ -1,0 +1,347 @@
+@* ============================================================================
+   Archivo: LP_Departments.cshtml
+   Proyecto: RH365.WebMVC
+   Ruta: RH365/Views/Department/LP_Departments.cshtml
+   Descripción: ListPage de Departamentos con gestión de vistas de usuario
+   Estándar: ISO 27001 - Interfaz segura de gestión de datos
+   ============================================================================ *@
+@{
+    ViewData["Title"] = "Departamentos";
+    string dataareaId = ViewBag.DataareaID ?? "DAT";
+    long userRefRecID = ViewBag.UserRefRecID ?? 0L;
+    string bearer = Context.Session.GetString("Token") ?? "";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RH365 - Departamentos</title>
+
+    <!-- Bootstrap -->
+    <link href="~/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="~/vendors/iCheck/skins/flat/green.css" rel="stylesheet">
+    <!-- Datatables -->
+    <link href="~/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="~/vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css" rel="stylesheet">
+    <link href="~/vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet">
+    <link href="~/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
+    <link href="~/vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery UI CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- PNotify CSS -->
+    <link href="~/vendors/pnotify/dist/pnotify.css" rel="stylesheet">
+    <link href="~/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
+    <link href="~/vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="~/build/css/custom.min.css" rel="stylesheet">
+</head>
+
+<body class="nav-md footer_fixed">
+    <div class="container body">
+        <div class="main_container">
+            <!-- Menú Lateral -->
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    @await Html.PartialAsync("~/Views/Layout/TopMenuLogo.cshtml")
+                    <div class="clearfix"></div>
+                    @await Html.PartialAsync("~/Views/Layout/ProfileMenu.cshtml")
+                    <br />
+                    @await Html.PartialAsync("~/Views/Layout/MainMenu.cshtml")
+                    @await Html.PartialAsync("~/Views/Layout/FooterMenu.cshtml")
+                </div>
+            </div>
+
+            <!-- Top Navigation -->
+            @await Html.PartialAsync("~/Views/Layout/TopMenu.cshtml")
+
+            <!-- page content -->
+            <div class="right_col" role="main"
+                 id="departments-page"
+                 data-dataarea="@dataareaId"
+                 data-user="@userRefRecID"
+                 data-token="@Html.Raw(bearer)">
+                <div class="">
+                    <div class="page-title">
+                        <div class="title_left">
+                            <button type="button" id="btn-new" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Nuevo
+                            </button>
+                            <button type="button" id="btn-edit" class="btn btn-primary" disabled>
+                                <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Editar
+                            </button>
+                            <button type="button" id="btn-delete" class="btn btn-primary" disabled>
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Eliminar
+                            </button>
+                        </div>
+
+                        <div class="title_right">
+                            <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <!-- Table -->
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_title">
+                                    <h2>Todos los departamentos</h2>
+
+                                    <!-- Controles de Vistas -->
+                                    <ul class="nav navbar-right panel_toolbox" style="min-width: 0;">
+                                        <li style="width: auto;">
+                                            <button type="button" class="btn btn-default btn-sm" id="btn-reset-view" title="Restablecer vista">
+                                                <i class="fa fa-refresh"></i>
+                                            </button>
+                                        </li>
+                                        <li style="width: auto;">
+                                            <button type="button" class="btn btn-default btn-sm" id="btn-manage-columns" title="Gestionar columnas">
+                                                <i class="fa fa-columns"></i> Columnas
+                                            </button>
+                                        </li>
+                                        <li style="width: auto;">
+                                            <button type="button" class="btn btn-default btn-sm" id="btn-save-as-view" title="Guardar como nueva vista">
+                                                <i class="fa fa-copy"></i> Guardar Como
+                                            </button>
+                                        </li>
+                                        <li style="width: auto;">
+                                            <button type="button" class="btn btn-default btn-sm" id="btn-save-view-changes" title="Guardar cambios" style="display: none;">
+                                                <i class="fa fa-save"></i> Guardar
+                                            </button>
+                                        </li>
+                                        <li style="width: auto;">
+                                            <strong style="line-height: 30px; margin-right: 5px;"><i class="fa fa-eye"></i> Vista:</strong>
+                                        </li>
+                                        <li class="dropdown" style="width: auto;">
+                                            <a href="#" class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown" role="button" aria-expanded="false" style="padding: 5px 10px;">
+                                                <span id="current-view-name">Vista por defecto</span> <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu" id="views-dropdown" role="menu">
+                                                <li class="dropdown-header">Mis Vistas</li>
+                                                <li><a href="#" data-view="default"><i class="fa fa-table"></i> Vista por defecto</a></li>
+                                                <li class="divider"></li>
+                                                <li id="saved-views-container">
+                                                    <!-- Vistas guardadas se cargan aquí -->
+                                                </li>
+                                                <li class="divider"></li>
+                                                <li><a href="#" id="btn-new-view"><i class="fa fa-plus-circle"></i> Nueva Vista</a></li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <div class="table-responsive" style="max-height: 800px; overflow-y: auto;">
+                                        <table id="departments-table" class="table table-striped table-bordered bulk_action">
+                                            <thead>
+                                                <!-- Las columnas se generan dinámicamente -->
+                                            </thead>
+                                            <tbody>
+                                                <!-- Los datos se cargan dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Table -->
+                </div>
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            <footer>
+                <div class="pull-right">
+                    RH365 - Sistema de Recursos Humanos © @DateTime.Now.Year
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- Modal: Gestionar Columnas -->
+    <div class="modal fade" id="modal-manage-columns" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title"><i class="fa fa-columns"></i> Gestionar Columnas</h4>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">
+                        <i class="fa fa-info-circle"></i> Selecciona las columnas visibles y arrastra para reordenar
+                    </p>
+                    <div id="columns-list" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Las columnas se cargan dinámicamente -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-apply-columns">
+                        <i class="fa fa-check"></i> Aplicar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Guardar Vista -->
+    <div class="modal fade" id="modal-save-view" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title"><i class="fa fa-save"></i> Guardar Vista</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="view-name">Nombre de la vista</label>
+                        <input type="text" class="form-control" id="view-name" placeholder="Ej: Vista Rápida" required>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="view-is-default"> Establecer como predeterminada
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="view-is-public"> Compartir con toda la empresa
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-save-view">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Guardar Como -->
+    <div class="modal fade" id="modal-save-as-view" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title"><i class="fa fa-copy"></i> Guardar Como Nueva Vista</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="view-name-saveas">Nombre de la nueva vista</label>
+                        <input type="text" class="form-control" id="view-name-saveas" placeholder="Ej: Mi Vista Personalizada" required>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="view-is-default-saveas"> Establecer como predeterminada
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="view-is-public-saveas"> Compartir con la empresa
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-save-as">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="~/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- FastClick -->
+    <script src="~/vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="~/vendors/nprogress/nprogress.js"></script>
+    <!-- iCheck -->
+    <script src="~/vendors/iCheck/icheck.min.js"></script>
+    <!-- Datatables -->
+    <script src="~/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="~/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="~/vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+    <script src="~/vendors/datatables.net-buttons/js/buttons.flash.min.js"></script>
+    <script src="~/vendors/datatables.net-buttons/js/buttons.html5.min.js"></script>
+    <script src="~/vendors/datatables.net-buttons/js/buttons.print.min.js"></script>
+    <script src="~/vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+    <script src="~/vendors/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+    <script src="~/vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+    <script src="~/vendors/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+    <script src="~/vendors/jszip/dist/jszip.min.js"></script>
+    <script src="~/vendors/pdfmake/build/pdfmake.min.js"></script>
+    <script src="~/vendors/pdfmake/build/vfs_fonts.js"></script>
+    <!-- PNotify JS -->
+    <script src="~/vendors/pnotify/dist/pnotify.js"></script>
+    <script src="~/vendors/pnotify/dist/pnotify.buttons.js"></script>
+    <script src="~/vendors/pnotify/dist/pnotify.nonblock.js"></script>
+    <!-- Deshabilitar notificaciones de demo de PNotify -->
+    <script>
+        (function() {
+            if (typeof PNotify !== 'undefined') {
+                PNotify.prototype.options.desktop = { desktop: false };
+                PNotify.removeAll();
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.classList &&
+                                (node.classList.contains('ui-pnotify') || node.classList.contains('pnotify'))) {
+                                var text = node.textContent || '';
+                                if (text.includes('Welcome') || text.includes('hovering') || text.includes('non-blocking')) {
+                                    node.remove();
+                                }
+                            }
+                        });
+                    });
+                });
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+                setTimeout(function() {
+                    observer.disconnect();
+                    PNotify.removeAll();
+                }, 3000);
+            }
+        })();
+    </script>
+    <!-- Custom Theme Scripts -->
+    <script src="~/build/js/custom.min.js"></script>
+
+    <!-- Sistema de Alertas -->
+    @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
+    @await Html.PartialAsync("~/Views/Layout/_ApiUrls.cshtml")
+
+    <!-- Modal Genérico -->
+    @await Html.PartialAsync("~/Views/Generic/_Modal.cshtml")
+
+    <!-- Grid Views Scripts -->
+    <script src="~/js/GridViews/grid-columns-manager.js"></script>
+    <script src="~/js/GridViews/grid-views-manager.js"></script>
+
+    <!-- Script de departamentos -->
+    <script src="~/js/Departments/departments-dt.js"></script>
+</body>
+</html>

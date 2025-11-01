@@ -4,15 +4,12 @@
 // Ruta: RH365.WebAPI/Controllers/DepartmentsController.cs
 // Descripción: Controlador REST para gestión de Departamentos (CRUD completo).
 //   - Endpoints: GET (paginado), GET/{recId}, POST, PUT/{recId}, DELETE/{recId}
-//   - Seguridad: JWT + multiempresa vía QueryFilters
-//   - PK real: RecID (long)
+//   - Todos los campos de la tabla incluidos
 // ============================================================================
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Authorization;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RH365.Core.Application.Common.Interfaces;
-using RH365.Core.Application.Common.Models;
 using RH365.Core.Application.Features.DTOs.Department;
 using RH365.Core.Domain.Entities;
 
@@ -20,8 +17,7 @@ namespace RH365.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    [Authorize]
+    [Produces(MediaTypeNames.Application.Json)]
     public sealed class DepartmentsController : ControllerBase
     {
         private readonly IApplicationDbContext _context;
@@ -33,181 +29,229 @@ namespace RH365.WebAPI.Controllers
             _logger = logger;
         }
 
-        // GET paginado
-        [HttpGet(Name = "GetDepartments")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagedResult<DepartmentDto>>> GetDepartments(
-            [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1,
-            [FromQuery, Range(1, 100)] int pageSize = 10,
-            [FromQuery] string? search = null,
+        // GET: api/Departments?skip=0&take=50
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<DepartmentDto>>> GetAll(
+            [FromQuery] int skip = 0,
+            [FromQuery] int take = 50,
             CancellationToken ct = default)
         {
-            try
-            {
-                IQueryable<Department> query = _context.Departments.AsNoTracking();
+            take = take <= 0 ? 50 : Math.Min(take, 200);
 
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    string pattern = $"%{search.Trim()}%";
-                    query = query.Where(d =>
-                        EF.Functions.Like(d.Name, pattern) ||
-                        EF.Functions.Like(d.DepartmentCode, pattern));
-                }
-
-                int totalCount = await query.CountAsync(ct);
-                int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-                var data = await query
-                    .OrderBy(d => d.Name)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(d => new DepartmentDto
-                    {
-                        RecID = d.RecID,
-                        DepartmentCode = d.DepartmentCode,
-                        Name = d.Name,
-                        CreatedBy = d.CreatedBy,
-                        CreatedOn = d.CreatedOn,
-                        ModifiedBy = d.ModifiedBy,
-                        ModifiedOn = d.ModifiedOn
-                    })
-                    .ToListAsync(ct);
-
-                return Ok(new PagedResult<DepartmentDto>
-                {
-                    Data = data,
-                    TotalCount = totalCount,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalPages = totalPages
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al listar departamentos");
-                return StatusCode(500, "Error interno del servidor");
-            }
-        }
-
-        // GET by RecID
-        [HttpGet("{id:long}", Name = "GetDepartmentById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DepartmentDto>> GetDepartment([FromRoute] long id, CancellationToken ct = default)
-        {
-            var dto = await _context.Departments
+            var items = await _context.Departments
                 .AsNoTracking()
-                .Where(d => d.RecID == id)
+                .OrderByDescending(x => x.RecID)
+                .Skip(skip)
+                .Take(take)
                 .Select(d => new DepartmentDto
                 {
                     RecID = d.RecID,
+                    ID = d.ID,
                     DepartmentCode = d.DepartmentCode,
                     Name = d.Name,
+                    QtyWorkers = d.QtyWorkers,
+                    StartDate = d.StartDate,
+                    EndDate = d.EndDate,
+                    Description = d.Description,
+                    DepartmentStatus = d.DepartmentStatus,
+                    Observations = d.Observations,
+                    DataareaID = d.DataareaID,
                     CreatedBy = d.CreatedBy,
                     CreatedOn = d.CreatedOn,
                     ModifiedBy = d.ModifiedBy,
-                    ModifiedOn = d.ModifiedOn
+                    ModifiedOn = d.ModifiedOn,
+                    RowVersion = d.RowVersion
                 })
-                .FirstOrDefaultAsync(ct);
+                .ToListAsync(ct);
 
-            if (dto == null) return NotFound($"Departamento con RecID {id} no encontrado.");
-            return Ok(dto);
+            return Ok(items);
         }
 
-        // POST
-        [HttpPost(Name = "CreateDepartment")]
-        [Consumes("application/json")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<DepartmentDto>> CreateDepartment(
-            [FromBody] CreateDepartmentRequest request,
-            CancellationToken ct = default)
+        // GET: api/Departments/{recId:long}
+        [HttpGet("{recId:long}")]
+        public async Task<ActionResult<DepartmentDto>> GetByRecId(long recId, CancellationToken ct = default)
         {
-            if (!ModelState.IsValid) return ValidationProblem(ModelState);
-
-            string code = request.DepartmentCode.Trim().ToUpper();
-            bool exists = await _context.Departments
-                .AnyAsync(d => d.DepartmentCode.ToLower() == code.ToLower(), ct);
-            if (exists) return Conflict($"Ya existe un departamento con el código '{code}'.");
-
-            var entity = new Department
-            {
-                DepartmentCode = code,
-                Name = request.Name.Trim()
-            };
-
-            _context.Departments.Add(entity);
-            await _context.SaveChangesAsync(ct);
+            var d = await _context.Departments.AsNoTracking().FirstOrDefaultAsync(e => e.RecID == recId, ct);
+            if (d == null) return NotFound();
 
             var dto = new DepartmentDto
             {
-                RecID = entity.RecID,
-                DepartmentCode = entity.DepartmentCode,
-                Name = entity.Name,
-                CreatedBy = entity.CreatedBy,
-                CreatedOn = entity.CreatedOn,
-                ModifiedBy = entity.ModifiedBy,
-                ModifiedOn = entity.ModifiedOn
+                RecID = d.RecID,
+                ID = d.ID,
+                DepartmentCode = d.DepartmentCode,
+                Name = d.Name,
+                QtyWorkers = d.QtyWorkers,
+                StartDate = d.StartDate,
+                EndDate = d.EndDate,
+                Description = d.Description,
+                DepartmentStatus = d.DepartmentStatus,
+                Observations = d.Observations,
+                DataareaID = d.DataareaID,
+                CreatedBy = d.CreatedBy,
+                CreatedOn = d.CreatedOn,
+                ModifiedBy = d.ModifiedBy,
+                ModifiedOn = d.ModifiedOn,
+                RowVersion = d.RowVersion
             };
 
-            return CreatedAtRoute("GetDepartmentById", new { id = dto.RecID }, dto);
+            return Ok(dto);
         }
 
-        // PUT
-        [HttpPut("{id:long}", Name = "UpdateDepartment")]
-        [Consumes("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DepartmentDto>> UpdateDepartment(
-            [FromRoute] long id,
-            [FromBody] UpdateDepartmentRequest request,
-            CancellationToken ct = default)
+        // POST: api/Departments
+        [HttpPost]
+        public async Task<ActionResult<DepartmentDto>> Create([FromBody] CreateDepartmentRequest request, CancellationToken ct = default)
         {
-            if (!ModelState.IsValid) return ValidationProblem(ModelState);
-
-            var entity = await _context.Departments.FindAsync(new object?[] { id }, ct);
-            if (entity == null) return NotFound($"Departamento con RecID {id} no encontrado.");
-
-            string newCode = request.DepartmentCode.Trim().ToUpper();
-            if (!string.Equals(entity.DepartmentCode, newCode, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                bool codeInUse = await _context.Departments
-                    .AnyAsync(d => d.RecID != id && d.DepartmentCode.ToLower() == newCode.ToLower(), ct);
-                if (codeInUse) return Conflict($"Ya existe otro departamento con el código '{newCode}'.");
+                if (string.IsNullOrWhiteSpace(request.DepartmentCode))
+                    return BadRequest("DepartmentCode es obligatorio.");
+                if (string.IsNullOrWhiteSpace(request.Name))
+                    return BadRequest("Name es obligatorio.");
+
+                // Verificar código único
+                string code = request.DepartmentCode.Trim().ToUpper();
+                bool exists = await _context.Departments
+                    .AnyAsync(d => d.DepartmentCode.ToLower() == code.ToLower(), ct);
+                if (exists)
+                    return Conflict($"Ya existe un departamento con el código '{code}'.");
+
+                var entity = new Department
+                {
+                    DepartmentCode = code,
+                    Name = request.Name.Trim(),
+                    QtyWorkers = request.QtyWorkers,
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
+                    Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+                    DepartmentStatus = request.DepartmentStatus,
+                    Observations = string.IsNullOrWhiteSpace(request.Observations) ? null : request.Observations.Trim()
+                };
+
+                await _context.Departments.AddAsync(entity, ct);
+                await _context.SaveChangesAsync(ct);
+
+                var dto = new DepartmentDto
+                {
+                    RecID = entity.RecID,
+                    ID = entity.ID,
+                    DepartmentCode = entity.DepartmentCode,
+                    Name = entity.Name,
+                    QtyWorkers = entity.QtyWorkers,
+                    StartDate = entity.StartDate,
+                    EndDate = entity.EndDate,
+                    Description = entity.Description,
+                    DepartmentStatus = entity.DepartmentStatus,
+                    Observations = entity.Observations,
+                    DataareaID = entity.DataareaID,
+                    CreatedBy = entity.CreatedBy,
+                    CreatedOn = entity.CreatedOn,
+                    ModifiedBy = entity.ModifiedBy,
+                    ModifiedOn = entity.ModifiedOn,
+                    RowVersion = entity.RowVersion
+                };
+
+                return CreatedAtAction(nameof(GetByRecId), new { recId = entity.RecID }, dto);
             }
-
-            entity.DepartmentCode = newCode;
-            entity.Name = request.Name.Trim();
-
-            await _context.SaveChangesAsync(ct);
-
-            var dto = new DepartmentDto
+            catch (Exception ex)
             {
-                RecID = entity.RecID,
-                DepartmentCode = entity.DepartmentCode,
-                Name = entity.Name,
-                CreatedBy = entity.CreatedBy,
-                CreatedOn = entity.CreatedOn,
-                ModifiedBy = entity.ModifiedBy,
-                ModifiedOn = entity.ModifiedOn
-            };
-
-            return Ok(dto);
+                _logger.LogError(ex, "Error al crear Department");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al crear Department.");
+            }
         }
 
-        // DELETE
-        [HttpDelete("{id:long}", Name = "DeleteDepartment")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteDepartment([FromRoute] long id, CancellationToken ct = default)
+        // PUT: api/Departments/{recId:long}
+        [HttpPut("{recId:long}")]
+        public async Task<ActionResult<DepartmentDto>> Update(long recId, [FromBody] UpdateDepartmentRequest request, CancellationToken ct = default)
         {
-            var entity = await _context.Departments.FindAsync(new object?[] { id }, ct);
-            if (entity == null) return NotFound($"Departamento con RecID {id} no encontrado.");
+            try
+            {
+                var entity = await _context.Departments.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
 
-            _context.Departments.Remove(entity);
-            await _context.SaveChangesAsync(ct);
+                // Verificar código único si se actualiza
+                if (!string.IsNullOrWhiteSpace(request.DepartmentCode))
+                {
+                    string newCode = request.DepartmentCode.Trim().ToUpper();
+                    if (!string.Equals(entity.DepartmentCode, newCode, StringComparison.OrdinalIgnoreCase))
+                    {
+                        bool codeInUse = await _context.Departments
+                            .AnyAsync(d => d.RecID != recId && d.DepartmentCode.ToLower() == newCode.ToLower(), ct);
+                        if (codeInUse)
+                            return Conflict($"Ya existe otro departamento con el código '{newCode}'.");
+                    }
+                    entity.DepartmentCode = newCode;
+                }
 
-            return NoContent();
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                    entity.Name = request.Name.Trim();
+                if (request.QtyWorkers.HasValue)
+                    entity.QtyWorkers = request.QtyWorkers.Value;
+                if (request.StartDate.HasValue)
+                    entity.StartDate = request.StartDate.Value;
+                if (request.EndDate.HasValue)
+                    entity.EndDate = request.EndDate.Value;
+                if (request.Description != null)
+                    entity.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+                if (request.DepartmentStatus.HasValue)
+                    entity.DepartmentStatus = request.DepartmentStatus.Value;
+                if (request.Observations != null)
+                    entity.Observations = string.IsNullOrWhiteSpace(request.Observations) ? null : request.Observations.Trim();
+
+                await _context.SaveChangesAsync(ct);
+
+                var dto = new DepartmentDto
+                {
+                    RecID = entity.RecID,
+                    ID = entity.ID,
+                    DepartmentCode = entity.DepartmentCode,
+                    Name = entity.Name,
+                    QtyWorkers = entity.QtyWorkers,
+                    StartDate = entity.StartDate,
+                    EndDate = entity.EndDate,
+                    Description = entity.Description,
+                    DepartmentStatus = entity.DepartmentStatus,
+                    Observations = entity.Observations,
+                    DataareaID = entity.DataareaID,
+                    CreatedBy = entity.CreatedBy,
+                    CreatedOn = entity.CreatedOn,
+                    ModifiedBy = entity.ModifiedBy,
+                    ModifiedOn = entity.ModifiedOn,
+                    RowVersion = entity.RowVersion
+                };
+
+                return Ok(dto);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Concurrencia al actualizar Department {RecID}", recId);
+                return Conflict("Conflicto de concurrencia al actualizar Department.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al actualizar Department {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al actualizar Department.");
+            }
+        }
+
+        // DELETE: api/Departments/{recId:long}
+        [HttpDelete("{recId:long}")]
+        public async Task<IActionResult> Delete(long recId, CancellationToken ct = default)
+        {
+            try
+            {
+                var entity = await _context.Departments.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
+
+                _context.Departments.Remove(entity);
+                await _context.SaveChangesAsync(ct);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar Department {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al eliminar Department.");
+            }
         }
     }
 }
