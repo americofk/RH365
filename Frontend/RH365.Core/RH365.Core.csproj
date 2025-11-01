@@ -13,6 +13,7 @@
     <Folder Include="Domain\Models\CalendarHoliday\" />
     <Folder Include="Domain\Models\CourseType\" />
     <Folder Include="Domain\Models\Department\" />
+    <Folder Include="Domain\Models\Job\" />
   </ItemGroup>
 
 </Project>

@@ -50,6 +50,7 @@
 		<Folder Include="TS\Courses\" />
 		<Folder Include="TS\CourseInstructors\" />
 		<Folder Include="TS\Departments\" />
+		<Folder Include="TS\Jobs\" />
 		<Folder Include="TS\Occupation\" />
 		<Folder Include="TS\ProjectCategories\" />
 		<Folder Include="TS\Projects\" />
