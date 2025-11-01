@@ -6,9 +6,9 @@
        - Formulario para Crear/Editar Cursos con estilo Gentelella
        - Layout de 2 COLUMNAS en Tab General
        - Tab Auditoría: Campos de trazabilidad ISO 27001
+       - Tab Empleados y Posiciones: Gestión de relaciones (SIN columna Departamento)
        - Renderizado dinámico de campos desde TypeScript
-       - URLs del API centralizadas desde backend
-   Estándar: ISO 27001 - Gestión segura de formularios de datos
+   Estándar: ISO 27001 - Gestión segura de formularios y relaciones de datos
    ============================================================================ *@
 @{
     ViewData["Title"] = "Curso";
@@ -92,6 +92,11 @@
                                                 </a>
                                             </li>
                                             <li role="presentation" class="">
+                                                <a href="#tab_content3" role="tab" id="employees-positions-tab" data-toggle="tab" aria-expanded="false">
+                                                    <i class="fa fa-users"></i> Empleados y Posiciones
+                                                </a>
+                                            </li>
+                                            <li role="presentation" class="">
                                                 <a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">
                                                     <i class="fa fa-history"></i> Auditoría
                                                 </a>
@@ -165,6 +170,123 @@
                                                 </div>
                                             </div>
                                             <!-- /TAB 1: GENERAL -->
+
+                                            <!-- ========================================== -->
+                                            <!-- TAB 3: EMPLEADOS Y POSICIONES -->
+                                            <!-- ========================================== -->
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="employees-positions-tab">
+                                                @if (!isNew)
+                                                {
+                                                    <!-- SECCIÓN: EMPLEADOS ASIGNADOS -->
+                                                    <div class="row">
+                                                        <div class="col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="x_panel">
+                                                                <div class="x_title">
+                                                                    <h2><i class="fa fa-user"></i> Empleados Asignados</h2>
+                                                                    <ul class="nav navbar-right panel_toolbox">
+                                                                        <li>
+                                                                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modal-add-employee">
+                                                                                <i class="fa fa-plus"></i> Agregar Empleados
+                                                                            </button>
+                                                                        </li>
+                                                                        <li>
+                                                                            <button type="button" id="btn-delete-selected-employees" class="btn btn-danger btn-sm" disabled>
+                                                                                <i class="fa fa-trash"></i> Eliminar Seleccionados
+                                                                            </button>
+                                                                        </li>
+                                                                    </ul>
+                                                                    <div class="clearfix"></div>
+                                                                </div>
+                                                                <div class="x_content">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-striped table-bordered">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th style="width: 40px;">
+                                                                                        <input type="checkbox" id="check-all-employees" class="flat" />
+                                                                                    </th>
+                                                                                    <th>Código</th>
+                                                                                    <th>Nombre</th>
+                                                                                    <th style="width: 80px;">Acciones</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody id="tbody-course-employees">
+                                                                                <tr>
+                                                                                    <td colspan="4" class="text-center text-muted">
+                                                                                        <i class="fa fa-spinner fa-spin"></i> Cargando empleados...
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- SECCIÓN: POSICIONES ASIGNADAS -->
+                                                    <div class="row">
+                                                        <div class="col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="x_panel">
+                                                                <div class="x_title">
+                                                                    <h2><i class="fa fa-briefcase"></i> Posiciones Asignadas</h2>
+                                                                    <ul class="nav navbar-right panel_toolbox">
+                                                                        <li>
+                                                                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modal-add-position">
+                                                                                <i class="fa fa-plus"></i> Agregar Posiciones
+                                                                            </button>
+                                                                        </li>
+                                                                        <li>
+                                                                            <button type="button" id="btn-delete-selected-positions" class="btn btn-danger btn-sm" disabled>
+                                                                                <i class="fa fa-trash"></i> Eliminar Seleccionados
+                                                                            </button>
+                                                                        </li>
+                                                                    </ul>
+                                                                    <div class="clearfix"></div>
+                                                                </div>
+                                                                <div class="x_content">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-striped table-bordered">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th style="width: 40px;">
+                                                                                        <input type="checkbox" id="check-all-positions" class="flat" />
+                                                                                    </th>
+                                                                                    <th>Código</th>
+                                                                                    <th>Nombre</th>
+                                                                                    <th style="width: 80px;">Acciones</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody id="tbody-course-positions">
+                                                                                <tr>
+                                                                                    <td colspan="4" class="text-center text-muted">
+                                                                                        <i class="fa fa-spinner fa-spin"></i> Cargando posiciones...
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <!-- Mensaje en modo creación -->
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="alert alert-warning" role="alert">
+                                                                <i class="fa fa-info-circle"></i>
+                                                                <strong>Modo Creación:</strong>
+                                                                Para asignar empleados y posiciones, primero debe guardar el curso.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <!-- /TAB 3: EMPLEADOS Y POSICIONES -->
+
                                             <!-- ========================================== -->
                                             <!-- TAB 2: AUDITORÍA (Campos ISO 27001)       -->
                                             <!-- ========================================== -->
@@ -222,6 +344,7 @@
                 </div>
             </div>
             <!-- /page content -->
+
             <!-- footer content -->
             <footer>
                 <div class="pull-right">
@@ -230,6 +353,116 @@
                 <div class="clearfix"></div>
             </footer>
             <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: AGREGAR EMPLEADOS -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modal-add-employee" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title"><i class="fa fa-user-plus"></i> Agregar Empleados al Curso</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- Buscador -->
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="text" id="employee-search" class="form-control" placeholder="Buscar por código o nombre...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary" type="button" id="btn-search-employee">
+                                    <i class="fa fa-search"></i> Buscar
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de empleados disponibles -->
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="check-all-modal-employees" class="flat" />
+                                    </th>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-available-employees">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        <i class="fa fa-spinner fa-spin"></i> Cargando empleados...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-add-employees">
+                        <i class="fa fa-check"></i> Agregar Seleccionados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: AGREGAR POSICIONES -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modal-add-position" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title"><i class="fa fa-briefcase"></i> Agregar Posiciones al Curso</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- Buscador -->
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="text" id="position-search" class="form-control" placeholder="Buscar por código o nombre...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary" type="button" id="btn-search-position">
+                                    <i class="fa fa-search"></i> Buscar
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de posiciones disponibles -->
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="check-all-modal-positions" class="flat" />
+                                    </th>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-available-positions">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        <i class="fa fa-spinner fa-spin"></i> Cargando posiciones...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-add-positions">
+                        <i class="fa fa-check"></i> Agregar Seleccionados
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -252,19 +485,14 @@
     <script>
         (function() {
             if (typeof PNotify !== 'undefined') {
-                // Configuración global para prevenir cualquier notificación automática
                 PNotify.prototype.options.desktop = { desktop: false };
-
-                // Remover todas las notificaciones inmediatamente
                 PNotify.removeAll();
 
-                // Observar el DOM para eliminar cualquier notificación que aparezca
                 var observer = new MutationObserver(function(mutations) {
                     mutations.forEach(function(mutation) {
                         mutation.addedNodes.forEach(function(node) {
                             if (node.nodeType === 1 && node.classList &&
                                 (node.classList.contains('ui-pnotify') || node.classList.contains('pnotify'))) {
-                                // Si es una notificación de PNotify, eliminarla inmediatamente
                                 var text = node.textContent || '';
                                 if (text.includes('Welcome') || text.includes('hovering') || text.includes('non-blocking')) {
                                     node.remove();
@@ -274,13 +502,11 @@
                     });
                 });
 
-                // Observar el body por notificaciones añadidas
                 observer.observe(document.body, {
                     childList: true,
                     subtree: true
                 });
 
-                // Limpiar después de 3 segundos (cuando ya todo debería estar cargado)
                 setTimeout(function() {
                     observer.disconnect();
                     PNotify.removeAll();
@@ -292,15 +518,16 @@
     <!-- Custom Theme Scripts -->
     <script src="~/build/js/custom.min.js"></script>
 
-    <!-- ============================================================ -->
-    <!-- CRÍTICO: API URLs - DEBE IR ANTES DE CUALQUIER SCRIPT PERSONALIZADO -->
-    <!-- ============================================================ -->
-    @await Html.PartialAsync("~/Views/Layout/_ApiUrls.cshtml")
-
     <!-- Sistema de Alertas -->
     @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
+    @await Html.PartialAsync("~/Views/Layout/_ApiUrls.cshtml")
 
-    <!-- Script del formulario de cursos -->
+    <!-- Modal Genérico (requerido para ALERTS.confirm) -->
+    @await Html.PartialAsync("~/Views/Generic/_Modal.cshtml")
+
+
+    <!-- Scripts del formulario de cursos -->
     <script src="~/js/Courses/course-form.js"></script>
+    <script src="~/js/Courses/course-employees-positions.js"></script>
 </body>
 </html>

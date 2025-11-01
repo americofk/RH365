@@ -9,7 +9,6 @@
 //   - Renderizado separado para cada tab
 //   - Validación cliente + servidor
 //   - Integración con API REST (/api/Courses)
-//   - Labels a la izquierda de los campos
 // Estándar: ISO 27001 - Validación y seguridad de datos
 // ============================================================================
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -30,22 +29,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     const $ = w.jQuery || w.$;
     const apiBase = w.RH365.urls.apiBase;
     const pageContainer = d.querySelector("#course-form-page");
-    // Si no existe el contenedor, salir
     if (!pageContainer)
         return;
-    // Extraer datos del DOM
     const token = pageContainer.getAttribute("data-token") || "";
     const dataareaId = pageContainer.getAttribute("data-dataarea") || "DAT";
     const userRefRecID = parseInt(pageContainer.getAttribute("data-user") || "0", 10);
     const recId = parseInt(pageContainer.getAttribute("data-recid") || "0", 10);
     const isNew = pageContainer.getAttribute("data-isnew") === "true";
-    // Variable global para almacenar los datos del curso cargados desde el API
     let courseData = null;
-    // Cache de tipos de curso y salones
     let courseTypesMap = new Map();
     let classRoomsMap = new Map();
     // ========================================================================
-    // DEFINICIÓN DE CAMPOS - TAB GENERAL (Campos de Negocio en 2 COLUMNAS)
+    // DEFINICIÓN DE CAMPOS - TAB GENERAL (2 COLUMNAS)
     // ========================================================================
     const businessFields = [
         // COLUMNA IZQUIERDA
@@ -71,7 +66,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             label: 'Tipo de Curso',
             type: 'select',
             required: true,
-            options: [], // Se llenará dinámicamente
+            options: [],
             column: 'left'
         },
         {
@@ -79,7 +74,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             label: 'Salón',
             type: 'select',
             required: false,
-            options: [], // Se llenará dinámicamente
+            options: [],
             column: 'left'
         },
         {
@@ -186,7 +181,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
     ];
     // ========================================================================
-    // DEFINICIÓN DE CAMPOS - TAB AUDITORÍA (SOLO ISO 27001)
+    // DEFINICIÓN DE CAMPOS - TAB AUDITORÍA (ISO 27001)
     // ========================================================================
     const auditFields = [
         {
@@ -235,23 +230,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     // UTILIDADES - COMUNICACIÓN CON API
     // ========================================================================
-    /**
-     * Realiza una petición HTTP al API con manejo de autenticación.
-     * @param url URL completa del endpoint
-     * @param options Opciones adicionales para fetch (method, body, etc.)
-     * @returns Promise con la respuesta JSON parseada
-     */
     const fetchJson = (url, options) => __awaiter(this, void 0, void 0, function* () {
         const headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         };
-        // Agregar token de autenticación si existe
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
         const response = yield fetch(url, Object.assign(Object.assign({}, options), { headers }));
-        // Si la respuesta no es exitosa, lanzar error con el detalle
         if (!response.ok) {
             const errorData = yield response.json().catch(() => ({}));
             throw new Error(JSON.stringify(errorData));
@@ -277,7 +264,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     courseTypesMap.set(type.RecID, type.Name);
                 }
             });
-            // Actualizar opciones del campo CourseTypeRefRecID
             const courseTypeField = businessFields.find(f => f.field === 'CourseTypeRefRecID');
             if (courseTypeField) {
                 courseTypeField.options = [
@@ -288,10 +274,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     }))
                 ];
             }
-            console.log(`✅ ${courseTypesMap.size} tipos de curso cargados`);
         }
         catch (error) {
-            console.error('⚠️ Error cargando tipos de curso:', error);
+            w.ALERTS.warn('No se pudieron cargar los tipos de curso', 'Advertencia');
+            throw error;
         }
     });
     const loadClassRooms = () => __awaiter(this, void 0, void 0, function* () {
@@ -310,7 +296,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     classRoomsMap.set(room.RecID, room.Name);
                 }
             });
-            // Actualizar opciones del campo ClassRoomRefRecID
             const classRoomField = businessFields.find(f => f.field === 'ClassRoomRefRecID');
             if (classRoomField) {
                 classRoomField.options = [
@@ -321,27 +306,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     }))
                 ];
             }
-            console.log(`✅ ${classRoomsMap.size} salones cargados`);
         }
         catch (error) {
-            console.error('⚠️ Error cargando salones:', error);
+            w.ALERTS.warn('No se pudieron cargar los salones', 'Advertencia');
+            throw error;
         }
     });
     // ========================================================================
     // RENDERIZADO DE CAMPOS
     // ========================================================================
-    /**
-     * Genera el HTML de un campo según su configuración.
-     * Labels siempre a la izquierda del campo.
-     * @param config Configuración del campo
-     * @param value Valor actual del campo
-     * @param is2Column Si es true, ajusta las clases para layout de 2 columnas
-     * @returns String con el HTML del campo
-     */
     const renderField = (config, value, is2Column = false) => {
         const fieldId = config.field;
         const fieldName = config.field;
-        // Labels SIEMPRE a la izquierda
         const labelClass = is2Column
             ? 'control-label col-md-4 col-sm-4 col-xs-12'
             : 'control-label col-md-3 col-sm-3 col-xs-12';
@@ -353,7 +329,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const requiredAttr = config.required ? 'required' : '';
         let inputHtml = '';
         let displayValue = value !== null && value !== void 0 ? value : '';
-        // Generar input según el tipo de campo
         switch (config.type) {
             case 'textarea':
                 inputHtml = `<textarea id="${fieldId}" name="${fieldName}" class="form-control" rows="3" maxlength="${config.maxLength || 500}" ${readonlyAttr} ${requiredAttr}>${displayValue}</textarea>`;
@@ -368,7 +343,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 inputHtml = `<input type="checkbox" id="${fieldId}" name="${fieldName}" class="flat" ${checked} ${readonlyAttr ? 'disabled' : ''}>`;
                 break;
             case 'datetime':
-                // Formatear datetime para input datetime-local (YYYY-MM-DDTHH:MM)
                 if (displayValue && typeof displayValue === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(displayValue)) {
                     displayValue = displayValue.slice(0, 16);
                 }
@@ -397,7 +371,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             case 'number':
                 inputHtml = `<input type="number" id="${fieldId}" name="${fieldName}" class="form-control" value="${displayValue}" ${readonlyAttr} ${requiredAttr}>`;
                 break;
-            default: // text
+            default:
                 inputHtml = `<input type="text" id="${fieldId}" name="${fieldName}" class="form-control" maxlength="${config.maxLength || 255}" value="${displayValue}" placeholder="${config.placeholder || ''}" ${readonlyAttr} ${requiredAttr}>`;
                 break;
         }
@@ -417,10 +391,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     // CARGA DE DATOS DEL CURSO
     // ========================================================================
-    /**
-     * Carga los datos del curso desde el API (solo si es edición).
-     * En modo creación, renderiza los formularios vacíos.
-     */
     const loadCourseData = () => __awaiter(this, void 0, void 0, function* () {
         if (isNew) {
             renderBusinessForm({});
@@ -434,7 +404,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             renderAuditForm(courseData);
         }
         catch (error) {
-            w.ALERTS.error('Error al cargar los datos del curso', 'Error');
+            w.ALERTS.error('No se pudieron cargar los datos del curso', 'Error');
             renderBusinessForm({});
             renderAuditForm({});
         }
@@ -442,11 +412,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     // RENDERIZADO DE FORMULARIOS
     // ========================================================================
-    /**
-     * Renderiza el formulario de campos de negocio en LAYOUT DE 2 COLUMNAS.
-     * Separa los campos según la propiedad 'column' de cada FieldConfig.
-     * @param data Datos del curso a mostrar
-     */
     const renderBusinessForm = (data) => {
         const containerLeft = $('#dynamic-fields-col-left');
         const containerRight = $('#dynamic-fields-col-right');
@@ -472,11 +437,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             });
         }
     };
-    /**
-     * Renderiza el formulario de campos de auditoría (Tab Auditoría).
-     * SOLO renderiza los campos definidos en auditFields.
-     * @param data Datos del curso a mostrar
-     */
     const renderAuditForm = (data) => {
         const container = $('#audit-fields-container');
         container.empty();
@@ -499,11 +459,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     // CAPTURA DE DATOS DEL FORMULARIO
     // ========================================================================
-    /**
-     * Obtiene los datos del formulario de negocio para enviar al API.
-     * SOLO captura campos editables del Tab General (businessFields).
-     * @returns Objeto con los datos del formulario
-     */
     const getFormData = () => {
         const formData = {};
         businessFields.forEach(config => {
@@ -552,10 +507,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     // GUARDADO DE CURSO
     // ========================================================================
-    /**
-     * Guarda el curso en el API (POST para crear, PUT para actualizar).
-     * Muestra alertas de éxito o error y redirige al listado si es exitoso.
-     */
     const saveCourse = () => __awaiter(this, void 0, void 0, function* () {
         const formData = getFormData();
         try {
@@ -584,14 +535,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 method: method,
                 body: JSON.stringify(payload)
             });
-            w.ALERTS.ok(isNew ? 'Curso creado exitosamente' : 'Curso actualizado exitosamente', 'Éxito');
+            w.ALERTS.ok(isNew
+                ? 'El curso ha sido creado exitosamente'
+                : 'El curso ha sido actualizado exitosamente', 'Éxito');
             setTimeout(() => {
                 window.location.href = '/Course/LP_Courses';
             }, 1500);
         }
         catch (error) {
-            console.error('Error al guardar:', error);
-            let errorMessage = 'Error al guardar el curso';
+            let errorMessage = 'No se pudo guardar el curso';
             try {
                 const errorData = JSON.parse(error.message);
                 if (errorData.errors) {
@@ -600,16 +552,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                         if (errorData.errors.hasOwnProperty(key)) {
                             const errList = errorData.errors[key];
                             if (Array.isArray(errList)) {
-                                for (let i = 0; i < errList.length; i++) {
-                                    errorsArray.push(errList[i]);
-                                }
+                                errorsArray.push(...errList);
                             }
                             else {
                                 errorsArray.push(errList);
                             }
                         }
                     }
-                    errorMessage = errorsArray.join(', ');
+                    errorMessage = errorsArray.join('. ');
                 }
                 else if (errorData.title) {
                     errorMessage = errorData.title;
@@ -618,19 +568,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             catch (_a) {
                 errorMessage = error.message || errorMessage;
             }
-            w.ALERTS.error(errorMessage, 'Error');
+            w.ALERTS.error(errorMessage, 'Error al Guardar');
         }
     });
     // ========================================================================
     // EVENT HANDLERS
     // ========================================================================
-    /**
-     * Manejador del botón Guardar.
-     * Valida el formulario y ejecuta el guardado.
-     */
     $('#btn-save').on('click', () => __awaiter(this, void 0, void 0, function* () {
         const form = document.getElementById('frm-course');
         if (!form.checkValidity()) {
+            w.ALERTS.warn('Por favor complete todos los campos requeridos', 'Validación');
             form.reportValidity();
             return;
         }
@@ -639,23 +586,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     // INICIALIZACIÓN
     // ========================================================================
-    /**
-     * Función de inicialización que se ejecuta cuando el DOM está listo.
-     * Carga los datos de referencia, luego los datos del curso y renderiza los formularios.
-     */
     $(function () {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Cargar tipos de curso y salones en paralelo
                 yield Promise.all([
                     loadCourseTypes(),
                     loadClassRooms()
                 ]);
-                // Luego cargar los datos del curso
                 yield loadCourseData();
             }
             catch (error) {
-                w.ALERTS.error('Error al inicializar el formulario', 'Error');
+                w.ALERTS.error('Error al inicializar el formulario de curso', 'Error de Inicialización');
             }
         });
     });

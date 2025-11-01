@@ -2,12 +2,11 @@
 // Archivo: course-employees-positions.ts
 // Proyecto: RH365.WebMVC
 // Ruta: TS/Courses/course-employees-positions.ts
-// Descripci�n:
-//   - Gesti�n de empleados y posiciones asignados a un curso
-//   - Modales para selecci�n m�ltiple
-//   - Integraci�n con APIs de Employees y Positions
-//   - Manejo de relaciones CourseEmployees y CoursePositions
-// Est�ndar: ISO 27001 - Gesti�n de relaciones de datos
+// Descripción:
+//   - Gestión de empleados y posiciones asignados a un Curso
+//   - Validaciones y confirmaciones con sistema ALERTS
+//   - CRUD completo con manejo de errores
+// Estándar: ISO 27001 - Gestión de relaciones de datos
 // ============================================================================
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -19,465 +18,445 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (function () {
+    var _a, _b;
     const w = window;
     const d = document;
     const $ = w.jQuery || w.$;
-    const apiBase = w.RH365.urls.apiBase;
+    const apiBase = ((_b = (_a = w.RH365) === null || _a === void 0 ? void 0 : _a.urls) === null || _b === void 0 ? void 0 : _b.apiBase) || '';
     const pageContainer = d.querySelector("#course-form-page");
     if (!pageContainer)
         return;
     const token = pageContainer.getAttribute("data-token") || "";
     const recId = parseInt(pageContainer.getAttribute("data-recid") || "0", 10);
     const isNew = pageContainer.getAttribute("data-isnew") === "true";
-    // ========================================================================
-    // VARIABLES GLOBALES
-    // ========================================================================
-    let availableEmployees = [];
-    let availablePositions = [];
+    // Acceso a sistema de alertas
+    const A = w.ALERTS;
+    const assertAlerts = () => {
+        if (!A || typeof A.confirm !== 'function' || typeof A.ok !== 'function' || typeof A.error !== 'function') {
+            throw new Error("Sistema ALERTS no disponible. Verifica la carga de scripts.");
+        }
+    };
+    // Estado en memoria
+    let allEmployees = [];
+    let allPositions = [];
     let assignedEmployees = [];
     let assignedPositions = [];
     // ========================================================================
-    // UTILIDADES - COMUNICACI�N CON API
+    // UTILIDADES - COMUNICACIÓN CON API
     // ========================================================================
     const fetchJson = (url, options) => __awaiter(this, void 0, void 0, function* () {
-        const headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        };
-        if (token) {
+        const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+        if (token)
             headers['Authorization'] = `Bearer ${token}`;
-        }
         const response = yield fetch(url, Object.assign(Object.assign({}, options), { headers }));
         if (!response.ok) {
-            const errorData = yield response.json().catch(() => ({}));
-            throw new Error(JSON.stringify(errorData));
+            const errorText = yield response.text().catch(() => '');
+            throw new Error(errorText || `HTTP ${response.status}`);
         }
-        return response.json();
+        if (response.status === 204)
+            return null;
+        const contentType = response.headers.get('content-type') || '';
+        return contentType.includes('application/json') ? response.json() : null;
     });
     // ========================================================================
-    // CARGA DE EMPLEADOS DISPONIBLES
+    // CARGA DE CATÁLOGOS
     // ========================================================================
-    const loadAvailableEmployees = () => __awaiter(this, void 0, void 0, function* () {
+    const loadAllEmployees = () => __awaiter(this, void 0, void 0, function* () {
         try {
-            const url = `${apiBase}/Employees?skip=0&take=1000`;
-            const response = yield fetchJson(url);
-            if (Array.isArray(response)) {
-                availableEmployees = response;
-            }
-            else if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
-                availableEmployees = response.Data;
-            }
-            else if ((response === null || response === void 0 ? void 0 : response.data) && Array.isArray(response.data)) {
-                availableEmployees = response.data;
-            }
-            renderAvailableEmployees();
+            const resp = yield fetchJson(`${apiBase}/Employees?skip=0&take=5000`);
+            allEmployees = Array.isArray(resp) ? resp : ((resp === null || resp === void 0 ? void 0 : resp.Data) || []);
         }
         catch (error) {
-            console.error('Error cargando empleados:', error);
-            $('#tbody-available-employees').html(`
-                <tr>
-                    <td colspan="4" class="text-center text-danger">
-                        <i class="fa fa-exclamation-triangle"></i> Error al cargar empleados
-                    </td>
-                </tr>
-            `);
+            A.error('Error al cargar catálogo de empleados', 'Error');
+            throw error;
         }
     });
-    // ========================================================================
-    // CARGA DE POSICIONES DISPONIBLES
-    // ========================================================================
-    const loadAvailablePositions = () => __awaiter(this, void 0, void 0, function* () {
+    const loadAllPositions = () => __awaiter(this, void 0, void 0, function* () {
         try {
-            const url = `${apiBase}/Positions?skip=0&take=1000`;
-            const response = yield fetchJson(url);
-            if (Array.isArray(response)) {
-                availablePositions = response;
-            }
-            else if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
-                availablePositions = response.Data;
-            }
-            else if ((response === null || response === void 0 ? void 0 : response.data) && Array.isArray(response.data)) {
-                availablePositions = response.data;
-            }
-            renderAvailablePositions();
+            const resp = yield fetchJson(`${apiBase}/Positions?skip=0&take=5000`);
+            allPositions = Array.isArray(resp) ? resp : ((resp === null || resp === void 0 ? void 0 : resp.Data) || []);
         }
         catch (error) {
-            console.error('Error cargando posiciones:', error);
-            $('#tbody-available-positions').html(`
-                <tr>
-                    <td colspan="4" class="text-center text-danger">
-                        <i class="fa fa-exclamation-triangle"></i> Error al cargar posiciones
-                    </td>
-                </tr>
-            `);
+            A.error('Error al cargar catálogo de posiciones', 'Error');
+            throw error;
         }
     });
     // ========================================================================
-    // RENDERIZADO DE EMPLEADOS DISPONIBLES EN MODAL
+    // RENDERIZADO - EMPLEADOS DISPONIBLES (MODAL)
     // ========================================================================
-    const renderAvailableEmployees = (searchTerm = '') => {
-        const tbody = $('#tbody-available-employees');
-        tbody.empty();
-        let filtered = availableEmployees;
-        // Filtrar por t�rmino de b�squeda
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = availableEmployees.filter(emp => (emp.EmployeeCode || '').toLowerCase().includes(term) ||
-                (emp.FirstName || '').toLowerCase().includes(term) ||
-                (emp.LastName || '').toLowerCase().includes(term));
+    const renderAvailableEmployees = (search = '') => {
+        const $tbody = $('#tbody-available-employees');
+        $tbody.empty();
+        let rows = allEmployees.filter(e => !assignedEmployees.some(a => a.EmployeeRecID === e.RecID));
+        if (search) {
+            const s = search.toLowerCase();
+            rows = rows.filter(e => (e.EmployeeCode || '').toLowerCase().includes(s) ||
+                (e.Name || '').toLowerCase().includes(s) ||
+                (e.LastName || '').toLowerCase().includes(s));
         }
-        // Excluir empleados ya asignados
-        filtered = filtered.filter(emp => !assignedEmployees.some(assigned => assigned.RecID === emp.RecID));
-        if (filtered.length === 0) {
-            tbody.html(`
-                <tr>
-                    <td colspan="4" class="text-center text-muted">
-                        <i class="fa fa-info-circle"></i> No hay empleados disponibles
-                    </td>
-                </tr>
-            `);
+        if (rows.length === 0) {
+            $tbody.html('<tr><td colspan="3" class="text-center text-muted"><i class="fa fa-info-circle"></i> No hay empleados disponibles</td></tr>');
             return;
         }
-        filtered.forEach(emp => {
-            const fullName = `${emp.FirstName || ''} ${emp.LastName || ''}`.trim();
-            const row = $(`
+        rows.forEach(e => {
+            const name = `${e.Name || ''} ${e.LastName || ''}`.trim() || 'Sin nombre';
+            $tbody.append(`
                 <tr>
-                    <td class="text-center">
-                        <input type="checkbox" class="flat employee-checkbox" data-recid="${emp.RecID}" 
-                               data-code="${emp.EmployeeCode || ''}" 
-                               data-name="${fullName}" />
-                    </td>
-                    <td>${emp.EmployeeCode || 'N/A'}</td>
-                    <td>${fullName}</td>
-                    <td>${emp.DepartmentName || 'N/A'}</td>
-                </tr>
-            `);
-            tbody.append(row);
+                  <td class="text-center"><input type="checkbox" class="flat employee-checkbox" data-recid="${e.RecID}"/></td>
+                  <td>${e.EmployeeCode || 'N/A'}</td>
+                  <td>${name}</td>
+                </tr>`);
         });
-        // Inicializar iCheck
-        if ($.fn.iCheck) {
-            $('.employee-checkbox').iCheck({
-                checkboxClass: 'icheckbox_flat-green'
-            });
-        }
+        if ($.fn.iCheck)
+            $('.employee-checkbox').iCheck({ checkboxClass: 'icheckbox_flat-green' });
     };
     // ========================================================================
-    // RENDERIZADO DE POSICIONES DISPONIBLES EN MODAL
+    // RENDERIZADO - POSICIONES DISPONIBLES (MODAL)
     // ========================================================================
-    const renderAvailablePositions = (searchTerm = '') => {
-        const tbody = $('#tbody-available-positions');
-        tbody.empty();
-        let filtered = availablePositions;
-        // Filtrar por t�rmino de b�squeda
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = availablePositions.filter(pos => (pos.PositionCode || '').toLowerCase().includes(term) ||
-                (pos.Name || '').toLowerCase().includes(term));
+    const renderAvailablePositions = (search = '') => {
+        const $tbody = $('#tbody-available-positions');
+        $tbody.empty();
+        let rows = allPositions.filter(p => !assignedPositions.some(a => a.PositionRecID === p.RecID));
+        if (search) {
+            const s = search.toLowerCase();
+            rows = rows.filter(p => (p.PositionCode || '').toLowerCase().includes(s) ||
+                (p.PositionName || '').toLowerCase().includes(s));
         }
-        // Excluir posiciones ya asignadas
-        filtered = filtered.filter(pos => !assignedPositions.some(assigned => assigned.RecID === pos.RecID));
-        if (filtered.length === 0) {
-            tbody.html(`
-                <tr>
-                    <td colspan="4" class="text-center text-muted">
-                        <i class="fa fa-info-circle"></i> No hay posiciones disponibles
-                    </td>
-                </tr>
-            `);
+        if (rows.length === 0) {
+            $tbody.html('<tr><td colspan="3" class="text-center text-muted"><i class="fa fa-info-circle"></i> No hay posiciones disponibles</td></tr>');
             return;
         }
-        filtered.forEach(pos => {
-            const row = $(`
+        rows.forEach(p => {
+            $tbody.append(`
                 <tr>
-                    <td class="text-center">
-                        <input type="checkbox" class="flat position-checkbox" data-recid="${pos.RecID}" 
-                               data-code="${pos.PositionCode || ''}" 
-                               data-name="${pos.Name || ''}" />
-                    </td>
-                    <td>${pos.PositionCode || 'N/A'}</td>
-                    <td>${pos.Name || 'N/A'}</td>
-                    <td>${pos.Description || 'N/A'}</td>
-                </tr>
-            `);
-            tbody.append(row);
+                  <td class="text-center"><input type="checkbox" class="flat position-checkbox" data-recid="${p.RecID}"/></td>
+                  <td>${p.PositionCode || 'N/A'}</td>
+                  <td>${p.PositionName || 'N/A'}</td>
+                </tr>`);
         });
-        // Inicializar iCheck
-        if ($.fn.iCheck) {
-            $('.position-checkbox').iCheck({
-                checkboxClass: 'icheckbox_flat-green'
-            });
-        }
+        if ($.fn.iCheck)
+            $('.position-checkbox').iCheck({ checkboxClass: 'icheckbox_flat-green' });
     };
     // ========================================================================
-    // RENDERIZADO DE EMPLEADOS ASIGNADOS
+    // RENDERIZADO - EMPLEADOS ASIGNADOS
     // ========================================================================
     const renderAssignedEmployees = () => {
-        const tbody = $('#tbody-course-employees');
-        tbody.empty();
+        const $tbody = $('#tbody-course-employees');
+        $tbody.empty();
         if (assignedEmployees.length === 0) {
-            tbody.html(`
-                <tr>
-                    <td colspan="4" class="text-center text-muted">
-                        <i class="fa fa-info-circle"></i> No hay empleados asignados
-                    </td>
-                </tr>
-            `);
-            $('#btn-delete-selected-employees').prop('disabled', true);
+            $tbody.html('<tr><td colspan="4" class="text-center text-muted"><i class="fa fa-info-circle"></i> No hay empleados asignados al curso</td></tr>');
             return;
         }
-        assignedEmployees.forEach(emp => {
-            const row = $(`
+        assignedEmployees.forEach(item => {
+            const e = allEmployees.find(x => x.RecID === item.EmployeeRecID);
+            if (!e)
+                return;
+            const name = `${e.Name || ''} ${e.LastName || ''}`.trim() || 'Sin nombre';
+            $tbody.append(`
                 <tr>
-                    <td class="text-center">
-                        <input type="checkbox" class="flat assigned-employee-checkbox" data-recid="${emp.RecID}" />
-                    </td>
-                    <td>${emp.Code}</td>
-                    <td>${emp.Name}</td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-xs btn-delete-employee" data-recid="${emp.RecID}">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `);
-            tbody.append(row);
+                  <td class="text-center"><input type="checkbox" class="flat assigned-employee-checkbox" data-recid="${item.EmployeeRecID}"/></td>
+                  <td>${e.EmployeeCode || 'N/A'}</td>
+                  <td>${name}</td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-xs btn-delete-employee"
+                            data-recid="${item.EmployeeRecID}"
+                            data-course-employee-recid="${item.CourseEmployeeRecID}"
+                            title="Eliminar empleado">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>`);
         });
-        // Inicializar iCheck
-        if ($.fn.iCheck) {
-            $('.assigned-employee-checkbox').iCheck({
-                checkboxClass: 'icheckbox_flat-green'
-            });
-        }
+        if ($.fn.iCheck)
+            $('.assigned-employee-checkbox').iCheck({ checkboxClass: 'icheckbox_flat-green' });
     };
     // ========================================================================
-    // RENDERIZADO DE POSICIONES ASIGNADAS
+    // RENDERIZADO - POSICIONES ASIGNADAS
     // ========================================================================
     const renderAssignedPositions = () => {
-        const tbody = $('#tbody-course-positions');
-        tbody.empty();
+        const $tbody = $('#tbody-course-positions');
+        $tbody.empty();
         if (assignedPositions.length === 0) {
-            tbody.html(`
-                <tr>
-                    <td colspan="4" class="text-center text-muted">
-                        <i class="fa fa-info-circle"></i> No hay posiciones asignadas
-                    </td>
-                </tr>
-            `);
-            $('#btn-delete-selected-positions').prop('disabled', true);
+            $tbody.html('<tr><td colspan="4" class="text-center text-muted"><i class="fa fa-info-circle"></i> No hay posiciones asignadas al curso</td></tr>');
             return;
         }
-        assignedPositions.forEach(pos => {
-            const row = $(`
+        assignedPositions.forEach(item => {
+            const p = allPositions.find(x => x.RecID === item.PositionRecID);
+            if (!p)
+                return;
+            $tbody.append(`
                 <tr>
-                    <td class="text-center">
-                        <input type="checkbox" class="flat assigned-position-checkbox" data-recid="${pos.RecID}" />
-                    </td>
-                    <td>${pos.Code}</td>
-                    <td>${pos.Name}</td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-xs btn-delete-position" data-recid="${pos.RecID}">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `);
-            tbody.append(row);
+                  <td class="text-center"><input type="checkbox" class="flat assigned-position-checkbox" data-recid="${item.PositionRecID}"/></td>
+                  <td>${p.PositionCode || 'N/A'}</td>
+                  <td>${p.PositionName || 'N/A'}</td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-xs btn-delete-position"
+                            data-recid="${item.PositionRecID}"
+                            data-course-position-recid="${item.CoursePositionRecID}"
+                            title="Eliminar posición">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>`);
         });
-        // Inicializar iCheck
-        if ($.fn.iCheck) {
-            $('.assigned-position-checkbox').iCheck({
-                checkboxClass: 'icheckbox_flat-green'
-            });
-        }
+        if ($.fn.iCheck)
+            $('.assigned-position-checkbox').iCheck({ checkboxClass: 'icheckbox_flat-green' });
     };
     // ========================================================================
-    // CARGAR EMPLEADOS Y POSICIONES ASIGNADOS (SI ES EDICI�N)
+    // CARGA DE DATOS ASIGNADOS
     // ========================================================================
     const loadAssignedData = () => __awaiter(this, void 0, void 0, function* () {
-        if (isNew || recId === 0) {
+        if (isNew || recId <= 0) {
             renderAssignedEmployees();
             renderAssignedPositions();
             return;
         }
         try {
-            // Cargar empleados asignados
-            const employeesUrl = `${apiBase}/CourseEmployees/ByCourse/${recId}`;
-            const employeesResponse = yield fetchJson(employeesUrl);
-            if (Array.isArray(employeesResponse)) {
-                assignedEmployees = employeesResponse.map(e => ({
-                    RecID: e.EmployeeRefRecID,
-                    Code: e.EmployeeCode || 'N/A',
-                    Name: e.EmployeeName || 'N/A',
-                    CourseEmployeeRecID: e.RecID
-                }));
-            }
-            // Cargar posiciones asignadas
-            const positionsUrl = `${apiBase}/CoursePositions/ByCourse/${recId}`;
-            const positionsResponse = yield fetchJson(positionsUrl);
-            if (Array.isArray(positionsResponse)) {
-                assignedPositions = positionsResponse.map(p => ({
-                    RecID: p.PositionRefRecID,
-                    Code: p.PositionCode || 'N/A',
-                    Name: p.PositionName || 'N/A',
-                    CoursePositionRecID: p.RecID
-                }));
-            }
+            const [empResp, posResp] = yield Promise.all([
+                fetchJson(`${apiBase}/CourseEmployees`),
+                fetchJson(`${apiBase}/CoursePositions`)
+            ]);
+            const empData = Array.isArray(empResp) ? empResp : ((empResp === null || empResp === void 0 ? void 0 : empResp.Data) || []);
+            const posData = Array.isArray(posResp) ? posResp : ((posResp === null || posResp === void 0 ? void 0 : posResp.Data) || []);
+            assignedEmployees = empData
+                .filter((e) => e.CourseRefRecID === recId)
+                .map((e) => ({ EmployeeRecID: e.EmployeeRefRecID, CourseEmployeeRecID: e.RecID }));
+            assignedPositions = posData
+                .filter((p) => p.CourseRefRecID === recId)
+                .map((p) => ({ PositionRecID: p.PositionRefRecID, CoursePositionRecID: p.RecID }));
             renderAssignedEmployees();
             renderAssignedPositions();
         }
         catch (error) {
-            console.error('Error cargando datos asignados:', error);
+            A.error('Error al cargar los datos asignados al curso', 'Error');
+            throw error;
         }
     });
     // ========================================================================
-    // EVENT HANDLERS
+    // EVENTOS - MODALES
     // ========================================================================
-    // Modal de empleados - Al abrirse
-    $('#modal-add-employee').on('show.bs.modal', function () {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield loadAvailableEmployees();
-        });
-    });
-    // Modal de posiciones - Al abrirse
-    $('#modal-add-position').on('show.bs.modal', function () {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield loadAvailablePositions();
-        });
-    });
-    // B�squeda de empleados
+    $('#modal-add-employee').on('show.bs.modal', () => renderAvailableEmployees());
+    $('#modal-add-position').on('show.bs.modal', () => renderAvailablePositions());
     $('#btn-search-employee, #employee-search').on('keyup change', function (e) {
         if (e.type === 'keyup' && e.keyCode !== 13)
             return;
-        const searchTerm = $('#employee-search').val();
-        renderAvailableEmployees(searchTerm);
+        renderAvailableEmployees(String($('#employee-search').val() || ''));
     });
-    // B�squeda de posiciones
     $('#btn-search-position, #position-search').on('keyup change', function (e) {
         if (e.type === 'keyup' && e.keyCode !== 13)
             return;
-        const searchTerm = $('#position-search').val();
-        renderAvailablePositions(searchTerm);
+        renderAvailablePositions(String($('#position-search').val() || ''));
     });
-    // Agregar empleados seleccionados
+    // ========================================================================
+    // AGREGAR EMPLEADOS SELECCIONADOS
+    // ========================================================================
     $('#btn-confirm-add-employees').on('click', function () {
-        const selected = [];
-        $('#tbody-available-employees input.employee-checkbox:checked').each(function () {
-            const $checkbox = $(this);
-            selected.push({
-                RecID: $checkbox.data('recid'),
-                Code: $checkbox.data('code'),
-                Name: $checkbox.data('name')
+        return __awaiter(this, void 0, void 0, function* () {
+            assertAlerts();
+            const selected = [];
+            $('#tbody-available-employees input.employee-checkbox:checked').each(function () {
+                selected.push($(this).data('recid'));
             });
+            if (selected.length === 0) {
+                A.warn('Debe seleccionar al menos un empleado', 'Advertencia');
+                return;
+            }
+            try {
+                for (const empRecId of selected) {
+                    const resp = yield fetchJson(`${apiBase}/CourseEmployees`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            CourseRefRecID: recId,
+                            EmployeeRefRecID: empRecId,
+                            Comment: '',
+                            Observations: ''
+                        })
+                    });
+                    assignedEmployees.push({ EmployeeRecID: empRecId, CourseEmployeeRecID: resp.RecID });
+                }
+                renderAssignedEmployees();
+                $('#modal-add-employee').modal('hide');
+                A.ok(`Se ${selected.length === 1 ? 'agregó' : 'agregaron'} ${selected.length} empleado${selected.length > 1 ? 's' : ''} al curso`, 'Éxito');
+            }
+            catch (error) {
+                A.error('Error al agregar empleados al curso', 'Error');
+            }
         });
-        if (selected.length === 0) {
-            w.ALERTS.warn('Seleccione al menos un empleado', 'Advertencia');
-            return;
-        }
-        assignedEmployees.push(...selected);
-        renderAssignedEmployees();
-        $('#modal-add-employee').modal('hide');
-        w.ALERTS.ok(`${selected.length} empleado(s) agregado(s)`, '�xito');
     });
-    // Agregar posiciones seleccionadas
+    // ========================================================================
+    // AGREGAR POSICIONES SELECCIONADAS
+    // ========================================================================
     $('#btn-confirm-add-positions').on('click', function () {
-        const selected = [];
-        $('#tbody-available-positions input.position-checkbox:checked').each(function () {
-            const $checkbox = $(this);
-            selected.push({
-                RecID: $checkbox.data('recid'),
-                Code: $checkbox.data('code'),
-                Name: $checkbox.data('name')
+        return __awaiter(this, void 0, void 0, function* () {
+            assertAlerts();
+            const selected = [];
+            $('#tbody-available-positions input.position-checkbox:checked').each(function () {
+                selected.push($(this).data('recid'));
             });
+            if (selected.length === 0) {
+                A.warn('Debe seleccionar al menos una posición', 'Advertencia');
+                return;
+            }
+            try {
+                for (const posRecId of selected) {
+                    const resp = yield fetchJson(`${apiBase}/CoursePositions`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            CourseRefRecID: recId,
+                            PositionRefRecID: posRecId,
+                            Comment: '',
+                            Observations: ''
+                        })
+                    });
+                    assignedPositions.push({ PositionRecID: posRecId, CoursePositionRecID: resp.RecID });
+                }
+                renderAssignedPositions();
+                $('#modal-add-position').modal('hide');
+                A.ok(`Se ${selected.length === 1 ? 'agregó' : 'agregaron'} ${selected.length} posición${selected.length > 1 ? 'es' : ''} al curso`, 'Éxito');
+            }
+            catch (error) {
+                A.error('Error al agregar posiciones al curso', 'Error');
+            }
         });
-        if (selected.length === 0) {
-            w.ALERTS.warn('Seleccione al menos una posici�n', 'Advertencia');
-            return;
-        }
-        assignedPositions.push(...selected);
-        renderAssignedPositions();
-        $('#modal-add-position').modal('hide');
-        w.ALERTS.ok(`${selected.length} posici�n(es) agregada(s)`, '�xito');
     });
-    // Eliminar empleado individual
-    $(document).on('click', '.btn-delete-employee', function () {
-        const recId = $(this).data('recid');
-        assignedEmployees = assignedEmployees.filter(e => e.RecID !== recId);
-        renderAssignedEmployees();
+    // ========================================================================
+    // ELIMINAR EMPLEADO INDIVIDUAL
+    // ========================================================================
+    $(d).on('click', '.btn-delete-employee', function () {
+        assertAlerts();
+        const empRecId = $(this).data('recid');
+        const courseEmpRecId = $(this).data('course-employee-recid');
+        w.ALERTS.confirm('¿Está seguro de eliminar este empleado del curso?', 'Confirmar Eliminación', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+            if (!confirmed)
+                return;
+            try {
+                yield fetchJson(`${apiBase}/CourseEmployees/${courseEmpRecId}`, { method: 'DELETE' });
+                assignedEmployees = assignedEmployees.filter(e => e.EmployeeRecID !== empRecId);
+                renderAssignedEmployees();
+                A.ok('El empleado ha sido eliminado del curso', 'Éxito');
+            }
+            catch (error) {
+                A.error('Error al eliminar el empleado del curso', 'Error');
+            }
+        }), { type: 'danger' });
     });
-    // Eliminar posici�n individual
-    $(document).on('click', '.btn-delete-position', function () {
-        const recId = $(this).data('recid');
-        assignedPositions = assignedPositions.filter(p => p.RecID !== recId);
-        renderAssignedPositions();
+    // ========================================================================
+    // ELIMINAR POSICIÓN INDIVIDUAL
+    // ========================================================================
+    $(d).on('click', '.btn-delete-position', function () {
+        assertAlerts();
+        const posRecId = $(this).data('recid');
+        const coursePosRecId = $(this).data('course-position-recid');
+        w.ALERTS.confirm('¿Está seguro de eliminar esta posición del curso?', 'Confirmar Eliminación', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+            if (!confirmed)
+                return;
+            try {
+                yield fetchJson(`${apiBase}/CoursePositions/${coursePosRecId}`, { method: 'DELETE' });
+                assignedPositions = assignedPositions.filter(p => p.PositionRecID !== posRecId);
+                renderAssignedPositions();
+                A.ok('La posición ha sido eliminada del curso', 'Éxito');
+            }
+            catch (error) {
+                A.error('Error al eliminar la posición del curso', 'Error');
+            }
+        }), { type: 'danger' });
     });
-    // Eliminar empleados seleccionados
+    // ========================================================================
+    // ELIMINAR EMPLEADOS MÚLTIPLES
+    // ========================================================================
     $('#btn-delete-selected-employees').on('click', function () {
+        assertAlerts();
         const toDelete = [];
         $('#tbody-course-employees input.assigned-employee-checkbox:checked').each(function () {
-            toDelete.push($(this).data('recid'));
+            const found = assignedEmployees.find(e => e.EmployeeRecID === $(this).data('recid'));
+            if (found)
+                toDelete.push(found);
         });
         if (toDelete.length === 0)
             return;
-        assignedEmployees = assignedEmployees.filter(e => !toDelete.includes(e.RecID));
-        renderAssignedEmployees();
-        w.ALERTS.ok(`${toDelete.length} empleado(s) eliminado(s)`, '�xito');
+        const message = toDelete.length === 1
+            ? '¿Está seguro de eliminar este empleado del curso?'
+            : `¿Está seguro de eliminar los ${toDelete.length} empleados seleccionados del curso?`;
+        w.ALERTS.confirm(message, 'Confirmar Eliminación', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+            if (!confirmed)
+                return;
+            try {
+                for (const item of toDelete) {
+                    yield fetchJson(`${apiBase}/CourseEmployees/${item.CourseEmployeeRecID}`, { method: 'DELETE' });
+                }
+                assignedEmployees = assignedEmployees.filter(e => !toDelete.some(d => d.EmployeeRecID === e.EmployeeRecID));
+                renderAssignedEmployees();
+                A.ok(`Se ${toDelete.length === 1 ? 'eliminó' : 'eliminaron'} ${toDelete.length} empleado${toDelete.length > 1 ? 's' : ''} del curso`, 'Éxito');
+            }
+            catch (error) {
+                A.error('Error al eliminar los empleados del curso', 'Error');
+            }
+        }), { type: 'danger' });
     });
-    // Eliminar posiciones seleccionadas
+    // ========================================================================
+    // ELIMINAR POSICIONES MÚLTIPLES
+    // ========================================================================
     $('#btn-delete-selected-positions').on('click', function () {
+        assertAlerts();
         const toDelete = [];
         $('#tbody-course-positions input.assigned-position-checkbox:checked').each(function () {
-            toDelete.push($(this).data('recid'));
+            const found = assignedPositions.find(p => p.PositionRecID === $(this).data('recid'));
+            if (found)
+                toDelete.push(found);
         });
         if (toDelete.length === 0)
             return;
-        assignedPositions = assignedPositions.filter(p => !toDelete.includes(p.RecID));
-        renderAssignedPositions();
-        w.ALERTS.ok(`${toDelete.length} posici�n(es) eliminada(s)`, '�xito');
-    });
-    // Habilitar/deshabilitar botones de eliminaci�n
-    $(document).on('ifChanged', '.assigned-employee-checkbox', function () {
-        const checkedCount = $('#tbody-course-employees input.assigned-employee-checkbox:checked').length;
-        $('#btn-delete-selected-employees').prop('disabled', checkedCount === 0);
-    });
-    $(document).on('ifChanged', '.assigned-position-checkbox', function () {
-        const checkedCount = $('#tbody-course-positions input.assigned-position-checkbox:checked').length;
-        $('#btn-delete-selected-positions').prop('disabled', checkedCount === 0);
-    });
-    // Check all en modales
-    $(document).on('ifChanged', '#check-all-modal-employees', function () {
-        const isChecked = $(this).is(':checked');
-        $('.employee-checkbox').iCheck(isChecked ? 'check' : 'uncheck');
-    });
-    $(document).on('ifChanged', '#check-all-modal-positions', function () {
-        const isChecked = $(this).is(':checked');
-        $('.position-checkbox').iCheck(isChecked ? 'check' : 'uncheck');
-    });
-    // Check all en tablas asignadas
-    $(document).on('ifChanged', '#check-all-employees', function () {
-        const isChecked = $(this).is(':checked');
-        $('.assigned-employee-checkbox').iCheck(isChecked ? 'check' : 'uncheck');
-    });
-    $(document).on('ifChanged', '#check-all-positions', function () {
-        const isChecked = $(this).is(':checked');
-        $('.assigned-position-checkbox').iCheck(isChecked ? 'check' : 'uncheck');
+        const message = toDelete.length === 1
+            ? '¿Está seguro de eliminar esta posición del curso?'
+            : `¿Está seguro de eliminar las ${toDelete.length} posiciones seleccionadas del curso?`;
+        w.ALERTS.confirm(message, 'Confirmar Eliminación', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+            if (!confirmed)
+                return;
+            try {
+                for (const item of toDelete) {
+                    yield fetchJson(`${apiBase}/CoursePositions/${item.CoursePositionRecID}`, { method: 'DELETE' });
+                }
+                assignedPositions = assignedPositions.filter(p => !toDelete.some(d => d.PositionRecID === p.PositionRecID));
+                renderAssignedPositions();
+                A.ok(`Se ${toDelete.length === 1 ? 'eliminó' : 'eliminaron'} ${toDelete.length} posición${toDelete.length > 1 ? 'es' : ''} del curso`, 'Éxito');
+            }
+            catch (error) {
+                A.error('Error al eliminar las posiciones del curso', 'Error');
+            }
+        }), { type: 'danger' });
     });
     // ========================================================================
-    // FUNCI�N P�BLICA PARA OBTENER DATOS
+    // EVENTOS - ICHECK TOGGLES
     // ========================================================================
-    w.CourseEmployeesPositions = {
-        getAssignedEmployees: () => assignedEmployees,
-        getAssignedPositions: () => assignedPositions
-    };
+    $(d).on('ifChanged', '.assigned-employee-checkbox', function () {
+        $('#btn-delete-selected-employees').prop('disabled', $('#tbody-course-employees input.assigned-employee-checkbox:checked').length === 0);
+    });
+    $(d).on('ifChanged', '.assigned-position-checkbox', function () {
+        $('#btn-delete-selected-positions').prop('disabled', $('#tbody-course-positions input.assigned-position-checkbox:checked').length === 0);
+    });
+    $(d).on('ifChanged', '#check-all-modal-employees', function () {
+        $('.employee-checkbox').iCheck($(this).is(':checked') ? 'check' : 'uncheck');
+    });
+    $(d).on('ifChanged', '#check-all-modal-positions', function () {
+        $('.position-checkbox').iCheck($(this).is(':checked') ? 'check' : 'uncheck');
+    });
+    $(d).on('ifChanged', '#check-all-employees', function () {
+        $('.assigned-employee-checkbox').iCheck($(this).is(':checked') ? 'check' : 'uncheck');
+    });
+    $(d).on('ifChanged', '#check-all-positions', function () {
+        $('.assigned-position-checkbox').iCheck($(this).is(':checked') ? 'check' : 'uncheck');
+    });
     // ========================================================================
-    // INICIALIZACI�N
+    // INICIALIZACIÓN
     // ========================================================================
     $(function () {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                yield Promise.all([loadAllEmployees(), loadAllPositions()]);
                 yield loadAssignedData();
             }
             catch (error) {
-                console.error('Error en inicializaci�n de empleados/posiciones:', error);
+                A.error('Error al inicializar el módulo de empleados y posiciones', 'Error de Inicialización');
             }
         });
     });

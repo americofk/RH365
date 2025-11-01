@@ -9,7 +9,6 @@
 //   - Renderizado separado para cada tab
 //   - Validación cliente + servidor
 //   - Integración con API REST (/api/Courses)
-//   - Labels a la izquierda de los campos
 // Estándar: ISO 27001 - Validación y seguridad de datos
 // ============================================================================
 
@@ -24,10 +23,8 @@
     const apiBase: string = w.RH365.urls.apiBase;
     const pageContainer = d.querySelector("#course-form-page");
 
-    // Si no existe el contenedor, salir
     if (!pageContainer) return;
 
-    // Extraer datos del DOM
     const token: string = pageContainer.getAttribute("data-token") || "";
     const dataareaId: string = pageContainer.getAttribute("data-dataarea") || "DAT";
     const userRefRecID: number = parseInt(pageContainer.getAttribute("data-user") || "0", 10);
@@ -37,11 +34,6 @@
     // ========================================================================
     // INTERFACES Y TIPOS
     // ========================================================================
-
-    /**
-     * Configuración de un campo del formulario.
-     * Define cómo se debe renderizar y validar cada campo.
-     */
     interface FieldConfig {
         field: string;
         label: string;
@@ -55,15 +47,12 @@
         column?: 'left' | 'right';
     }
 
-    // Variable global para almacenar los datos del curso cargados desde el API
     let courseData: any = null;
-
-    // Cache de tipos de curso y salones
     let courseTypesMap: Map<number, string> = new Map();
     let classRoomsMap: Map<number, string> = new Map();
 
     // ========================================================================
-    // DEFINICIÓN DE CAMPOS - TAB GENERAL (Campos de Negocio en 2 COLUMNAS)
+    // DEFINICIÓN DE CAMPOS - TAB GENERAL (2 COLUMNAS)
     // ========================================================================
     const businessFields: FieldConfig[] = [
         // COLUMNA IZQUIERDA
@@ -89,7 +78,7 @@
             label: 'Tipo de Curso',
             type: 'select',
             required: true,
-            options: [], // Se llenará dinámicamente
+            options: [],
             column: 'left'
         },
         {
@@ -97,7 +86,7 @@
             label: 'Salón',
             type: 'select',
             required: false,
-            options: [], // Se llenará dinámicamente
+            options: [],
             column: 'left'
         },
         {
@@ -206,7 +195,7 @@
     ];
 
     // ========================================================================
-    // DEFINICIÓN DE CAMPOS - TAB AUDITORÍA (SOLO ISO 27001)
+    // DEFINICIÓN DE CAMPOS - TAB AUDITORÍA (ISO 27001)
     // ========================================================================
     const auditFields: FieldConfig[] = [
         {
@@ -256,27 +245,18 @@
     // ========================================================================
     // UTILIDADES - COMUNICACIÓN CON API
     // ========================================================================
-
-    /**
-     * Realiza una petición HTTP al API con manejo de autenticación.
-     * @param url URL completa del endpoint
-     * @param options Opciones adicionales para fetch (method, body, etc.)
-     * @returns Promise con la respuesta JSON parseada
-     */
     const fetchJson = async (url: string, options?: RequestInit): Promise<any> => {
         const headers: Record<string, string> = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         };
 
-        // Agregar token de autenticación si existe
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
         const response = await fetch(url, { ...options, headers });
 
-        // Si la respuesta no es exitosa, lanzar error con el detalle
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(JSON.stringify(errorData));
@@ -288,7 +268,6 @@
     // ========================================================================
     // CARGA DE DATOS DE REFERENCIA
     // ========================================================================
-
     const loadCourseTypes = async (): Promise<void> => {
         try {
             const url = `${apiBase}/CourseTypes?pageNumber=1&pageSize=1000`;
@@ -308,7 +287,6 @@
                 }
             });
 
-            // Actualizar opciones del campo CourseTypeRefRecID
             const courseTypeField = businessFields.find(f => f.field === 'CourseTypeRefRecID');
             if (courseTypeField) {
                 courseTypeField.options = [
@@ -319,10 +297,9 @@
                     }))
                 ];
             }
-
-            console.log(`✅ ${courseTypesMap.size} tipos de curso cargados`);
         } catch (error) {
-            console.error('⚠️ Error cargando tipos de curso:', error);
+            (w as any).ALERTS.warn('No se pudieron cargar los tipos de curso', 'Advertencia');
+            throw error;
         }
     };
 
@@ -345,7 +322,6 @@
                 }
             });
 
-            // Actualizar opciones del campo ClassRoomRefRecID
             const classRoomField = businessFields.find(f => f.field === 'ClassRoomRefRecID');
             if (classRoomField) {
                 classRoomField.options = [
@@ -356,30 +332,19 @@
                     }))
                 ];
             }
-
-            console.log(`✅ ${classRoomsMap.size} salones cargados`);
         } catch (error) {
-            console.error('⚠️ Error cargando salones:', error);
+            (w as any).ALERTS.warn('No se pudieron cargar los salones', 'Advertencia');
+            throw error;
         }
     };
 
     // ========================================================================
     // RENDERIZADO DE CAMPOS
     // ========================================================================
-
-    /**
-     * Genera el HTML de un campo según su configuración.
-     * Labels siempre a la izquierda del campo.
-     * @param config Configuración del campo
-     * @param value Valor actual del campo
-     * @param is2Column Si es true, ajusta las clases para layout de 2 columnas
-     * @returns String con el HTML del campo
-     */
     const renderField = (config: FieldConfig, value: any, is2Column: boolean = false): string => {
         const fieldId = config.field;
         const fieldName = config.field;
 
-        // Labels SIEMPRE a la izquierda
         const labelClass = is2Column
             ? 'control-label col-md-4 col-sm-4 col-xs-12'
             : 'control-label col-md-3 col-sm-3 col-xs-12';
@@ -395,7 +360,6 @@
         let inputHtml = '';
         let displayValue = value ?? '';
 
-        // Generar input según el tipo de campo
         switch (config.type) {
             case 'textarea':
                 inputHtml = `<textarea id="${fieldId}" name="${fieldName}" class="form-control" rows="3" maxlength="${config.maxLength || 500}" ${readonlyAttr} ${requiredAttr}>${displayValue}</textarea>`;
@@ -415,7 +379,6 @@
                 break;
 
             case 'datetime':
-                // Formatear datetime para input datetime-local (YYYY-MM-DDTHH:MM)
                 if (displayValue && typeof displayValue === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(displayValue)) {
                     displayValue = displayValue.slice(0, 16);
                 }
@@ -446,7 +409,7 @@
                 inputHtml = `<input type="number" id="${fieldId}" name="${fieldName}" class="form-control" value="${displayValue}" ${readonlyAttr} ${requiredAttr}>`;
                 break;
 
-            default: // text
+            default:
                 inputHtml = `<input type="text" id="${fieldId}" name="${fieldName}" class="form-control" maxlength="${config.maxLength || 255}" value="${displayValue}" placeholder="${config.placeholder || ''}" ${readonlyAttr} ${requiredAttr}>`;
                 break;
         }
@@ -469,11 +432,6 @@
     // ========================================================================
     // CARGA DE DATOS DEL CURSO
     // ========================================================================
-
-    /**
-     * Carga los datos del curso desde el API (solo si es edición).
-     * En modo creación, renderiza los formularios vacíos.
-     */
     const loadCourseData = async (): Promise<void> => {
         if (isNew) {
             renderBusinessForm({});
@@ -488,7 +446,7 @@
             renderBusinessForm(courseData);
             renderAuditForm(courseData);
         } catch (error) {
-            (w as any).ALERTS.error('Error al cargar los datos del curso', 'Error');
+            (w as any).ALERTS.error('No se pudieron cargar los datos del curso', 'Error');
             renderBusinessForm({});
             renderAuditForm({});
         }
@@ -497,12 +455,6 @@
     // ========================================================================
     // RENDERIZADO DE FORMULARIOS
     // ========================================================================
-
-    /**
-     * Renderiza el formulario de campos de negocio en LAYOUT DE 2 COLUMNAS.
-     * Separa los campos según la propiedad 'column' de cada FieldConfig.
-     * @param data Datos del curso a mostrar
-     */
     const renderBusinessForm = (data: any): void => {
         const containerLeft = $('#dynamic-fields-col-left');
         const containerRight = $('#dynamic-fields-col-right');
@@ -533,11 +485,6 @@
         }
     };
 
-    /**
-     * Renderiza el formulario de campos de auditoría (Tab Auditoría).
-     * SOLO renderiza los campos definidos en auditFields.
-     * @param data Datos del curso a mostrar
-     */
     const renderAuditForm = (data: any): void => {
         const container = $('#audit-fields-container');
         container.empty();
@@ -563,12 +510,6 @@
     // ========================================================================
     // CAPTURA DE DATOS DEL FORMULARIO
     // ========================================================================
-
-    /**
-     * Obtiene los datos del formulario de negocio para enviar al API.
-     * SOLO captura campos editables del Tab General (businessFields).
-     * @returns Objeto con los datos del formulario
-     */
     const getFormData = (): any => {
         const formData: any = {};
 
@@ -615,11 +556,6 @@
     // ========================================================================
     // GUARDADO DE CURSO
     // ========================================================================
-
-    /**
-     * Guarda el curso en el API (POST para crear, PUT para actualizar).
-     * Muestra alertas de éxito o error y redirige al listado si es exitoso.
-     */
     const saveCourse = async (): Promise<void> => {
         const formData = getFormData();
 
@@ -647,15 +583,15 @@
                 Observations: formData.Observations || null
             };
 
-            
-
             await fetchJson(url, {
                 method: method,
                 body: JSON.stringify(payload)
             });
 
             (w as any).ALERTS.ok(
-                isNew ? 'Curso creado exitosamente' : 'Curso actualizado exitosamente',
+                isNew
+                    ? 'El curso ha sido creado exitosamente'
+                    : 'El curso ha sido actualizado exitosamente',
                 'Éxito'
             );
 
@@ -664,8 +600,7 @@
             }, 1500);
 
         } catch (error: any) {
-            console.error('Error al guardar:', error);
-            let errorMessage = 'Error al guardar el curso';
+            let errorMessage = 'No se pudo guardar el curso';
 
             try {
                 const errorData = JSON.parse(error.message);
@@ -676,15 +611,13 @@
                         if (errorData.errors.hasOwnProperty(key)) {
                             const errList = errorData.errors[key];
                             if (Array.isArray(errList)) {
-                                for (let i = 0; i < errList.length; i++) {
-                                    errorsArray.push(errList[i]);
-                                }
+                                errorsArray.push(...errList);
                             } else {
                                 errorsArray.push(errList);
                             }
                         }
                     }
-                    errorMessage = errorsArray.join(', ');
+                    errorMessage = errorsArray.join('. ');
                 } else if (errorData.title) {
                     errorMessage = errorData.title;
                 }
@@ -692,22 +625,18 @@
                 errorMessage = error.message || errorMessage;
             }
 
-            (w as any).ALERTS.error(errorMessage, 'Error');
+            (w as any).ALERTS.error(errorMessage, 'Error al Guardar');
         }
     };
 
     // ========================================================================
     // EVENT HANDLERS
     // ========================================================================
-
-    /**
-     * Manejador del botón Guardar.
-     * Valida el formulario y ejecuta el guardado.
-     */
     $('#btn-save').on('click', async () => {
         const form = document.getElementById('frm-course') as HTMLFormElement;
 
         if (!form.checkValidity()) {
+            (w as any).ALERTS.warn('Por favor complete todos los campos requeridos', 'Validación');
             form.reportValidity();
             return;
         }
@@ -718,23 +647,16 @@
     // ========================================================================
     // INICIALIZACIÓN
     // ========================================================================
-
-    /**
-     * Función de inicialización que se ejecuta cuando el DOM está listo.
-     * Carga los datos de referencia, luego los datos del curso y renderiza los formularios.
-     */
     $(async function () {
         try {
-            // Cargar tipos de curso y salones en paralelo
             await Promise.all([
                 loadCourseTypes(),
                 loadClassRooms()
             ]);
 
-            // Luego cargar los datos del curso
             await loadCourseData();
         } catch (error) {
-            (w as any).ALERTS.error('Error al inicializar el formulario', 'Error');
+            (w as any).ALERTS.error('Error al inicializar el formulario de curso', 'Error de Inicialización');
         }
     });
 })();

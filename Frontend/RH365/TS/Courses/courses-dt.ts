@@ -259,7 +259,7 @@ interface ColumnConfig {
                 }
             });
 
-            console.log(`✅ ${courseTypesMap.size} tipos de curso cargados`);
+            
         } catch (error) {
             console.error('⚠️ Error cargando tipos de curso:', error);
         }
@@ -284,7 +284,7 @@ interface ColumnConfig {
                 }
             });
 
-            console.log(`✅ ${classRoomsMap.size} salones cargados`);
+            
         } catch (error) {
             console.error('⚠️ Error cargando salones:', error);
         }
