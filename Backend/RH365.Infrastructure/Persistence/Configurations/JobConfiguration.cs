@@ -1,7 +1,7 @@
 // ============================================================================
 // Archivo: JobConfiguration.cs
 // Proyecto: RH365.Infrastructure
-// Ruta: Infrastructure/Persistence/Configurations/JobConfiguration.cs
+// Ruta: RH365.Infrastructure/Persistence/Configurations/Organization/JobConfiguration.cs
 // Descripción: Configuración EF Core para Job.
 //   - Tabla: dbo.Jobs
 //   - RecID usa secuencia global dbo.RecId
@@ -20,31 +20,52 @@ namespace RH365.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("Jobs", "dbo");
 
+            // Configuración del ID generado por BD
+            builder.Property(e => e.ID)
+                .HasMaxLength(50)
+                .HasColumnName("ID")
+                .ValueGeneratedOnAdd()
+                .Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+
             builder.Property(j => j.JobCode)
-                   .HasMaxLength(10)
-                   .IsRequired();
+                .HasMaxLength(10)
+                .IsRequired();
 
             builder.Property(j => j.Name)
-                   .HasMaxLength(255)
-                   .IsRequired();
+                .HasMaxLength(255)
+                .IsRequired();
 
             builder.Property(j => j.Description)
-                   .HasMaxLength(500);
+                .HasMaxLength(500);
 
             builder.Property(j => j.JobStatus)
-                   .IsRequired()
-                   .HasDefaultValue(true);
+                .IsRequired();
 
-            // ID legible (ej. JOB-00000001)
-            builder.Property<string>("ID")
-                   .HasMaxLength(50)
-                   .ValueGeneratedOnAdd()
-                   .HasDefaultValueSql("('JOB-' + RIGHT('00000000' + CAST(NEXT VALUE FOR dbo.JobsId AS VARCHAR(8)), 8))");
+            builder.Property(e => e.Observations)
+                .HasMaxLength(500);
+
+            builder.Property(e => e.DataareaID)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            builder.Property(e => e.CreatedBy)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            builder.Property(e => e.ModifiedBy)
+                .HasMaxLength(50);
+
+            builder.Property(e => e.RowVersion)
+                .IsRowVersion()
+                .IsConcurrencyToken();
+
+            // CRÍTICO: Ignorar navegación inversa que causa shadow property
+            builder.Ignore(j => j.Positions);
 
             // Índice único por empresa + código
             builder.HasIndex(j => new { j.DataareaID, j.JobCode })
-                   .IsUnique()
-                   .HasDatabaseName("UX_Jobs_Dataarea_JobCode");
+                .IsUnique()
+                .HasDatabaseName("UX_Jobs_Dataarea_JobCode");
         }
     }
 }

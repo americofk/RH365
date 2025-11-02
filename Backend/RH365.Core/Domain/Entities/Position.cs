@@ -8,7 +8,6 @@
 // ============================================================================
 
 using RH365.Core.Domain.Common;
-using RH365.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
 
@@ -20,12 +19,12 @@ namespace RH365.Core.Domain.Entities
     public class Position : AuditableCompanyEntity
     {
         /// <summary>
-        /// Código único del puesto.
+        /// Código único del puesto (máx 20 caracteres).
         /// </summary>
         public string PositionCode { get; set; } = null!;
 
         /// <summary>
-        /// Nombre del puesto.
+        /// Nombre del puesto (máx 50 caracteres).
         /// </summary>
         public string PositionName { get; set; } = null!;
 
@@ -65,9 +64,11 @@ namespace RH365.Core.Domain.Entities
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Descripción general del puesto.
+        /// Descripción general del puesto (máx 200 caracteres).
         /// </summary>
         public string? Description { get; set; }
+
+        // Observations heredado de AuditableCompanyEntity (500 caracteres)
 
         // -----------------------------
         // Propiedades de navegación
@@ -76,7 +77,17 @@ namespace RH365.Core.Domain.Entities
         /// <summary>
         /// Departamento al que pertenece el puesto.
         /// </summary>
-        public virtual Department DepartmentRefRec { get; set; } = null!;
+        public virtual Department? Department { get; set; }
+
+        /// <summary>
+        /// Cargo (Job) relacionado al puesto.
+        /// </summary>
+        public virtual Job? Job { get; set; }
+
+        /// <summary>
+        /// Puesto al que se notifica (opcional).
+        /// </summary>
+        public virtual Position? NotifyPosition { get; set; }
 
         /// <summary>
         /// Relación con los empleados asignados al puesto.
@@ -86,17 +97,7 @@ namespace RH365.Core.Domain.Entities
         /// <summary>
         /// Puestos que notifican a este puesto.
         /// </summary>
-        public virtual ICollection<Position> InverseNotifyPositionRefRec { get; set; } = new List<Position>();
-
-        /// <summary>
-        /// Cargo (Job) relacionado al puesto.
-        /// </summary>
-        public virtual Job JobRefRec { get; set; } = null!;
-
-        /// <summary>
-        /// Puesto al que se notifica (opcional).
-        /// </summary>
-        public virtual Position? NotifyPositionRefRec { get; set; }
+        public virtual ICollection<Position> InverseNotifyPosition { get; set; } = new List<Position>();
 
         /// <summary>
         /// Requisitos asociados al puesto.

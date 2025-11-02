@@ -3,31 +3,22 @@
 // Proyecto: RH365.WebAPI
 // Ruta: RH365.WebAPI/Controllers/PositionsController.cs
 // Descripción: Controlador REST para gestión de puestos (CRUD completo).
-//   - GET paginado con búsqueda
-//   - GET/{id}
-//   - POST
-//   - PUT/{id}
-//   - DELETE/{id}
-// Notas:
-//   * Se usa explícitamente RH365.Core.Application.Common.Models.PagedResult<T>
-//     para evitar colisiones con cualquier clase PagedResult local en el proyecto.
-//   * Los DTO provienen de RH365.Core.Application.DTOs.Position.
+//   - Todos los campos de la tabla incluidos
+//   - Validaciones de FK
+//   - Manejo de concurrencia con RowVersion
 // ============================================================================
-
-using Microsoft.AspNetCore.Authorization;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RH365.Core.Application.Common.Interfaces;
 using RH365.Core.Application.DTOs.Position;
 using RH365.Core.Domain.Entities;
 
-
 namespace RH365.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
-    [Authorize]
+    [Produces(MediaTypeNames.Application.Json)]
     public class PositionsController : ControllerBase
     {
         private readonly IApplicationDbContext _context;
@@ -39,142 +30,119 @@ namespace RH365.WebAPI.Controllers
             _logger = logger;
         }
 
-        // =========================================================================
-        // GET: /api/positions?pageNumber=1&pageSize=10&search=xxx
-        // =========================================================================
-        [HttpGet(Name = "GetPositions")]
-        public async Task<ActionResult<RH365.Core.Application.Common.Models.PagedResult<PositionDto>>> GetPositions(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? search = null,
+        // GET: api/Positions?skip=0&take=50
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<PositionDto>>> GetAll(
+            [FromQuery] int skip = 0,
+            [FromQuery] int take = 50,
             CancellationToken ct = default)
+        {
+            take = take <= 0 ? 50 : Math.Min(take, 200);
+
+            var items = await _context.Positions
+                .AsNoTracking()
+                .OrderByDescending(x => x.RecID)
+                .Skip(skip)
+                .Take(take)
+                .Select(p => new PositionDto
+                {
+                    RecID = p.RecID,
+                    ID = p.ID,
+                    PositionCode = p.PositionCode,
+                    PositionName = p.PositionName,
+                    IsVacant = p.IsVacant,
+                    DepartmentRefRecID = p.DepartmentRefRecID,
+                    JobRefRecID = p.JobRefRecID,
+                    NotifyPositionRefRecID = p.NotifyPositionRefRecID,
+                    PositionStatus = p.PositionStatus,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    Description = p.Description,
+                    Observations = p.Observations,
+                    DataareaID = p.DataareaID,
+                    CreatedBy = p.CreatedBy,
+                    CreatedOn = p.CreatedOn,
+                    ModifiedBy = p.ModifiedBy,
+                    ModifiedOn = p.ModifiedOn,
+                    RowVersion = p.RowVersion
+                })
+                .ToListAsync(ct);
+
+            return Ok(items);
+        }
+
+        // GET: api/Positions/{recId:long}
+        [HttpGet("{recId:long}")]
+        public async Task<ActionResult<PositionDto>> GetByRecId(long recId, CancellationToken ct = default)
+        {
+            var p = await _context.Positions.AsNoTracking().FirstOrDefaultAsync(e => e.RecID == recId, ct);
+            if (p == null) return NotFound();
+
+            var dto = new PositionDto
+            {
+                RecID = p.RecID,
+                ID = p.ID,
+                PositionCode = p.PositionCode,
+                PositionName = p.PositionName,
+                IsVacant = p.IsVacant,
+                DepartmentRefRecID = p.DepartmentRefRecID,
+                JobRefRecID = p.JobRefRecID,
+                NotifyPositionRefRecID = p.NotifyPositionRefRecID,
+                PositionStatus = p.PositionStatus,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Description = p.Description,
+                Observations = p.Observations,
+                DataareaID = p.DataareaID,
+                CreatedBy = p.CreatedBy,
+                CreatedOn = p.CreatedOn,
+                ModifiedBy = p.ModifiedBy,
+                ModifiedOn = p.ModifiedOn,
+                RowVersion = p.RowVersion
+            };
+
+            return Ok(dto);
+        }
+
+        // POST: api/Positions
+        [HttpPost]
+        public async Task<ActionResult<PositionDto>> Create([FromBody] CreatePositionRequest request, CancellationToken ct = default)
         {
             try
             {
-                pageNumber = Math.Max(1, pageNumber);
-                pageSize = Math.Clamp(pageSize, 1, 100);
+                if (string.IsNullOrWhiteSpace(request.PositionCode))
+                    return BadRequest("PositionCode es obligatorio.");
+                if (string.IsNullOrWhiteSpace(request.PositionName))
+                    return BadRequest("PositionName es obligatorio.");
 
-                IQueryable<Position> query = _context.Positions.AsNoTracking();
+                // Validar FK Department
+                var departmentExists = await _context.Departments.AnyAsync(d => d.RecID == request.DepartmentRefRecID, ct);
+                if (!departmentExists)
+                    return BadRequest($"El Department con RecID {request.DepartmentRefRecID} no existe.");
 
-                if (!string.IsNullOrWhiteSpace(search))
+                // Validar FK Job
+                var jobExists = await _context.Jobs.AnyAsync(j => j.RecID == request.JobRefRecID, ct);
+                if (!jobExists)
+                    return BadRequest($"El Job con RecID {request.JobRefRecID} no existe.");
+
+                // Validar FK NotifyPosition (si se envía)
+                if (request.NotifyPositionRefRecID.HasValue)
                 {
-                    string pattern = $"%{search.Trim()}%";
-                    query = query.Where(p =>
-                        EF.Functions.Like(p.PositionName, pattern) ||
-                        EF.Functions.Like(p.PositionCode, pattern));
+                    var notifyPositionExists = await _context.Positions.AnyAsync(p => p.RecID == request.NotifyPositionRefRecID.Value, ct);
+                    if (!notifyPositionExists)
+                        return BadRequest($"El Position con RecID {request.NotifyPositionRefRecID.Value} no existe.");
                 }
 
-                int totalCount = await query.CountAsync(ct);
-                int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-                var items = await query
-                    .OrderBy(p => p.PositionName)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(p => new PositionDto
-                    {
-                        RecID = p.RecID,
-                        PositionCode = p.PositionCode,
-                        PositionName = p.PositionName,
-                        IsVacant = p.IsVacant,
-                        DepartmentRefRecID = p.DepartmentRefRecID,
-                        JobRefRecID = p.JobRefRecID,
-                        NotifyPositionRefRecID = p.NotifyPositionRefRecID,
-                        PositionStatus = p.PositionStatus,
-                        StartDate = p.StartDate,
-                        EndDate = p.EndDate,
-                        Description = p.Description,
-                        CreatedBy = p.CreatedBy,
-                        CreatedOn = p.CreatedOn,
-                        ModifiedBy = p.ModifiedBy,
-                        ModifiedOn = p.ModifiedOn
-                    })
-                    .ToListAsync(ct);
-
-                return Ok(
-    new RH365.Core.Application.Common.Models.PagedResult<PositionDto>(
-        items,         // List<PositionDto>
-        totalCount,    // int
-        pageNumber,    // int
-        pageSize       // int
-    )
-    {
-        TotalPages = totalPages
-    }
-);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al listar Positions");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
-            }
-        }
-
-        // =========================================================================
-        // GET: /api/positions/{id}  (RecID)
-        // =========================================================================
-        [HttpGet("{id:long}", Name = "GetPositionById")]
-        public async Task<ActionResult<PositionDto>> GetPosition(long id, CancellationToken ct = default)
-        {
-            try
-            {
-                var position = await _context.Positions
-                    .AsNoTracking()
-                    .Where(p => p.RecID == id)
-                    .Select(p => new PositionDto
-                    {
-                        RecID = p.RecID,
-                        PositionCode = p.PositionCode,
-                        PositionName = p.PositionName,
-                        IsVacant = p.IsVacant,
-                        DepartmentRefRecID = p.DepartmentRefRecID,
-                        JobRefRecID = p.JobRefRecID,
-                        NotifyPositionRefRecID = p.NotifyPositionRefRecID,
-                        PositionStatus = p.PositionStatus,
-                        StartDate = p.StartDate,
-                        EndDate = p.EndDate,
-                        Description = p.Description,
-                        CreatedBy = p.CreatedBy,
-                        CreatedOn = p.CreatedOn,
-                        ModifiedBy = p.ModifiedBy,
-                        ModifiedOn = p.ModifiedOn
-                    })
-                    .FirstOrDefaultAsync(ct);
-
-                if (position == null)
-                    return NotFound($"Puesto con ID {id} no encontrado.");
-
-                return Ok(position);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener Position {RecID}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
-            }
-        }
-
-        // =========================================================================
-        // POST: /api/positions
-        // =========================================================================
-        [HttpPost(Name = "CreatePosition")]
-        public async Task<ActionResult<PositionDto>> CreatePosition(
-            [FromBody] CreatePositionRequest request,
-            CancellationToken ct = default)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return ValidationProblem(ModelState);
-
+                // Verificar código único
+                string code = request.PositionCode.Trim().ToUpper();
                 bool exists = await _context.Positions
-                    .AnyAsync(p => p.PositionCode.ToLower() == request.PositionCode.ToLower(), ct);
+                    .AnyAsync(p => p.PositionCode.ToLower() == code.ToLower(), ct);
                 if (exists)
-                    return Conflict($"Ya existe un puesto con el código '{request.PositionCode}'.");
+                    return Conflict($"Ya existe un puesto con el código '{code}'.");
 
                 var entity = new Position
                 {
-                    PositionCode = request.PositionCode.Trim().ToUpper(),
+                    PositionCode = code,
                     PositionName = request.PositionName.Trim(),
                     IsVacant = request.IsVacant,
                     DepartmentRefRecID = request.DepartmentRefRecID,
@@ -183,15 +151,17 @@ namespace RH365.WebAPI.Controllers
                     PositionStatus = request.PositionStatus,
                     StartDate = request.StartDate,
                     EndDate = request.EndDate,
-                    Description = request.Description
+                    Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+                    Observations = string.IsNullOrWhiteSpace(request.Observations) ? null : request.Observations.Trim()
                 };
 
-                _context.Positions.Add(entity);
+                await _context.Positions.AddAsync(entity, ct);
                 await _context.SaveChangesAsync(ct);
 
                 var dto = new PositionDto
                 {
                     RecID = entity.RecID,
+                    ID = entity.ID,
                     PositionCode = entity.PositionCode,
                     PositionName = entity.PositionName,
                     IsVacant = entity.IsVacant,
@@ -202,61 +172,95 @@ namespace RH365.WebAPI.Controllers
                     StartDate = entity.StartDate,
                     EndDate = entity.EndDate,
                     Description = entity.Description,
+                    Observations = entity.Observations,
+                    DataareaID = entity.DataareaID,
                     CreatedBy = entity.CreatedBy,
-                    CreatedOn = entity.CreatedOn
+                    CreatedOn = entity.CreatedOn,
+                    ModifiedBy = entity.ModifiedBy,
+                    ModifiedOn = entity.ModifiedOn,
+                    RowVersion = entity.RowVersion
                 };
 
-                return CreatedAtRoute("GetPositionById", new { id = dto.RecID }, dto);
+                return CreatedAtAction(nameof(GetByRecId), new { recId = entity.RecID }, dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear Position");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al crear Position.");
             }
         }
 
-        // =========================================================================
-        // PUT: /api/positions/{id}  (RecID)
-        // =========================================================================
-        [HttpPut("{id:long}", Name = "UpdatePosition")]
-        public async Task<ActionResult<PositionDto>> UpdatePosition(
-            long id,
-            [FromBody] UpdatePositionRequest request,
-            CancellationToken ct = default)
+        // PUT: api/Positions/{recId:long}
+        [HttpPut("{recId:long}")]
+        public async Task<ActionResult<PositionDto>> Update(long recId, [FromBody] UpdatePositionRequest request, CancellationToken ct = default)
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return ValidationProblem(ModelState);
+                var entity = await _context.Positions.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
 
-                var entity = await _context.Positions.FindAsync(new object?[] { id }, ct);
-                if (entity == null)
-                    return NotFound($"Puesto con ID {id} no encontrado.");
-
-                if (!string.Equals(entity.PositionCode, request.PositionCode, StringComparison.OrdinalIgnoreCase))
+                // Validar FK Department si se actualiza
+                if (request.DepartmentRefRecID.HasValue)
                 {
-                    bool inUse = await _context.Positions
-                        .AnyAsync(p => p.RecID != id && p.PositionCode.ToLower() == request.PositionCode.ToLower(), ct);
-                    if (inUse)
-                        return Conflict($"Ya existe otro puesto con el código '{request.PositionCode}'.");
+                    var departmentExists = await _context.Departments.AnyAsync(d => d.RecID == request.DepartmentRefRecID.Value, ct);
+                    if (!departmentExists)
+                        return BadRequest($"El Department con RecID {request.DepartmentRefRecID.Value} no existe.");
+                    entity.DepartmentRefRecID = request.DepartmentRefRecID.Value;
                 }
 
-                entity.PositionCode = request.PositionCode.Trim().ToUpper();
-                entity.PositionName = request.PositionName.Trim();
-                entity.IsVacant = request.IsVacant;
-                entity.DepartmentRefRecID = request.DepartmentRefRecID;
-                entity.JobRefRecID = request.JobRefRecID;
-                entity.NotifyPositionRefRecID = request.NotifyPositionRefRecID;
-                entity.PositionStatus = request.PositionStatus;
-                entity.StartDate = request.StartDate;
-                entity.EndDate = request.EndDate;
-                entity.Description = request.Description;
+                // Validar FK Job si se actualiza
+                if (request.JobRefRecID.HasValue)
+                {
+                    var jobExists = await _context.Jobs.AnyAsync(j => j.RecID == request.JobRefRecID.Value, ct);
+                    if (!jobExists)
+                        return BadRequest($"El Job con RecID {request.JobRefRecID.Value} no existe.");
+                    entity.JobRefRecID = request.JobRefRecID.Value;
+                }
+
+                // Validar FK NotifyPosition si se actualiza
+                if (request.NotifyPositionRefRecID.HasValue)
+                {
+                    var notifyPositionExists = await _context.Positions.AnyAsync(p => p.RecID == request.NotifyPositionRefRecID.Value, ct);
+                    if (!notifyPositionExists)
+                        return BadRequest($"El Position con RecID {request.NotifyPositionRefRecID.Value} no existe.");
+                    entity.NotifyPositionRefRecID = request.NotifyPositionRefRecID.Value;
+                }
+
+                // Verificar código único si se actualiza
+                if (!string.IsNullOrWhiteSpace(request.PositionCode))
+                {
+                    string newCode = request.PositionCode.Trim().ToUpper();
+                    if (!string.Equals(entity.PositionCode, newCode, StringComparison.OrdinalIgnoreCase))
+                    {
+                        bool codeInUse = await _context.Positions
+                            .AnyAsync(p => p.RecID != recId && p.PositionCode.ToLower() == newCode.ToLower(), ct);
+                        if (codeInUse)
+                            return Conflict($"Ya existe otro puesto con el código '{newCode}'.");
+                    }
+                    entity.PositionCode = newCode;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.PositionName))
+                    entity.PositionName = request.PositionName.Trim();
+                if (request.IsVacant.HasValue)
+                    entity.IsVacant = request.IsVacant.Value;
+                if (request.PositionStatus.HasValue)
+                    entity.PositionStatus = request.PositionStatus.Value;
+                if (request.StartDate.HasValue)
+                    entity.StartDate = request.StartDate.Value;
+                if (request.EndDate.HasValue)
+                    entity.EndDate = request.EndDate.Value;
+                if (request.Description != null)
+                    entity.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+                if (request.Observations != null)
+                    entity.Observations = string.IsNullOrWhiteSpace(request.Observations) ? null : request.Observations.Trim();
 
                 await _context.SaveChangesAsync(ct);
 
-                return Ok(new PositionDto
+                var dto = new PositionDto
                 {
                     RecID = entity.RecID,
+                    ID = entity.ID,
                     PositionCode = entity.PositionCode,
                     PositionName = entity.PositionName,
                     IsVacant = entity.IsVacant,
@@ -267,39 +271,42 @@ namespace RH365.WebAPI.Controllers
                     StartDate = entity.StartDate,
                     EndDate = entity.EndDate,
                     Description = entity.Description,
+                    Observations = entity.Observations,
+                    DataareaID = entity.DataareaID,
                     CreatedBy = entity.CreatedBy,
                     CreatedOn = entity.CreatedOn,
                     ModifiedBy = entity.ModifiedBy,
-                    ModifiedOn = entity.ModifiedOn
-                });
+                    ModifiedOn = entity.ModifiedOn,
+                    RowVersion = entity.RowVersion
+                };
+
+                return Ok(dto);
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.LogError(ex, "Conflicto de concurrencia al actualizar Position {RecID}", id);
-                return StatusCode(StatusCodes.Status409Conflict, "Conflicto de concurrencia al actualizar el registro.");
+                _logger.LogError(ex, "Concurrencia al actualizar Position {RecID}", recId);
+                return Conflict("Conflicto de concurrencia al actualizar Position.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar Position {RecID}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                _logger.LogError(ex, "Error al actualizar Position {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al actualizar Position.");
             }
         }
 
-        // =========================================================================
-        // DELETE: /api/positions/{id}  (RecID)
-        // =========================================================================
-        [HttpDelete("{id:long}", Name = "DeletePosition")]
-        public async Task<IActionResult> DeletePosition(long id, CancellationToken ct = default)
+        // DELETE: api/Positions/{recId:long}
+        [HttpDelete("{recId:long}")]
+        public async Task<IActionResult> Delete(long recId, CancellationToken ct = default)
         {
             try
             {
-                var entity = await _context.Positions.FindAsync(new object?[] { id }, ct);
-                if (entity == null)
-                    return NotFound($"Puesto con ID {id} no encontrado.");
+                var entity = await _context.Positions.FirstOrDefaultAsync(x => x.RecID == recId, ct);
+                if (entity == null) return NotFound();
 
+                // Verificar si tiene empleados asignados
                 bool hasEmployees = await _context.EmployeePositions
                     .AsNoTracking()
-                    .AnyAsync(ep => ep.PositionRefRecID == id, ct);
+                    .AnyAsync(ep => ep.PositionRefRecID == recId, ct);
 
                 if (hasEmployees)
                     return Conflict("No se puede eliminar el puesto porque tiene empleados asignados.");
@@ -311,8 +318,8 @@ namespace RH365.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar Position {RecID}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno del servidor");
+                _logger.LogError(ex, "Error al eliminar Position {RecID}", recId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al eliminar Position.");
             }
         }
     }
