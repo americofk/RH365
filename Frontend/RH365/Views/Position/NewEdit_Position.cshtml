@@ -5,6 +5,7 @@
    Descripción: 
        - Formulario para Crear/Editar Posiciones con estilo Gentelella
        - Layout de 2 COLUMNAS en Tab General
+       - Tab Requisitos: Gestión de requisitos de posición (línea por línea)
        - Tab Auditoría: Campos de trazabilidad ISO 27001
        - Renderizado dinámico de campos desde TypeScript
        - URLs del API centralizadas desde backend
@@ -93,7 +94,12 @@
                                                 </a>
                                             </li>
                                             <li role="presentation" class="">
-                                                <a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">
+                                                <a href="#tab_content2" role="tab" id="requirements-tab" data-toggle="tab" aria-expanded="false">
+                                                    <i class="fa fa-list-alt"></i> Requisitos
+                                                </a>
+                                            </li>
+                                            <li role="presentation" class="">
+                                                <a href="#tab_content3" role="tab" id="audit-tab" data-toggle="tab" aria-expanded="false">
                                                     <i class="fa fa-history"></i> Auditoría
                                                 </a>
                                             </li>
@@ -167,9 +173,54 @@
                                             </div>
                                             <!-- /TAB 1: GENERAL -->
                                             <!-- ========================================== -->
-                                            <!-- TAB 2: AUDITORÍA (Campos ISO 27001)       -->
+                                            <!-- TAB 2: REQUISITOS                          -->
                                             <!-- ========================================== -->
-                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="requirements-tab">
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>
+                                                                    <i class="fa fa-list-alt"></i> Requisitos de la Posición
+                                                                </h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <button type="button" class="btn btn-success btn-sm" id="btn-add-requirement">
+                                                                            <i class="fa fa-plus"></i> Agregar Requisito
+                                                                        </button>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <br />
+                                                                <!-- Contenedor para la tabla de requisitos -->
+                                                                <div id="requirements-container">
+                                                                    <div class="text-center" style="padding: 40px;">
+                                                                        <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                                                        <p class="text-muted">Cargando requisitos...</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="ln_solid"></div>
+
+                                                                <!-- Info adicional sobre requisitos -->
+                                                                <div class="alert alert-info" role="alert">
+                                                                    <strong><i class="fa fa-info-circle"></i> Información:</strong>
+                                                                    Los requisitos definen las características, habilidades, experiencia y
+                                                                    cualidades necesarias para el desempeño exitoso de esta posición.
+                                                                    Puede agregar, editar o eliminar requisitos según sea necesario.
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /TAB 2: REQUISITOS -->
+                                            <!-- ========================================== -->
+                                            <!-- TAB 3: AUDITORÍA (Campos ISO 27001)       -->
+                                            <!-- ========================================== -->
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="audit-tab">
                                                 <div class="row">
                                                     <div class="col-md-12 col-sm-12 col-xs-12">
                                                         <div class="x_panel">
@@ -212,7 +263,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- /TAB 2: AUDITORÍA -->
+                                            <!-- /TAB 3: AUDITORÍA -->
                                         </div>
                                     </div>
                                 </div>
@@ -231,6 +282,69 @@
                 <div class="clearfix"></div>
             </footer>
             <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: AGREGAR/EDITAR REQUISITO           -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modal-requirement" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title" id="modal-requirement-title">
+                        <i class="fa fa-list-alt"></i> Agregar Requisito
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal form-label-left">
+                        <!-- Nombre -->
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                                Nombre <span class="required">*</span>
+                            </label>
+                            <div class="col-md-9 col-sm-9 col-xs-12">
+                                <input type="text" class="form-control" id="requirement-name" maxlength="30"
+                                       placeholder="Ej: Título universitario" required>
+                                <span class="help-block">Nombre corto del requisito (máx. 30 caracteres)</span>
+                            </div>
+                        </div>
+
+                        <!-- Detalle -->
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                                Detalle <span class="required">*</span>
+                            </label>
+                            <div class="col-md-9 col-sm-9 col-xs-12">
+                                <textarea class="form-control" id="requirement-detail" rows="3" maxlength="100"
+                                          placeholder="Descripción detallada del requisito" required></textarea>
+                                <span class="help-block">Descripción completa (máx. 100 caracteres)</span>
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                                Observaciones
+                            </label>
+                            <div class="col-md-9 col-sm-9 col-xs-12">
+                                <textarea class="form-control" id="requirement-observations" rows="3" maxlength="500"
+                                          placeholder="Información adicional (opcional)"></textarea>
+                                <span class="help-block">Notas adicionales (máx. 500 caracteres)</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fa fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-save-requirement">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -289,12 +403,17 @@
     <!-- ============================================================ -->
     <!-- CRÍTICO: API URLs - DEBE IR ANTES DE CUALQUIER SCRIPT PERSONALIZADO -->
     <!-- ============================================================ -->
+
     @await Html.PartialAsync("~/Views/Layout/_ApiUrls.cshtml")
 
     <!-- Sistema de Alertas -->
     @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
 
-    <!-- Script del formulario de posiciones -->
+
+    <!-- Modal Genérico -->
+    @await Html.PartialAsync("~/Views/Generic/_Modal.cshtml")
+    <!-- Scripts del formulario de posiciones -->
     <script src="~/js/Positions/position-form.js"></script>
+    <script src="~/js/Positions/position-requirements.js"></script>
 </body>
 </html>

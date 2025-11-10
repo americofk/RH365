@@ -457,7 +457,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 IsVacant: formData.IsVacant,
                 DepartmentRefRecID: formData.DepartmentRefRecID,
                 JobRefRecID: formData.JobRefRecID,
-                NotifyPositionRefRecID: formData.NotifyPositionRefRecID || 0,
+                NotifyPositionRefRecID: formData.NotifyPositionRefRecID || null, // ← CORREGIDO: null en lugar de 0
                 PositionStatus: formData.PositionStatus,
                 StartDate: formData.StartDate,
                 EndDate: formData.EndDate || null,

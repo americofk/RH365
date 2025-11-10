@@ -224,7 +224,7 @@
         try {
             const url = `${apiBase}/Departments?pageNumber=1&pageSize=100`;
             const response = await fetchJson(url);
-            
+
             // Manejar tanto Array directo como Object con Data
             let departmentsArray: any[] = [];
             if (Array.isArray(response)) {
@@ -232,7 +232,7 @@
             } else if (response?.Data && Array.isArray(response.Data)) {
                 departmentsArray = response.Data;
             }
-            
+
             if (departmentsArray.length > 0) {
                 const departmentField = businessFields.find(f => f.field === 'DepartmentRefRecID');
                 if (departmentField) {
@@ -255,7 +255,7 @@
         try {
             const url = `${apiBase}/Jobs?pageNumber=1&pageSize=100`;
             const response = await fetchJson(url);
-            
+
             // Manejar tanto Array directo como Object con Data
             let jobsArray: any[] = [];
             if (Array.isArray(response)) {
@@ -263,7 +263,7 @@
             } else if (response?.Data && Array.isArray(response.Data)) {
                 jobsArray = response.Data;
             }
-            
+
             if (jobsArray.length > 0) {
                 const jobField = businessFields.find(f => f.field === 'JobRefRecID');
                 if (jobField) {
@@ -310,7 +310,7 @@
             case 'select':
                 const options = config.options || [];
                 let optionsHtml = '';
-                
+
                 if (config.field === 'DepartmentRefRecID' || config.field === 'JobRefRecID') {
                     optionsHtml = '<option value="">-- Seleccione --</option>';
                     optionsHtml += options.map(opt => {
@@ -322,7 +322,7 @@
                         `<option value="${opt.value}" ${displayValue.toString() === opt.value ? 'selected' : ''}>${opt.text}</option>`
                     ).join('');
                 }
-                
+
                 inputHtml = `<select id="${fieldId}" name="${fieldName}" class="form-control" ${readonlyAttr ? 'disabled' : ''} ${requiredAttr}>${optionsHtml}</select>`;
                 break;
 
@@ -518,7 +518,7 @@
                 IsVacant: formData.IsVacant,
                 DepartmentRefRecID: formData.DepartmentRefRecID,
                 JobRefRecID: formData.JobRefRecID,
-                NotifyPositionRefRecID: formData.NotifyPositionRefRecID || 0,
+                NotifyPositionRefRecID: formData.NotifyPositionRefRecID || null, // ← CORREGIDO: null en lugar de 0
                 PositionStatus: formData.PositionStatus,
                 StartDate: formData.StartDate,
                 EndDate: formData.EndDate || null,
