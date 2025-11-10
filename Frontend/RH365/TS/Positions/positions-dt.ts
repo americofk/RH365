@@ -178,15 +178,25 @@ interface ColumnConfig {
             }
         };
         $table.DataTable(dtConfig);
+        console.log('✅ DataTable inicializado');
     };
 
     const loadPositions = async (): Promise<PositionRow[]> => {
         const url = `${apiBase}/Positions?pageNumber=1&pageSize=100`;
-        const response: PositionResponse = await fetchJson(url);
-        if (response?.Data && Array.isArray(response.Data)) {
-            return response.Data;
+        const response: any = await fetchJson(url);
+        
+        // Manejar tanto Array directo como Object con Data
+        let positionsArray: PositionRow[] = [];
+        if (Array.isArray(response)) {
+            positionsArray = response;
+        } else if (response?.Data && Array.isArray(response.Data)) {
+            positionsArray = response.Data;
+        } else {
+            console.error('Formato de respuesta no reconocido:', response);
+            throw new Error('Respuesta del API inválida');
         }
-        throw new Error('Respuesta del API inválida');
+        
+        return positionsArray;
     };
 
     const updateSummary = (count: number): void => {
@@ -529,9 +539,18 @@ interface ColumnConfig {
     $(async function () {
         try {
             const probeUrl = `${apiBase}/Positions?pageNumber=1&pageSize=1`;
-            const probe: PositionResponse = await fetchJson(probeUrl);
-            if (probe?.Data?.length) {
-                allColumns = getColumnsFromData(probe.Data[0]);
+            const probe: any = await fetchJson(probeUrl);
+            
+            // Manejar tanto Array directo como Object con Data
+            let sampleData: any = null;
+            if (Array.isArray(probe)) {
+                sampleData = probe[0];
+            } else if (probe?.Data?.length) {
+                sampleData = probe.Data[0];
+            }
+            
+            if (sampleData) {
+                allColumns = getColumnsFromData(sampleData);
             } else {
                 allColumns = [...defaultColumns];
             }
@@ -551,10 +570,8 @@ interface ColumnConfig {
                 visibleColumns = savedColumns.filter(c => c.visible).sort((a, b) => a.order - b.order).map(c => c.field);
                 const viewName = gridViewsManager.getCurrentViewName();
                 $('#current-view-name').text(viewName);
-                console.log(`✓ Vista "${viewName}" cargada desde BD`);
             } else {
                 visibleColumns = [...defaultColumns];
-                console.log('✓ Usando vista por defecto');
             }
 
             gridColumnsManager = new GridColumnsManagerClass(allColumns, visibleColumns, (newColumns: string[]) => {

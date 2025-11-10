@@ -159,14 +159,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
         };
         $table.DataTable(dtConfig);
+        console.log('✅ DataTable inicializado');
     };
     const loadPositions = () => __awaiter(this, void 0, void 0, function* () {
         const url = `${apiBase}/Positions?pageNumber=1&pageSize=100`;
         const response = yield fetchJson(url);
-        if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
-            return response.Data;
+        // Manejar tanto Array directo como Object con Data
+        let positionsArray = [];
+        if (Array.isArray(response)) {
+            positionsArray = response;
         }
-        throw new Error('Respuesta del API inválida');
+        else if ((response === null || response === void 0 ? void 0 : response.Data) && Array.isArray(response.Data)) {
+            positionsArray = response.Data;
+        }
+        else {
+            console.error('Formato de respuesta no reconocido:', response);
+            throw new Error('Respuesta del API inválida');
+        }
+        return positionsArray;
     });
     const updateSummary = (count) => {
         const summary = d.getElementById('positions-summary');
@@ -464,8 +474,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             try {
                 const probeUrl = `${apiBase}/Positions?pageNumber=1&pageSize=1`;
                 const probe = yield fetchJson(probeUrl);
-                if ((_a = probe === null || probe === void 0 ? void 0 : probe.Data) === null || _a === void 0 ? void 0 : _a.length) {
-                    allColumns = getColumnsFromData(probe.Data[0]);
+                // Manejar tanto Array directo como Object con Data
+                let sampleData = null;
+                if (Array.isArray(probe)) {
+                    sampleData = probe[0];
+                }
+                else if ((_a = probe === null || probe === void 0 ? void 0 : probe.Data) === null || _a === void 0 ? void 0 : _a.length) {
+                    sampleData = probe.Data[0];
+                }
+                if (sampleData) {
+                    allColumns = getColumnsFromData(sampleData);
                 }
                 else {
                     allColumns = [...defaultColumns];
@@ -484,11 +502,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     visibleColumns = savedColumns.filter(c => c.visible).sort((a, b) => a.order - b.order).map(c => c.field);
                     const viewName = gridViewsManager.getCurrentViewName();
                     $('#current-view-name').text(viewName);
-                    console.log(`✓ Vista "${viewName}" cargada desde BD`);
                 }
                 else {
                     visibleColumns = [...defaultColumns];
-                    console.log('✓ Usando vista por defecto');
                 }
                 gridColumnsManager = new GridColumnsManagerClass(allColumns, visibleColumns, (newColumns) => {
                     applyColumnChanges(newColumns);

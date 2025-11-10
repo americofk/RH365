@@ -223,41 +223,27 @@
     const loadDepartments = async (): Promise<void> => {
         try {
             const url = `${apiBase}/Departments?pageNumber=1&pageSize=100`;
-            console.log('📡 Cargando departamentos desde:', url);
-            
             const response = await fetchJson(url);
-            console.log('📦 Respuesta Departments:', response);
             
             // Manejar tanto Array directo como Object con Data
             let departmentsArray: any[] = [];
             if (Array.isArray(response)) {
-                // Si es un array directo
                 departmentsArray = response;
-                console.log('✓ Formato: Array directo');
             } else if (response?.Data && Array.isArray(response.Data)) {
-                // Si es un objeto con propiedad Data
                 departmentsArray = response.Data;
-                console.log('✓ Formato: Object con Data');
             }
             
             if (departmentsArray.length > 0) {
-                console.log('✓ Departamentos recibidos:', departmentsArray.length);
-                
                 const departmentField = businessFields.find(f => f.field === 'DepartmentRefRecID');
-                console.log('🔍 Campo DepartmentRefRecID encontrado:', departmentField ? 'SÍ' : 'NO');
-                
                 if (departmentField) {
                     departmentField.options = departmentsArray.map((dept: any) => ({
                         value: dept.RecID.toString(),
                         text: `${dept.DepartmentCode} - ${dept.Name}`
                     }));
-                    console.log('✅ Opciones asignadas:', departmentField.options);
                 }
-            } else {
-                console.warn('⚠️ No se recibieron departamentos');
             }
         } catch (error) {
-            console.error('❌ Error cargando departamentos:', error);
+            console.error('Error cargando departamentos:', error);
             (w as any).ALERTS.warn('No se pudieron cargar los departamentos', 'Advertencia');
         }
     };
@@ -268,41 +254,27 @@
     const loadJobs = async (): Promise<void> => {
         try {
             const url = `${apiBase}/Jobs?pageNumber=1&pageSize=100`;
-            console.log('📡 Cargando jobs desde:', url);
-            
             const response = await fetchJson(url);
-            console.log('📦 Respuesta Jobs:', response);
             
             // Manejar tanto Array directo como Object con Data
             let jobsArray: any[] = [];
             if (Array.isArray(response)) {
-                // Si es un array directo
                 jobsArray = response;
-                console.log('✓ Formato: Array directo');
             } else if (response?.Data && Array.isArray(response.Data)) {
-                // Si es un objeto con propiedad Data
                 jobsArray = response.Data;
-                console.log('✓ Formato: Object con Data');
             }
             
             if (jobsArray.length > 0) {
-                console.log('✓ Jobs recibidos:', jobsArray.length);
-                
                 const jobField = businessFields.find(f => f.field === 'JobRefRecID');
-                console.log('🔍 Campo JobRefRecID encontrado:', jobField ? 'SÍ' : 'NO');
-                
                 if (jobField) {
                     jobField.options = jobsArray.map((job: any) => ({
                         value: job.RecID.toString(),
                         text: `${job.JobCode} - ${job.Name}`
                     }));
-                    console.log('✅ Opciones asignadas:', jobField.options);
                 }
-            } else {
-                console.warn('⚠️ No se recibieron jobs');
             }
         } catch (error) {
-            console.error('❌ Error cargando jobs:', error);
+            console.error('Error cargando jobs:', error);
             (w as any).ALERTS.warn('No se pudieron cargar los puestos', 'Advertencia');
         }
     };
@@ -339,12 +311,6 @@
                 const options = config.options || [];
                 let optionsHtml = '';
                 
-                // Debug para dropdowns de catálogos
-                if (config.field === 'DepartmentRefRecID' || config.field === 'JobRefRecID') {
-                    console.log(`🔧 Renderizando ${config.field} con ${options.length} opciones:`, options);
-                }
-                
-                // Si es un dropdown de catálogo (Department o Job), agregar opción vacía
                 if (config.field === 'DepartmentRefRecID' || config.field === 'JobRefRecID') {
                     optionsHtml = '<option value="">-- Seleccione --</option>';
                     optionsHtml += options.map(opt => {
@@ -415,31 +381,23 @@
     // ========================================================================
 
     const loadPositionData = async (): Promise<void> => {
-        console.log('🚀 Iniciando carga de datos...');
-        
-        // Primero cargar los catálogos (Departments y Jobs)
-        console.log('⏳ Cargando catálogos...');
         await loadDepartments();
         await loadJobs();
-        console.log('✅ Catálogos cargados');
 
         if (isNew) {
-            console.log('📝 Modo CREACIÓN - Renderizando formulario vacío');
             renderBusinessForm({});
             renderAuditForm({});
             return;
         }
 
-        console.log('✏️ Modo EDICIÓN - Cargando datos de la posición');
         try {
             const url = `${apiBase}/Positions/${recId}`;
             positionData = await fetchJson(url);
-            console.log('📦 Datos de posición cargados:', positionData);
 
             renderBusinessForm(positionData);
             renderAuditForm(positionData);
         } catch (error) {
-            console.error('❌ Error al cargar posición:', error);
+            console.error('Error al cargar posición:', error);
             (w as any).ALERTS.error('Error al cargar los datos de la posición', 'Error');
 
             renderBusinessForm({});
@@ -457,14 +415,6 @@
 
         containerLeft.empty();
         containerRight.empty();
-
-        console.log('🎨 Renderizando formulario de negocio...');
-        
-        // Verificar opciones de dropdowns antes de renderizar
-        const deptField = businessFields.find(f => f.field === 'DepartmentRefRecID');
-        const jobField = businessFields.find(f => f.field === 'JobRefRecID');
-        console.log('🔍 Opciones DepartmentRefRecID al renderizar:', deptField?.options?.length || 0);
-        console.log('🔍 Opciones JobRefRecID al renderizar:', jobField?.options?.length || 0);
 
         businessFields
             .filter(config => config.column === 'left')
@@ -568,16 +518,13 @@
                 IsVacant: formData.IsVacant,
                 DepartmentRefRecID: formData.DepartmentRefRecID,
                 JobRefRecID: formData.JobRefRecID,
-                NotifyPositionRefRecID: formData.NotifyPositionRefRecID || null,
+                NotifyPositionRefRecID: formData.NotifyPositionRefRecID || 0,
                 PositionStatus: formData.PositionStatus,
                 StartDate: formData.StartDate,
                 EndDate: formData.EndDate || null,
                 Description: formData.Description || null,
                 Observations: formData.Observations || null
             };
-
-            console.log('FormData capturado:', formData);
-            console.log('Enviando payload:', payload);
 
             await fetchJson(url, {
                 method: method,
