@@ -2,13 +2,13 @@
 // Archivo: position-requirements.ts
 // Proyecto: RH365.WebMVC
 // Ruta: TS/Positions/position-requirements.ts
-// Descripción:
-//   - Gestión de Requisitos de Posición (línea por línea)
+// Descripci�n:
+//   - Gesti�n de Requisitos de Posici�n (l�nea por l�nea)
 //   - CRUD completo de requisitos
-//   - Integración con API REST (/api/PositionRequirements)
+//   - Integraci�n con API REST (/api/PositionRequirements)
 //   - Filtrado en cliente por PositionRefRecID
-//   - Tab independiente dentro del formulario de posición
-// Estándar: ISO 27001 - Control A.12.1.1 (Procedimientos operacionales documentados)
+//   - Tab independiente dentro del formulario de posici�n
+// Est�ndar: ISO 27001 - Control A.12.1.1 (Procedimientos operacionales documentados)
 // ============================================================================
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -21,7 +21,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 (function () {
     // ========================================================================
-    // CONFIGURACIÓN GLOBAL Y CONTEXTO
+    // CONFIGURACI�N GLOBAL Y CONTEXTO
     // ========================================================================
     const w = window;
     const d = document;
@@ -39,10 +39,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     let requirements = [];
     let editingRequirementRecID = null;
     // ========================================================================
-    // COMUNICACIÓN CON API
+    // COMUNICACI�N CON API
     // ========================================================================
     /**
-     * Realiza peticiones HTTP al API con manejo de autenticación
+     * Realiza peticiones HTTP al API con manejo de autenticaci�n
      */
     const fetchJson = (url, options) => __awaiter(this, void 0, void 0, function* () {
         const headers = {
@@ -76,10 +76,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             return;
         }
         try {
-            // Traer TODOS los requisitos (ajusta el take según necesites)
+            // Traer TODOS los requisitos (ajusta el take seg�n necesites)
             const url = `${apiBase}/PositionRequirements?skip=0&take=1000`;
             const response = yield fetchJson(url);
-            // Filtrar solo los requisitos de esta posición
+            // Filtrar solo los requisitos de esta posici�n
             if (Array.isArray(response)) {
                 // Si el endpoint retorna array directo
                 requirements = response.filter((req) => req.PositionRefRecID === positionRecID);
@@ -124,19 +124,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     const renderRequirementsTab = () => {
         const container = $('#requirements-container');
         container.empty();
-        // Modo creación: no permite agregar requisitos hasta guardar la posición
+        // Modo creaci�n: no permite agregar requisitos hasta guardar la posici�n
         if (isNewPosition) {
             container.html(`
                 <div class="alert alert-warning" role="alert">
                     <i class="fa fa-info-circle"></i>
-                    <strong>Modo Creación:</strong> 
-                    Primero debe guardar la posición para poder agregar requisitos.
+                    <strong>Modo Creaci�n:</strong> 
+                    Primero debe guardar la posici�n para poder agregar requisitos.
                 </div>
             `);
             $('#btn-add-requirement').prop('disabled', true);
             return;
         }
-        // Habilitar botón de agregar requisito en modo edición
+        // Habilitar bot�n de agregar requisito en modo edici�n
         $('#btn-add-requirement').prop('disabled', false);
         // Si no hay requisitos, mostrar mensaje informativo
         if (requirements.length === 0) {
@@ -230,11 +230,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const observations = $('#requirement-observations').val().trim();
         // Validaciones
         if (!name) {
-            w.ALERTS.warn('El campo "Nombre" es obligatorio', 'Validación');
+            w.ALERTS.warn('El campo "Nombre" es obligatorio', 'Validaci�n');
             return;
         }
         if (!detail) {
-            w.ALERTS.warn('El campo "Detalle" es obligatorio', 'Validación');
+            w.ALERTS.warn('El campo "Detalle" es obligatorio', 'Validaci�n');
             return;
         }
         try {
@@ -253,7 +253,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             requirements.push(newRequirement);
             renderRequirementsTab();
             $('#modal-requirement').modal('hide');
-            w.ALERTS.ok('Requisito agregado exitosamente', 'Éxito');
+            w.ALERTS.ok('Requisito agregado exitosamente', '�xito');
         }
         catch (error) {
             console.error('Error al crear requisito:', error);
@@ -301,11 +301,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const observations = $('#requirement-observations').val().trim();
         // Validaciones
         if (!name) {
-            w.ALERTS.warn('El campo "Nombre" es obligatorio', 'Validación');
+            w.ALERTS.warn('El campo "Nombre" es obligatorio', 'Validaci�n');
             return;
         }
         if (!detail) {
-            w.ALERTS.warn('El campo "Detalle" es obligatorio', 'Validación');
+            w.ALERTS.warn('El campo "Detalle" es obligatorio', 'Validaci�n');
             return;
         }
         try {
@@ -327,7 +327,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
             renderRequirementsTab();
             $('#modal-requirement').modal('hide');
-            w.ALERTS.ok('Requisito actualizado exitosamente', 'Éxito');
+            w.ALERTS.ok('Requisito actualizado exitosamente', '�xito');
         }
         catch (error) {
             console.error('Error al actualizar requisito:', error);
@@ -363,10 +363,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // CRUD - ELIMINAR REQUISITO
     // ========================================================================
     /**
-     * Eliminar requisito del API con confirmación
+     * Eliminar requisito del API con confirmaci�n
      */
     const deleteRequirement = (recID) => {
-        w.ALERTS.confirm('¿Está seguro de eliminar este requisito?', 'Confirmar Eliminación', (confirmed) => __awaiter(this, void 0, void 0, function* () {
+        w.ALERTS.confirm('�Est� seguro de eliminar este requisito?', 'Confirmar Eliminaci�n', (confirmed) => __awaiter(this, void 0, void 0, function* () {
             if (!confirmed)
                 return;
             try {
@@ -375,7 +375,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 // Eliminar del array local
                 requirements = requirements.filter(r => r.RecID !== recID);
                 renderRequirementsTab();
-                w.ALERTS.ok('Requisito eliminado exitosamente', 'Éxito');
+                w.ALERTS.ok('Requisito eliminado exitosamente', '�xito');
             }
             catch (error) {
                 console.error('Error al eliminar requisito:', error);
@@ -400,27 +400,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // EVENT HANDLERS
     // ========================================================================
     /**
-     * Botón "Agregar Requisito"
+     * Bot�n "Agregar Requisito"
      */
     $('#btn-add-requirement').on('click', () => {
         openAddRequirementModal();
     });
     /**
-     * Botones "Editar" en la tabla (delegación de eventos)
+     * Botones "Editar" en la tabla (delegaci�n de eventos)
      */
     $(document).on('click', '.btn-edit-requirement', function () {
         const recID = parseInt($(this).data('recid'), 10);
         openEditRequirementModal(recID);
     });
     /**
-     * Botones "Eliminar" en la tabla (delegación de eventos)
+     * Botones "Eliminar" en la tabla (delegaci�n de eventos)
      */
     $(document).on('click', '.btn-delete-requirement', function () {
         const recID = parseInt($(this).data('recid'), 10);
         deleteRequirement(recID);
     });
     /**
-     * Botón "Guardar" en el modal
+     * Bot�n "Guardar" en el modal
      */
     $('#btn-save-requirement').on('click', () => __awaiter(this, void 0, void 0, function* () {
         if (editingRequirementRecID) {
@@ -431,10 +431,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
     }));
     // ========================================================================
-    // INICIALIZACIÓN
+    // INICIALIZACI�N
     // ========================================================================
     /**
-     * Cargar requisitos al iniciar el módulo
+     * Cargar requisitos al iniciar el m�dulo
      */
     $(function () {
         return __awaiter(this, void 0, void 0, function* () {
@@ -442,7 +442,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 yield loadRequirements();
             }
             catch (error) {
-                console.error('Error al inicializar módulo de requisitos:', error);
+                console.error('Error al inicializar m�dulo de requisitos:', error);
                 w.ALERTS.error('Error al inicializar requisitos', 'Error');
             }
         });
