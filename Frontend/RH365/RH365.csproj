@@ -51,6 +51,7 @@
 		<Folder Include="TS\CourseInstructors\" />
 		<Folder Include="TS\Departments\" />
 		<Folder Include="TS\Jobs\" />
+		<Folder Include="TS\DeductionCodes\" />
 		<Folder Include="TS\Taxes\" />
 		<Folder Include="TS\Positions\" />
 		<Folder Include="TS\Occupation\" />
@@ -62,6 +63,7 @@
 		<Folder Include="Views\Country\" />
 		<Folder Include="Views\CourseInstructor\" />
 		<Folder Include="Views\Department\" />
+		<Folder Include="Views\DeductionCode\" />
 		<Folder Include="Views\Tax\" />
 		<Folder Include="Views\Occupation\" />
 		<Folder Include="wwwroot\html\" />
