@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -52,6 +52,7 @@
 		<Folder Include="TS\Departments\" />
 		<Folder Include="TS\Jobs\" />
 		<Folder Include="TS\DeductionCodes\" />
+		<Folder Include="TS\EarningCodes\" />
 		<Folder Include="TS\Taxes\" />
 		<Folder Include="TS\Positions\" />
 		<Folder Include="TS\Occupation\" />
@@ -64,6 +65,7 @@
 		<Folder Include="Views\CourseInstructor\" />
 		<Folder Include="Views\Department\" />
 		<Folder Include="Views\DeductionCode\" />
+		<Folder Include="Views\EarningCode\" />
 		<Folder Include="Views\Tax\" />
 		<Folder Include="Views\Occupation\" />
 		<Folder Include="wwwroot\html\" />

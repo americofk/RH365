@@ -15,6 +15,7 @@
     <Folder Include="Domain\Models\Department\" />
     <Folder Include="Domain\Models\Job\" />
     <Folder Include="Domain\Models\DeductionCode\" />
+    <Folder Include="Domain\Models\EarningCode\" />
     <Folder Include="Domain\Models\TaxDetail\" />
     <Folder Include="Domain\Models\Tax\" />
     <Folder Include="Domain\Models\Position\" />
