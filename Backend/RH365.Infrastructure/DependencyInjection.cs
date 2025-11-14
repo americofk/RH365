@@ -16,6 +16,7 @@ using RH365.Infrastructure.Persistence.Context;
 using RH365.Infrastructure.Services.Common;
 using RH365.Infrastructure.Services.Communication;
 using RH365.Infrastructure.Services.Identity;
+using RH365.Infrastructure.Services;
 
 namespace RH365.Infrastructure
 {
@@ -88,13 +89,16 @@ namespace RH365.Infrastructure
         /// Configura servicios de aplicación principales.
         /// </summary>
         private static IServiceCollection AddApplicationServices(
-            this IServiceCollection services)
+    this IServiceCollection services)
         {
             // Servicio de usuario actual (crítico para auditoría ISO 27001)
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             // Servicio de fecha/hora
             services.AddSingleton<IDateTime, DateTimeService>();
+
+            // Servicio de generación de ciclos de pago
+            services.AddScoped<IPayCycleGeneratorService, PayCycleGeneratorService>();
 
             // Requerido para ICurrentUserService
             services.AddHttpContextAccessor();

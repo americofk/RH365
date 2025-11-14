@@ -5,6 +5,7 @@
    Descripción: 
        - Formulario para Crear/Editar Nóminas con estilo Gentelella
        - Layout de 2 COLUMNAS en Tab General
+       - Tab Ciclos de Pago: Generación masiva automática
        - Tab Auditoría: Campos de trazabilidad ISO 27001
        - Renderizado dinámico de campos desde TypeScript
        - URLs del API centralizadas desde backend
@@ -42,7 +43,7 @@
     <!-- Custom Theme Style -->
     <link href="~/build/css/custom.min.css" rel="stylesheet">
     
-    <!-- Estilos personalizados para campos readonly -->
+    <!-- Estilos personalizados -->
     <style>
         input[readonly], 
         textarea[readonly], 
@@ -50,6 +51,18 @@
             background-color: #f5f5f5 !important;
             cursor: not-allowed !important;
             color: #999 !important;
+        }
+        
+        /* ✅ NUEVO: Hacer que los botones estén en línea horizontal */
+        .panel_toolbox li {
+            display: inline-block !important;
+            float: none !important;
+            margin-left: 5px !important;
+        }
+        
+        .panel_toolbox {
+            display: inline-block !important;
+            float: right !important;
         }
     </style>
 </head>
@@ -105,6 +118,7 @@
                                             <li role="presentation" class="">
                                                 <a href="#tab_content2" role="tab" id="paycycles-tab" data-toggle="tab" aria-expanded="false">
                                                     <i class="fa fa-calendar"></i> Ciclos de Pago
+                                                    <span class="badge badge-primary" id="paycycles-count-badge" style="display:none;">0</span>
                                                 </a>
                                             </li>
                                             <li role="presentation" class="">
@@ -181,8 +195,9 @@
                                                 </div>
                                             </div>
                                             <!-- /TAB 1: GENERAL -->
+                                            
                                             <!-- ========================================== -->
-                                            <!-- TAB 2: CICLOS DE PAGO                      -->
+                                            <!-- TAB 2: CICLOS DE PAGO (GENERACIÓN MASIVA) -->
                                             <!-- ========================================== -->
                                             <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="paycycles-tab">
                                                 <div class="row">
@@ -191,28 +206,77 @@
                                                             <div class="x_title">
                                                                 <h2>
                                                                     <i class="fa fa-calendar"></i> Ciclos de Pago
+                                                                    <small class="text-muted" id="paycycles-count">0 ciclos</small>
                                                                 </h2>
+                                                                
+                                                                <!-- ✅ TOOLBAR EN LÍNEA HORIZONTAL -->
                                                                 <ul class="nav navbar-right panel_toolbox">
                                                                     <li>
-                                                                        <button type="button" id="btn-new-cycle" class="btn btn-success btn-sm">
-                                                                            <i class="fa fa-plus"></i> Nuevo Ciclo
+                                                                        <button type="button" id="btn-new-cycle" class="btn btn-sm btn-default">
+                                                                            <i class="fa fa-plus"></i> Nuevo
                                                                         </button>
                                                                     </li>
                                                                     <li>
-                                                                        <button type="button" id="btn-delete-cycles" class="btn btn-danger btn-sm" disabled>
-                                                                            <i class="fa fa-trash"></i> Eliminar
+                                                                        <input type="number" 
+                                                                               id="paycycle-quantity" 
+                                                                               class="form-control input-sm" 
+                                                                               style="width: 70px; display: inline-block;"
+                                                                               placeholder="12" 
+                                                                               min="1" 
+                                                                               max="100"
+                                                                               value="12"
+                                                                               title="Cantidad de ciclos a generar">
+                                                                    </li>
+                                                                    <li>
+                                                                        <button type="button" 
+                                                                                id="btn-generate-cycles" 
+                                                                                class="btn btn-primary btn-sm"
+                                                                                title="Generar ciclos automáticamente">
+                                                                            <i class="fa fa-magic"></i> Generar
                                                                         </button>
                                                                     </li>
                                                                 </ul>
                                                                 <div class="clearfix"></div>
                                                             </div>
+                                                            
                                                             <div class="x_content">
-                                                                <br />
-                                                                <!-- Contenedor dinámico para ciclos de pago -->
-                                                                <div id="paycycles-container">
-                                                                    <div class="text-center" style="padding: 40px;">
-                                                                        <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
-                                                                        <p class="text-muted">Cargando ciclos de pago...</p>
+                                                                <!-- Tabla de Ciclos -->
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-striped table-bordered table-hover">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th style="width: 30px;">
+                                                                                    <input type="checkbox" id="check-all-cycles" class="flat">
+                                                                                </th>
+                                                                                <th>ID</th>
+                                                                                <th>Fecha Inicio</th>
+                                                                                <th>Fecha Fin</th>
+                                                                                <th>Fecha de Pago</th>
+                                                                                <th>Monto</th>
+                                                                                <th>Estado</th>
+                                                                                <th style="width: 50px;">ISR</th>
+                                                                                <th style="width: 50px;">TSS</th>
+                                                                                <th style="width: 100px;">Acciones</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody id="paycycles-tbody">
+                                                                            <tr>
+                                                                                <td colspan="10" class="text-center text-muted" style="padding: 40px;">
+                                                                                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                                                                                    <p style="margin-top: 15px;">Cargando ciclos...</p>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+
+                                                                <!-- Botones de acción masiva -->
+                                                                <div class="ln_solid"></div>
+                                                                <div class="form-group">
+                                                                    <div class="col-md-12 text-right">
+                                                                        <button type="button" id="btn-delete-cycles" class="btn btn-danger" disabled>
+                                                                            <i class="fa fa-trash"></i> Eliminar Seleccionados
+                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -221,6 +285,7 @@
                                                 </div>
                                             </div>
                                             <!-- /TAB 2: CICLOS DE PAGO -->
+                                            
                                             <!-- ========================================== -->
                                             <!-- TAB 3: AUDITORÍA (Campos ISO 27001)       -->
                                             <!-- ========================================== -->
@@ -267,7 +332,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- /TAB 2: AUDITORÍA -->
+                                            <!-- /TAB 3: AUDITORÍA -->
                                         </div>
                                     </div>
                                 </div>
@@ -278,6 +343,7 @@
                 </div>
             </div>
             <!-- /page content -->
+            
             <!-- footer content -->
             <footer>
                 <div class="pull-right">
@@ -289,99 +355,77 @@
         </div>
     </div>
 
-    <!-- Modal: Crear/Editar Ciclo de Pago -->
+    <!-- Modal: Editar Ciclo Individual -->
     <div class="modal fade" id="modal-paycycle" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                    <h4 class="modal-title" id="modal-paycycle-title"><i class="fa fa-calendar"></i> Nuevo Ciclo de Pago</h4>
+                    <h4 class="modal-title" id="modal-paycycle-title">
+                        <i class="fa fa-calendar"></i> Ciclo de Pago
+                    </h4>
                 </div>
                 <div class="modal-body">
-                    <form id="frm-paycycle" class="form-horizontal form-label-left">
+                    <form id="paycycle-form" class="form-horizontal">
+                        <input type="hidden" id="paycycle-recid" value="0">
+                        
                         <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12" for="PeriodStartDate">
-                                Inicio Período <span class="required">*</span>
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <input type="date" id="PeriodStartDate" name="PeriodStartDate" class="form-control" required>
+                            <label class="control-label col-md-4">Fecha Inicio:</label>
+                            <div class="col-md-8">
+                                <input type="date" id="paycycle-start-date" class="form-control" required>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12" for="PeriodEndDate">
-                                Fin Período <span class="required">*</span>
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <input type="date" id="PeriodEndDate" name="PeriodEndDate" class="form-control" required>
+                            <label class="control-label col-md-4">Fecha Fin:</label>
+                            <div class="col-md-8">
+                                <input type="date" id="paycycle-end-date" class="form-control" required>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12" for="DefaultPayDate">
-                                Fecha de Pago por Defecto <span class="required">*</span>
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <input type="date" id="DefaultPayDate" name="DefaultPayDate" class="form-control" required>
+                            <label class="control-label col-md-4">Fecha de Pago:</label>
+                            <div class="col-md-8">
+                                <input type="date" id="paycycle-pay-date" class="form-control" required>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12" for="PayDate">
-                                Fecha de Pago <span class="required">*</span>
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <input type="date" id="PayDate" name="PayDate" class="form-control" required>
+                            <label class="control-label col-md-4">Monto:</label>
+                            <div class="col-md-8">
+                                <input type="number" 
+                                       id="paycycle-amount" 
+                                       class="form-control" 
+                                       step="0.01"
+                                       placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <!-- Checkbox ISR -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4">ISR:</label>
+                            <div class="col-md-8">
+                                <input type="checkbox" id="paycycle-is-for-tax" class="flat">
+                                <span class="help-block">Aplica retención de ISR</span>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox TSS -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4">TSS:</label>
+                            <div class="col-md-8">
+                                <input type="checkbox" id="paycycle-is-for-tss" class="flat">
+                                <span class="help-block">Aplica seguridad social</span>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12" for="AmountPaidPerPeriod">
-                                Monto a Pagar
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <input type="number" id="AmountPaidPerPeriod" name="AmountPaidPerPeriod" class="form-control" step="0.01" value="0">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12" for="StatusPeriod">
-                                Estado del Período <span class="required">*</span>
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <select id="StatusPeriod" name="StatusPeriod" class="form-control" required>
-                                    <option value="0">Abierto</option>
-                                    <option value="1">Procesado</option>
-                                    <option value="2">Pagado</option>
-                                    <option value="3">Registrado</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
-                                Opciones
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" id="IsForTax" name="IsForTax" class="flat"> Para Impuestos
-                                    </label>
-                                </div>
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" id="IsForTss" name="IsForTss" class="flat"> Para TSS
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="control-label col-md-4 col-sm-4 col-xs-12" for="ObservationsCycle">
-                                Observaciones
-                            </label>
-                            <div class="col-md-8 col-sm-8 col-xs-12">
-                                <textarea id="ObservationsCycle" name="ObservationsCycle" class="form-control" rows="3" maxlength="500"></textarea>
+                            <label class="control-label col-md-4">Observaciones:</label>
+                            <div class="col-md-8">
+                                <textarea id="paycycle-observations" 
+                                          class="form-control" 
+                                          rows="3" 
+                                          maxlength="500"></textarea>
                             </div>
                         </div>
                     </form>
@@ -390,7 +434,7 @@
                     <button type="button" class="btn btn-default" data-dismiss="modal">
                         <i class="fa fa-times"></i> Cancelar
                     </button>
-                    <button type="button" class="btn btn-primary" id="btn-save-cycle">
+                    <button type="button" id="btn-save-paycycle" class="btn btn-primary">
                         <i class="fa fa-save"></i> Guardar
                     </button>
                 </div>
@@ -451,6 +495,10 @@
 
     <!-- Sistema de Alertas -->
     @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
+
+    <!-- Modal Genérico -->
+    @await Html.PartialAsync("~/Views/Generic/_Modal.cshtml")
+
 
     <!-- Script del formulario de nóminas -->
     <script src="~/js/Payrolls/payroll-form.js"></script>

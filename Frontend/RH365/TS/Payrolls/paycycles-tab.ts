@@ -1,14 +1,15 @@
 // ============================================================================
 // Archivo: paycycles-tab.ts
 // Proyecto: RH365.WebMVC
-// Ruta: TS/Payrolls/paycycles-tab.ts
-// Descripción: 
-//   - Gestión de Ciclos de Pago (PayCycles) dentro del formulario de Nómina
-//   - CRUD completo con tabla dinámica
-//   - Filtrado por PayrollRefRecID
-//   - Modal para crear/editar
-//   - Bloqueo total si estado es Pagado (2) o Registrado (3)
-// ISO 27001: Control de ciclos de pago con validación y trazabilidad
+// Ruta: wwwroot/js/Payrolls/paycycles-tab.ts
+// Descripción:
+//   - Tab de Ciclos de Pago dentro del formulario de Payroll
+//   - Generación masiva de ciclos con un solo clic
+//   - CRUD individual de ciclos
+//   - Eliminación múltiple de ciclos seleccionados
+//   - Validaciones de estado (solo Open se puede editar/eliminar)
+//   - Soporte para ISR y TSS
+// ISO 27001: Gestión de ciclos con trazabilidad completa
 // ============================================================================
 
 (function () {
@@ -16,579 +17,472 @@
     const d: Document = document;
     const $: any = w.jQuery || w.$;
 
-    console.log('🔄 Inicializando paycycles-tab.ts...');
+    const apiBase: string = w.RH365?.urls?.apiBase || '/api';
 
-    const apiBase: string = w.RH365?.urls?.apiBase;
-    if (!apiBase) {
-        console.error('❌ API Base URL no está definida');
-        return;
-    }
-
-    const pageContainer = d.querySelector("#payroll-form-page");
-    if (!pageContainer) {
-        console.error('❌ Contenedor #payroll-form-page no encontrado');
-        return;
-    }
-
-    const token: string = pageContainer.getAttribute("data-token") || "";
-    const recId: number = parseInt(pageContainer.getAttribute("data-recid") || "0", 10);
-    const isNew: boolean = pageContainer.getAttribute("data-isnew") === "true";
-
-    console.log('📋 Configuración:', { token: token ? '✓' : '✗', recId, isNew });
-
-    let payCyclesData: any[] = [];
-    let currentEditingId: number | null = null;
-
-    // Mapa de estados de período según GlobalsEnum
-    const statusPeriodMap: Record<number, string> = {
-        0: 'Abierto',
-        1: 'Procesado',
-        2: 'Pagado',
-        3: 'Registrado'
-    };
-
-    // Estados que no permiten edición
-    const LOCKED_STATUSES = [2, 3]; // Pagado y Registrado
+    // Variables globales
+    let currentPayrollId: number = 0;
+    let payCycles: any[] = [];
 
     // ========================================================================
-    // UTILIDADES - COMUNICACIÓN CON API
+    // INICIALIZACIÓN DE PAYROLL ID
     // ========================================================================
 
-    const fetchJson = async (url: string, options?: RequestInit): Promise<any> => {
-        const headers: Record<string, string> = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        };
-
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
+    /**
+     * Obtiene el PayrollId desde el DOM
+     */
+    const getPayrollIdFromDOM = (): number => {
+        const pageContainer = d.querySelector("#payroll-form-page");
+        if (!pageContainer) {
+            console.warn('⚠️ No se encontró #payroll-form-page');
+            return 0;
         }
 
-        console.log('🌐 Fetch:', { url, method: options?.method || 'GET' });
-
-        const response = await fetch(url, { ...options, headers });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('❌ Error en fetch:', errorData);
-            throw new Error(JSON.stringify(errorData));
-        }
-
-        return response.json();
+        const recIdAttr = pageContainer.getAttribute("data-recid");
+        const recId = parseInt(recIdAttr || "0", 10);
+        
+        console.log('📊 PayrollId desde DOM:', recId);
+        return recId;
     };
 
     // ========================================================================
-    // UTILIDADES - VALIDACIONES
-    // ========================================================================
-
-    const isStatusLocked = (status: number): boolean => {
-        return LOCKED_STATUSES.includes(status);
-    };
-
-    const getStatusName = (status: number): string => {
-        return statusPeriodMap[status] || 'Desconocido';
-    };
-
-    // ========================================================================
-    // CARGA DE DATOS
+    // FUNCIÓN PARA CARGAR CICLOS DE PAGO
     // ========================================================================
 
     const loadPayCycles = async (): Promise<void> => {
-        console.log('🔄 Cargando ciclos de pago...', { isNew, recId });
+        console.log('📊 loadPayCycles() - Iniciando carga...');
+        console.log('📊 Current Payroll ID:', currentPayrollId);
 
-        if (isNew || recId === 0) {
-            console.log('ℹ️ Modo creación - mostrando estado vacío');
-            showEmptyState();
+        // Si no hay PayrollId, mostrar estado vacío
+        if (!currentPayrollId || currentPayrollId === 0) {
+            console.log('⚠️ No hay Payroll ID, mostrando estado para nuevo registro');
+            showNewPayrollState();
             return;
         }
 
         try {
-            const url = `${apiBase}/PayCycles?skip=0&take=100`;
-            console.log('📡 Llamando API:', url);
+            // Llamar al API para obtener TODOS los ciclos
+            const url = `${apiBase}/PayCycles?skip=0&take=500`;
+            console.log('🌐 Fetching:', url);
 
-            const response = await fetchJson(url);
-            console.log('✅ Respuesta del API:', response);
-
-            let allCycles = [];
-            if (Array.isArray(response)) {
-                allCycles = response;
-            } else if (response?.Data && Array.isArray(response.Data)) {
-                allCycles = response.Data;
-            } else {
-                console.warn('⚠️ Respuesta inesperada del API:', response);
-            }
-
-            // Filtrar por PayrollRefRecID
-            payCyclesData = allCycles.filter((cycle: any) => {
-                console.log(`🔍 Comparando: cycle.PayrollRefRecID=${cycle.PayrollRefRecID} con recId=${recId}`);
-                return cycle.PayrollRefRecID === recId;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
             });
 
-            console.log(`✅ ${payCyclesData.length} ciclos de pago cargados para nómina ${recId}`);
-            renderTable();
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const allCycles = await response.json();
+            console.log('📦 Total ciclos recibidos:', allCycles.length);
+
+            // Filtrar solo los ciclos de este Payroll (PascalCase)
+            payCycles = allCycles.filter((c: any) => {
+                const match = c.PayrollRefRecID === currentPayrollId;
+                if (match) {
+                    console.log('✓ Ciclo matched:', c.ID, 'PayrollRef:', c.PayrollRefRecID);
+                }
+                return match;
+            });
+
+            console.log(`✅ ${payCycles.length} ciclos filtrados para Payroll ${currentPayrollId}`);
+
+            renderPayCyclesTable();
+            updateCycleCount(payCycles.length);
+            updateButtonStates();
         } catch (error) {
-            console.error('❌ Error al cargar ciclos de pago:', error);
-            (w as any).ALERTS?.error('Error al cargar ciclos de pago', 'Error');
+            console.error('❌ Error al cargar ciclos:', error);
+            (w as any).ALERTS?.error('Error al cargar los ciclos de pago', 'Error');
             showEmptyState();
         }
     };
 
     // ========================================================================
-    // RENDERIZADO
+    // RENDERIZADO DE TABLA
     // ========================================================================
+
+    const renderPayCyclesTable = (): void => {
+        const tbody = $('#paycycles-tbody');
+        tbody.empty();
+
+        if (payCycles.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        payCycles.forEach(cycle => {
+            const statusBadge = getStatusBadge(cycle.StatusPeriod);
+            const isLocked = cycle.StatusPeriod === 2 || cycle.StatusPeriod === 3; // Paid or Registered
+
+            const row = `
+                <tr data-recid="${cycle.RecID}">
+                    <td class="text-center">
+                        <input type="checkbox" 
+                               class="flat cycle-check" 
+                               data-recid="${cycle.RecID}"
+                               data-status="${cycle.StatusPeriod}"
+                               ${isLocked ? 'disabled' : ''}>
+                    </td>
+                    <td>${cycle.ID || '-'}</td>
+                    <td>${formatDate(cycle.PeriodStartDate)}</td>
+                    <td>${formatDate(cycle.PeriodEndDate)}</td>
+                    <td>${formatDate(cycle.PayDate)}</td>
+                    <td class="text-right">${formatCurrency(cycle.AmountPaidPerPeriod)}</td>
+                    <td class="text-center">${statusBadge}</td>
+                    <td class="text-center">
+                        <input type="checkbox" 
+                               class="flat" 
+                               ${cycle.IsForTax ? 'checked' : ''} 
+                               disabled>
+                    </td>
+                    <td class="text-center">
+                        <input type="checkbox" 
+                               class="flat" 
+                               ${cycle.IsForTss ? 'checked' : ''} 
+                               disabled>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" 
+                                class="btn btn-xs btn-primary btn-edit-cycle" 
+                                data-recid="${cycle.RecID}"
+                                data-status="${cycle.StatusPeriod}"
+                                ${isLocked ? 'disabled' : ''}>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <button type="button" 
+                                class="btn btn-xs btn-danger btn-delete-cycle" 
+                                data-recid="${cycle.RecID}"
+                                data-status="${cycle.StatusPeriod}"
+                                ${isLocked ? 'disabled' : ''}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+
+        // Re-inicializar iCheck
+        if ($.fn.iCheck) {
+            $('.flat').iCheck({
+                checkboxClass: 'icheckbox_flat-green'
+            });
+        }
+    };
 
     const showEmptyState = (): void => {
-        console.log('📄 Mostrando estado vacío');
-
-        const emptyHtml = isNew
-            ? `<div class="alert alert-warning text-center">
-                <i class="fa fa-info-circle"></i>
-                <strong>Modo Creación:</strong> Guarda la nómina primero para agregar ciclos de pago.
-            </div>`
-            : `<div class="alert alert-info text-center">
-                <i class="fa fa-info-circle"></i>
-                No hay ciclos de pago registrados. Haz clic en "Nuevo Ciclo" para agregar uno.
-            </div>`;
-
-        const container = $('#paycycles-container');
-        if (container.length) {
-            container.html(emptyHtml);
-            console.log('✅ Estado vacío renderizado');
-        } else {
-            console.error('❌ Contenedor #paycycles-container no encontrado');
-        }
-
-        const btnNew = $('#btn-new-cycle');
-        if (btnNew.length) {
-            btnNew.prop('disabled', isNew);
-            console.log('✅ Botón nuevo ciclo configurado:', { disabled: isNew });
-        }
-    };
-
-    const formatDate = (dateString: string): string => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return '';
-        return date.toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    };
-
-    const formatCurrency = (value: number): string => {
-        if (value == null) return '$0.00';
-        return new Intl.NumberFormat('es-DO', {
-            style: 'currency',
-            currency: 'DOP'
-        }).format(value);
-    };
-
-    const getStatusLabel = (status: number): string => {
-        const labels: Record<number, string> = {
-            0: '<span class="label label-success">Abierto</span>',
-            1: '<span class="label label-info">Procesado</span>',
-            2: '<span class="label label-warning">Pagado</span>',
-            3: '<span class="label label-default">Registrado</span>'
-        };
-        return labels[status] || '<span class="label label-default">Desconocido</span>';
-    };
-
-    const renderTable = (): void => {
-        console.log('🎨 Renderizando tabla con', payCyclesData.length, 'ciclos');
-
-        if (payCyclesData.length === 0) {
-            showEmptyState();
-            return;
-        }
-
-        const tableRows = payCyclesData.map(cycle => {
-            const isLocked = isStatusLocked(cycle.StatusPeriod);
-            const editBtnClass = isLocked ? 'btn-default disabled' : 'btn-primary';
-            const editBtnTitle = isLocked ? 'Ver (Solo Lectura)' : 'Editar';
-            const editBtnIcon = isLocked ? 'fa-eye' : 'fa-pencil';
-
-            return `
-            <tr data-recid="${cycle.RecID}">
-                <td class="text-center">
-                    <input type="checkbox" class="flat cycle-check" data-recid="${cycle.RecID}"/>
-                </td>
-                <td>${cycle.ID || ''}</td>
-                <td>${formatDate(cycle.PeriodStartDate)}</td>
-                <td>${formatDate(cycle.PeriodEndDate)}</td>
-                <td>${formatDate(cycle.PayDate)}</td>
-                <td>${formatCurrency(cycle.AmountPaidPerPeriod)}</td>
-                <td>${getStatusLabel(cycle.StatusPeriod)}</td>
-                <td class="text-center">
-                    ${cycle.IsForTax ? '<i class="fa fa-check text-success"></i>' : '<i class="fa fa-times text-muted"></i>'}
-                </td>
-                <td class="text-center">
-                    ${cycle.IsForTss ? '<i class="fa fa-check text-success"></i>' : '<i class="fa fa-times text-muted"></i>'}
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-xs ${editBtnClass} btn-edit-cycle" 
-                            data-recid="${cycle.RecID}" 
-                            data-status="${cycle.StatusPeriod}"
-                            title="${editBtnTitle}">
-                        <i class="fa ${editBtnIcon}"></i>
-                    </button>
-                    <button type="button" class="btn btn-xs btn-danger btn-delete-cycle" 
-                            data-recid="${cycle.RecID}"
-                            data-status="${cycle.StatusPeriod}" 
-                            title="Eliminar"
-                            ${isLocked ? 'disabled' : ''}>
-                        <i class="fa fa-trash"></i>
-                    </button>
+        const tbody = $('#paycycles-tbody');
+        tbody.html(`
+            <tr>
+                <td colspan="10" class="text-center text-muted" style="padding: 40px;">
+                    <i class="fa fa-calendar-o fa-3x" style="opacity: 0.3;"></i>
+                    <p style="margin-top: 15px; font-size: 16px;">No hay ciclos de pago</p>
+                    <p class="text-muted" style="font-size: 13px;">
+                        Use el botón <strong>"Generar"</strong> para crear ciclos automáticamente
+                    </p>
                 </td>
             </tr>
-        `;
-        }).join('');
+        `);
+        updateCycleCount(0);
+    };
 
-        const tableHtml = `
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th style="width:40px;"><input type="checkbox" id="check-all-cycles" class="flat"/></th>
-                            <th>ID</th>
-                            <th>Inicio Período</th>
-                            <th>Fin Período</th>
-                            <th>Fecha de Pago</th>
-                            <th>Monto</th>
-                            <th>Estado</th>
-                            <th style="width:80px;">Para Impuestos</th>
-                            <th style="width:80px;">Para TSS</th>
-                            <th style="width:100px;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
-            </div>
-        `;
-
-        const container = $('#paycycles-container');
-        if (container.length) {
-            container.html(tableHtml);
-            console.log('✅ Tabla renderizada');
-        }
-
-        const btnNew = $('#btn-new-cycle');
-        if (btnNew.length) {
-            btnNew.prop('disabled', false);
-        }
-
-        // Inicializar iCheck
-        if ($.fn.iCheck) {
-            $('.flat').iCheck({ checkboxClass: 'icheckbox_flat-green' });
-            console.log('✅ iCheck inicializado');
-        }
-
-        updateButtonStates();
+    const showNewPayrollState = (): void => {
+        const tbody = $('#paycycles-tbody');
+        tbody.html(`
+            <tr>
+                <td colspan="10" class="text-center" style="padding: 40px;">
+                    <i class="fa fa-info-circle fa-3x text-info" style="opacity: 0.5;"></i>
+                    <p style="margin-top: 15px; font-size: 16px; color: #31708f;">
+                        <strong>Guarde primero la nómina</strong>
+                    </p>
+                    <p class="text-muted" style="font-size: 13px;">
+                        Después de guardar podrá generar los ciclos de pago
+                    </p>
+                </td>
+            </tr>
+        `);
+        updateCycleCount(0);
     };
 
     // ========================================================================
-    // MODAL - CREAR/EDITAR
+    // ACTUALIZACIÓN DE CONTADOR
     // ========================================================================
 
-    const openModal = (cycleId?: number): void => {
-        console.log('📝 Abriendo modal:', { cycleId });
-
-        currentEditingId = cycleId || null;
-        const isEdit = cycleId !== undefined;
-
-        // Resetear formulario
-        const form = document.getElementById('frm-paycycle') as HTMLFormElement;
-        if (form) {
-            form.reset();
-        }
-
-        // Habilitar todos los campos por defecto
-        $('#PeriodStartDate, #PeriodEndDate, #DefaultPayDate, #PayDate, #AmountPaidPerPeriod, #StatusPeriod, #ObservationsCycle').prop('readonly', false).prop('disabled', false);
-        $('#IsForTax, #IsForTss').iCheck('enable');
-
-        let isStatusLockedFlag = false;
-
-        if (isEdit) {
-            const cycle = payCyclesData.find(c => c.RecID === cycleId);
-            if (cycle) {
-                console.log('✏️ Cargando datos del ciclo:', cycle);
-
-                isStatusLockedFlag = isStatusLocked(cycle.StatusPeriod);
-
-                $('#PeriodStartDate').val(cycle.PeriodStartDate ? cycle.PeriodStartDate.split('T')[0] : '');
-                $('#PeriodEndDate').val(cycle.PeriodEndDate ? cycle.PeriodEndDate.split('T')[0] : '');
-                $('#DefaultPayDate').val(cycle.DefaultPayDate ? cycle.DefaultPayDate.split('T')[0] : '');
-                $('#PayDate').val(cycle.PayDate ? cycle.PayDate.split('T')[0] : '');
-                $('#AmountPaidPerPeriod').val(cycle.AmountPaidPerPeriod || 0);
-                $('#StatusPeriod').val(cycle.StatusPeriod.toString());
-                $('#IsForTax').prop('checked', cycle.IsForTax);
-                $('#IsForTss').prop('checked', cycle.IsForTss);
-                $('#ObservationsCycle').val(cycle.Observations || '');
-
-                if (isStatusLockedFlag) {
-                    // ESTADO PAGADO O REGISTRADO: Bloquear TODO
-                    console.log('🔒 Estado PAGADO/REGISTRADO - Bloqueando TODOS los campos');
-
-                    $('#PeriodStartDate, #PeriodEndDate, #DefaultPayDate, #PayDate').prop('readonly', true);
-                    $('#AmountPaidPerPeriod').prop('readonly', true);
-                    $('#StatusPeriod').prop('disabled', true);
-                    $('#ObservationsCycle').prop('readonly', true);
-                    $('#IsForTax, #IsForTss').iCheck('disable');
-
-                    $('#modal-paycycle-title').html(`<i class="fa fa-eye"></i> Ver Ciclo de Pago - ${getStatusName(cycle.StatusPeriod)} (Solo Lectura)`);
-                    $('#btn-save-cycle').hide();
-
-                    // Mostrar alerta informativa
-                    const alertHtml = `
-                        <div class="alert alert-warning" role="alert" id="locked-alert">
-                            <i class="fa fa-lock"></i> 
-                            <strong>Solo Lectura:</strong> Este ciclo está en estado <strong>${getStatusName(cycle.StatusPeriod)}</strong> y no puede ser modificado.
-                        </div>
-                    `;
-                    $('#frm-paycycle').prepend(alertHtml);
-                } else {
-                    // ESTADO ABIERTO O PROCESADO: Bloquear campos excepto IsForTax e IsForTss
-                    console.log('🔓 Estado ABIERTO/PROCESADO - Bloqueando campos (excepto Para Impuestos y Para TSS)');
-
-                    $('#PeriodStartDate, #PeriodEndDate, #DefaultPayDate, #PayDate').prop('readonly', true);
-                    $('#AmountPaidPerPeriod').prop('readonly', true);
-                    $('#StatusPeriod').prop('disabled', true);
-                    $('#ObservationsCycle').prop('readonly', true);
-
-                    $('#modal-paycycle-title').html('<i class="fa fa-pencil"></i> Editar Ciclo de Pago');
-                    $('#btn-save-cycle').show();
-                }
-            }
+    const updateCycleCount = (count: number): void => {
+        $('#paycycles-count').text(`${count} ciclo${count !== 1 ? 's' : ''}`);
+        
+        const badge = $('#paycycles-count-badge');
+        if (count > 0) {
+            badge.text(count).show();
         } else {
-            $('#modal-paycycle-title').html('<i class="fa fa-plus"></i> Nuevo Ciclo de Pago');
-            $('#btn-save-cycle').show();
+            badge.hide();
         }
-
-        // Actualizar iCheck
-        if ($.fn.iCheck) {
-            $('#IsForTax, #IsForTss').iCheck('update');
-        }
-
-        // Abrir modal
-        ($ as any)('#modal-paycycle').modal('show');
-        console.log('✅ Modal abierto');
     };
 
     // ========================================================================
-    // GUARDADO
+    // GENERACIÓN MASIVA DE CICLOS
     // ========================================================================
 
-    const saveCycle = async (): Promise<void> => {
-        console.log('💾 Guardando ciclo...');
+    /**
+     * Genera múltiples ciclos de pago llamando al endpoint del API.
+     */
+    const generatePayCycles = async (): Promise<void> => {
+        console.log('🎯 generatePayCycles() llamado');
 
-        const form = document.getElementById('frm-paycycle') as HTMLFormElement;
+        const quantity = parseInt($('#paycycle-quantity').val() as string, 10);
+        console.log('📊 Cantidad ingresada:', quantity);
+        console.log('📊 Payroll ID actual:', currentPayrollId);
 
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            console.warn('⚠️ Formulario inválido');
+        // Validar cantidad
+        if (!quantity || quantity < 1 || quantity > 100) {
+            console.warn('⚠️ Cantidad inválida:', quantity);
+            (w as any).ALERTS?.warn('Por favor ingrese una cantidad entre 1 y 100', 'Validación');
             return;
         }
 
+        if (!currentPayrollId || currentPayrollId === 0) {
+            console.error('❌ Payroll ID inválido:', currentPayrollId);
+            (w as any).ALERTS?.error('Debe guardar la nómina antes de generar ciclos', 'Error');
+            return;
+        }
+
+        console.log(`🚀 Generando ${quantity} ciclos para Payroll ${currentPayrollId}`);
+        console.log(`🌐 API Base: ${apiBase}`);
+
         try {
-            let payload: any;
+            // Mostrar loading
+            (w as any).ALERTS?.info('Generando ciclos...', 'Procesando');
 
-            if (currentEditingId) {
-                // MODO EDICIÓN: Solo enviar campos editables
-                payload = {
-                    IsForTax: $('#IsForTax').is(':checked'),
-                    IsForTss: $('#IsForTss').is(':checked')
-                };
-                console.log('✏️ Modo edición - solo enviando IsForTax e IsForTss');
-            } else {
-                // MODO CREACIÓN: Enviar todos los campos
-                payload = {
-                    PayrollRefRecID: recId,
-                    PeriodStartDate: ($('#PeriodStartDate').val() as string) ? new Date($('#PeriodStartDate').val() as string).toISOString() : null,
-                    PeriodEndDate: ($('#PeriodEndDate').val() as string) ? new Date($('#PeriodEndDate').val() as string).toISOString() : null,
-                    DefaultPayDate: ($('#DefaultPayDate').val() as string) ? new Date($('#DefaultPayDate').val() as string).toISOString() : null,
-                    PayDate: ($('#PayDate').val() as string) ? new Date($('#PayDate').val() as string).toISOString() : null,
-                    AmountPaidPerPeriod: parseFloat($('#AmountPaidPerPeriod').val() as string) || 0,
-                    StatusPeriod: parseInt($('#StatusPeriod').val() as string),
-                    IsForTax: $('#IsForTax').is(':checked'),
-                    IsForTss: $('#IsForTss').is(':checked'),
-                    Observations: ($('#ObservationsCycle').val() as string) || null
-                };
-                console.log('➕ Modo creación - enviando todos los campos');
-            }
+            const url = `${apiBase}/PayCycles/generate`;
+            console.log('🌐 POST:', url);
 
-            console.log('📤 Payload a enviar:', payload);
+            // Payload con PascalCase
+            const payload = {
+                PayrollRefRecID: currentPayrollId,
+                Quantity: quantity
+            };
+            console.log('📤 Payload:', payload);
 
-            const url = currentEditingId
-                ? `${apiBase}/PayCycles/${currentEditingId}`
-                : `${apiBase}/PayCycles`;
-
-            const method = currentEditingId ? 'PUT' : 'POST';
-
-            await fetchJson(url, {
-                method: method,
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(payload)
             });
 
-            console.log('✅ Ciclo guardado exitosamente');
-
-            if (w.ALERTS?.ok) {
-                w.ALERTS.ok(
-                    currentEditingId ? 'Ciclo actualizado exitosamente' : 'Ciclo creado exitosamente',
-                    'Éxito'
-                );
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('❌ Error del API:', errorData);
+                throw new Error(errorData.error || errorData.message || errorData.title || `HTTP ${response.status}`);
             }
 
-            ($ as any)('#modal-paycycle').modal('hide');
+            const result = await response.json();
+            console.log('✅ Respuesta del API:', result);
+
+            // Mostrar mensaje de éxito
+            const message = result.message || `Se generaron ${result.count || quantity} ciclo(s) exitosamente`;
+            (w as any).ALERTS?.ok(message, 'Éxito');
+
+            // Recargar la tabla
             await loadPayCycles();
 
+            // Limpiar input
+            $('#paycycle-quantity').val('12');
+
         } catch (error: any) {
-            console.error('❌ Error al guardar ciclo:', error);
-            let errorMessage = 'Error al guardar el ciclo de pago';
-
-            try {
-                const errorData = JSON.parse(error.message);
-                if (errorData.errors) {
-                    const errorsArray: string[] = [];
-                    for (const key in errorData.errors) {
-                        if (errorData.errors.hasOwnProperty(key)) {
-                            errorsArray.push(...errorData.errors[key]);
-                        }
-                    }
-                    errorMessage = errorsArray.join(', ');
-                } else if (errorData.title) {
-                    errorMessage = errorData.title;
-                }
-            } catch {
-                errorMessage = error.message || errorMessage;
-            }
-
-            if (w.ALERTS?.error) {
-                w.ALERTS.error(errorMessage, 'Error');
-            }
+            console.error('❌ Error al generar ciclos:', error);
+            (w as any).ALERTS?.error(
+                error.message || 'Error al generar los ciclos de pago',
+                'Error'
+            );
         }
     };
 
     // ========================================================================
-    // ELIMINACIÓN
+    // CRUD INDIVIDUAL DE CICLOS
     // ========================================================================
 
-    const deleteCycle = async (cycleId: number, cycleStatus: number): Promise<void> => {
-        console.log('🗑️ Intentando eliminar ciclo:', cycleId);
+    const createPayCycle = async (data: any): Promise<void> => {
+        try {
+            const url = `${apiBase}/PayCycles`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ...data,
+                    PayrollRefRecID: currentPayrollId
+                })
+            });
 
-        // Verificar si el estado está bloqueado
-        if (isStatusLocked(cycleStatus)) {
-            console.warn('⚠️ No se puede eliminar - Estado bloqueado:', getStatusName(cycleStatus));
-            if (w.ALERTS?.warn) {
-                w.ALERTS.warn(
-                    `No se puede eliminar un ciclo en estado ${getStatusName(cycleStatus)}`,
-                    'Operación no permitida'
-                );
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
+
+            (w as any).ALERTS?.ok('Ciclo creado exitosamente', 'Éxito');
+            await loadPayCycles();
+            ($ as any)('#modal-paycycle').modal('hide');
+        } catch (error) {
+            console.error('Error al crear ciclo:', error);
+            (w as any).ALERTS?.error('Error al crear el ciclo de pago', 'Error');
+        }
+    };
+
+    const updatePayCycle = async (recId: number, data: any): Promise<void> => {
+        try {
+            const url = `${apiBase}/PayCycles/${recId}`;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            (w as any).ALERTS?.ok('Ciclo actualizado exitosamente', 'Éxito');
+            await loadPayCycles();
+            ($ as any)('#modal-paycycle').modal('hide');
+        } catch (error) {
+            console.error('Error al actualizar ciclo:', error);
+            (w as any).ALERTS?.error('Error al actualizar el ciclo de pago', 'Error');
+        }
+    };
+
+    const deleteCycle = async (recId: number, status: number): Promise<void> => {
+        // Validar que solo se puedan eliminar ciclos Open
+        if (status === 2 || status === 3) {
+            (w as any).ALERTS?.error(
+                'No se pueden eliminar ciclos Pagados o Registrados',
+                'Validación'
+            );
             return;
         }
 
-        if (!w.ALERTS?.confirm) {
-            console.error('❌ ALERTS.confirm no disponible');
-            return;
-        }
-
-        w.ALERTS.confirm(
+        (w as any).ALERTS?.confirm(
             '¿Está seguro de eliminar este ciclo de pago?',
             'Confirmar Eliminación',
             async (confirmed: boolean) => {
-                if (!confirmed) {
-                    console.log('❌ Eliminación cancelada por el usuario');
-                    return;
-                }
+                if (!confirmed) return;
 
                 try {
-                    const url = `${apiBase}/PayCycles/${cycleId}`;
-                    await fetchJson(url, { method: 'DELETE' });
+                    const url = `${apiBase}/PayCycles/${recId}`;
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
 
-                    console.log('✅ Ciclo eliminado exitosamente');
-
-                    if (w.ALERTS?.ok) {
-                        w.ALERTS.ok('Ciclo eliminado exitosamente', 'Éxito');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
                     }
 
+                    (w as any).ALERTS?.ok('Ciclo eliminado exitosamente', 'Éxito');
                     await loadPayCycles();
                 } catch (error) {
-                    console.error('❌ Error al eliminar ciclo:', error);
-                    if (w.ALERTS?.error) {
-                        w.ALERTS.error('Error al eliminar el ciclo de pago', 'Error');
-                    }
+                    console.error('Error al eliminar ciclo:', error);
+                    (w as any).ALERTS?.error('Error al eliminar el ciclo de pago', 'Error');
                 }
             },
             { type: 'danger' }
         );
     };
 
+    // ========================================================================
+    // ✅ NUEVA FUNCIÓN: ELIMINAR MÚLTIPLES CICLOS SELECCIONADOS
+    // ========================================================================
+
     const deleteSelectedCycles = async (): Promise<void> => {
+        console.log('🗑️ deleteSelectedCycles() llamado');
+
+        // Obtener todos los checkboxes marcados
         const $checked = $('.cycle-check:checked');
         const count = $checked.length;
 
-        console.log('🗑️ Intentando eliminar', count, 'ciclos seleccionados');
+        if (count === 0) {
+            console.warn('⚠️ No hay ciclos seleccionados');
+            return;
+        }
 
-        if (count === 0) return;
+        console.log(`📊 Ciclos seleccionados: ${count}`);
 
-        // Verificar si alguno tiene estado bloqueado
+        // Validar que ninguno esté Pagado o Registrado
         let hasLockedCycles = false;
         $checked.each(function () {
-            const $row = $(this).closest('tr');
-            const recId = $(this).data('recid');
-            const cycle = payCyclesData.find(c => c.RecID === recId);
-            if (cycle && isStatusLocked(cycle.StatusPeriod)) {
+            const status = parseInt($(this).data('status'), 10);
+            if (status === 2 || status === 3) {
                 hasLockedCycles = true;
+                return false; // break
             }
         });
 
         if (hasLockedCycles) {
-            if (w.ALERTS?.warn) {
-                w.ALERTS.warn(
-                    'Algunos ciclos seleccionados están en estado Pagado o Registrado y no pueden ser eliminados',
-                    'Operación no permitida'
-                );
-            }
+            (w as any).ALERTS?.error(
+                'No se pueden eliminar ciclos Pagados o Registrados. Deseleccione esos ciclos e intente nuevamente.',
+                'Validación'
+            );
             return;
         }
 
+        // Confirmar eliminación
         const message = count === 1
-            ? '¿Está seguro de eliminar este ciclo de pago?'
-            : `¿Está seguro de eliminar ${count} ciclos de pago?`;
+            ? '¿Está seguro de eliminar este ciclo?'
+            : `¿Está seguro de eliminar ${count} ciclos?`;
 
-        if (!w.ALERTS?.confirm) {
-            console.error('❌ ALERTS.confirm no disponible');
-            return;
-        }
-
-        w.ALERTS.confirm(
+        (w as any).ALERTS?.confirm(
             message,
             'Confirmar Eliminación',
             async (confirmed: boolean) => {
                 if (!confirmed) return;
 
                 try {
+                    console.log('🚀 Eliminando ciclos...');
+
+                    // Eliminar cada ciclo
                     const promises: Promise<void>[] = [];
                     $checked.each(function () {
-                        const cycleId = $(this).data('recid');
-                        if (cycleId) {
-                            const url = `${apiBase}/PayCycles/${cycleId}`;
-                            promises.push(fetchJson(url, { method: 'DELETE' }));
+                        const recId = $(this).data('recid');
+                        if (recId) {
+                            const url = `${apiBase}/PayCycles/${recId}`;
+                            const promise = fetch(url, {
+                                method: 'DELETE',
+                                headers: { 'Accept': 'application/json' }
+                            }).then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`Error al eliminar ciclo ${recId}`);
+                                }
+                            });
+                            promises.push(promise);
                         }
                     });
 
                     await Promise.all(promises);
 
-                    console.log('✅ Ciclos eliminados exitosamente');
+                    console.log('✅ Todos los ciclos eliminados');
+                    (w as any).ALERTS?.ok(
+                        `Se eliminaron ${count} ciclo(s) exitosamente`,
+                        'Éxito'
+                    );
 
-                    if (w.ALERTS?.ok) {
-                        w.ALERTS.ok('Ciclo(s) eliminado(s) exitosamente', 'Éxito');
-                    }
-
+                    // Recargar la tabla
                     await loadPayCycles();
+
                 } catch (error) {
                     console.error('❌ Error al eliminar ciclos:', error);
-                    if (w.ALERTS?.error) {
-                        w.ALERTS.error('Error al eliminar ciclo(s) de pago', 'Error');
-                    }
+                    (w as any).ALERTS?.error('Error al eliminar algunos ciclos', 'Error');
+                    await loadPayCycles(); // Recargar de todas formas
                 }
             },
             { type: 'danger' }
@@ -596,15 +490,39 @@
     };
 
     // ========================================================================
-    // ESTADOS DE BOTONES
+    // UTILIDADES
     // ========================================================================
+
+    const getStatusBadge = (status: number): string => {
+        const statusMap: any = {
+            0: '<span class="label label-info">Abierto</span>',
+            1: '<span class="label label-warning">Procesado</span>',
+            2: '<span class="label label-success">Pagado</span>',
+            3: '<span class="label label-primary">Registrado</span>'
+        };
+        return statusMap[status] || '<span class="label label-default">Desconocido</span>';
+    };
+
+    const formatDate = (dateStr: string): string => {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('es-DO', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    };
+
+    const formatCurrency = (amount: number): string => {
+        return new Intl.NumberFormat('es-DO', {
+            style: 'currency',
+            currency: 'DOP'
+        }).format(amount || 0);
+    };
 
     const updateButtonStates = (): void => {
         const checkedCount = $('.cycle-check:checked').length;
-        const btnDelete = $('#btn-delete-cycles');
-        if (btnDelete.length) {
-            btnDelete.prop('disabled', checkedCount === 0);
-        }
+        $('#btn-delete-cycles').prop('disabled', checkedCount === 0);
     };
 
     // ========================================================================
@@ -612,34 +530,89 @@
     // ========================================================================
 
     const setupEventHandlers = (): void => {
-        console.log('🔧 Configurando event handlers...');
+        console.log('🔧 Configurando event handlers de PayCycles');
 
-        // Botón nuevo ciclo
-        $('#btn-new-cycle').off('click').on('click', function () {
+        // Botón: Generar Ciclos
+        $(document).off('click', '#btn-generate-cycles').on('click', '#btn-generate-cycles', async function () {
+            console.log('🚀 Click en btn-generate-cycles');
+            await generatePayCycles();
+        });
+
+        // Botón: Nuevo Ciclo (manual)
+        $(document).off('click', '#btn-new-cycle').on('click', '#btn-new-cycle', function () {
             console.log('➕ Click en btn-new-cycle');
-            openModal();
+
+            if (!currentPayrollId || currentPayrollId === 0) {
+                (w as any).ALERTS?.error('Debe guardar la nómina antes de crear ciclos', 'Error');
+                return;
+            }
+
+            // Limpiar formulario y abrir modal
+            const form = $('#paycycle-form')[0] as HTMLFormElement;
+            if (form) form.reset();
+            $('#paycycle-recid').val('0');
+            
+            // Inicializar checkboxes ISR y TSS como desmarcados
+            $('#paycycle-is-for-tax').iCheck('uncheck');
+            $('#paycycle-is-for-tss').iCheck('uncheck');
+            
+            $('#modal-paycycle-title').text('Nuevo Ciclo de Pago');
+            ($ as any)('#modal-paycycle').modal('show');
         });
 
-        // Botón guardar ciclo
-        $('#btn-save-cycle').off('click').on('click', async function () {
-            console.log('💾 Click en btn-save-cycle');
-            await saveCycle();
+        // Botón: Editar Ciclo
+        $(document).off('click', '.btn-edit-cycle').on('click', '.btn-edit-cycle', async function () {
+            if ($(this).prop('disabled')) {
+                console.warn('⚠️ Botón editar deshabilitado');
+                return;
+            }
+
+            const recId = $(this).data('recid');
+            const cycleStatus = $(this).data('status');
+            console.log('✏️ Click en btn-edit-cycle:', { recId, cycleStatus });
+
+            // Validar que solo se puedan editar ciclos Open
+            if (cycleStatus === 2 || cycleStatus === 3) {
+                (w as any).ALERTS?.warning(
+                    'No se pueden editar ciclos Pagados o Registrados',
+                    'Validación'
+                );
+                return;
+            }
+
+            // Buscar el ciclo (PascalCase)
+            const cycle = payCycles.find(c => c.RecID === recId);
+            if (!cycle) {
+                (w as any).ALERTS?.error('Ciclo no encontrado', 'Error');
+                return;
+            }
+
+            // Llenar formulario (PascalCase)
+            $('#paycycle-recid').val(cycle.RecID);
+            $('#paycycle-start-date').val(cycle.PeriodStartDate.split('T')[0]);
+            $('#paycycle-end-date').val(cycle.PeriodEndDate.split('T')[0]);
+            $('#paycycle-pay-date').val(cycle.PayDate.split('T')[0]);
+            $('#paycycle-amount').val(cycle.AmountPaidPerPeriod);
+            $('#paycycle-observations').val(cycle.Observations || '');
+            
+            // Llenar checkboxes ISR y TSS
+            if (cycle.IsForTax) {
+                $('#paycycle-is-for-tax').iCheck('check');
+            } else {
+                $('#paycycle-is-for-tax').iCheck('uncheck');
+            }
+            
+            if (cycle.IsForTss) {
+                $('#paycycle-is-for-tss').iCheck('check');
+            } else {
+                $('#paycycle-is-for-tss').iCheck('uncheck');
+            }
+
+            $('#modal-paycycle-title').text('Editar Ciclo de Pago');
+            ($ as any)('#modal-paycycle').modal('show');
         });
 
-        // Botón eliminar seleccionados
-        $('#btn-delete-cycles').off('click').on('click', async function () {
-            console.log('🗑️ Click en btn-delete-cycles');
-            await deleteSelectedCycles();
-        });
-
-        // Botón editar/ver ciclo (delegado)
-        $(document).off('click', '.btn-edit-cycle').on('click', '.btn-edit-cycle', function () {
-            const cycleId = $(this).data('recid');
-            console.log('✏️ Click en btn-edit-cycle:', cycleId);
-            openModal(cycleId);
-        });
-
-        // Botón eliminar ciclo (delegado)
+        // Botón: Eliminar Ciclo Individual
         $(document).off('click', '.btn-delete-cycle').on('click', '.btn-delete-cycle', function () {
             if ($(this).prop('disabled')) {
                 console.warn('⚠️ Botón eliminar deshabilitado');
@@ -649,6 +622,12 @@
             const cycleStatus = $(this).data('status');
             console.log('🗑️ Click en btn-delete-cycle:', { cycleId, cycleStatus });
             deleteCycle(cycleId, cycleStatus);
+        });
+
+        // ✅ NUEVO: Botón Eliminar Seleccionados
+        $(document).off('click', '#btn-delete-cycles').on('click', '#btn-delete-cycles', async function () {
+            console.log('🗑️ Click en btn-delete-cycles');
+            await deleteSelectedCycles();
         });
 
         // Check all cycles
@@ -672,36 +651,98 @@
             updateButtonStates();
         });
 
-        // Limpiar alerta al cerrar modal
-        ($ as any)('#modal-paycycle').on('hidden.bs.modal', function () {
-            $('#locked-alert').remove();
+        // Guardar ciclo (desde modal) - Con ISR y TSS
+        $(document).off('click', '#btn-save-paycycle').on('click', '#btn-save-paycycle', async function () {
+            const recId = parseInt($('#paycycle-recid').val() as string, 10);
+            const isNew = !recId || recId === 0;
+
+            // Capturar valores de ISR y TSS
+            const data = {
+                PeriodStartDate: $('#paycycle-start-date').val(),
+                PeriodEndDate: $('#paycycle-end-date').val(),
+                PayDate: $('#paycycle-pay-date').val(),
+                DefaultPayDate: $('#paycycle-pay-date').val(),
+                AmountPaidPerPeriod: parseFloat($('#paycycle-amount').val() as string) || 0,
+                StatusPeriod: 0, // Open
+                IsForTax: $('#paycycle-is-for-tax').is(':checked'),
+                IsForTss: $('#paycycle-is-for-tss').is(':checked'),
+                Observations: $('#paycycle-observations').val()
+            };
+
+            console.log('💾 Guardando ciclo:', data);
+
+            if (isNew) {
+                await createPayCycle(data);
+            } else {
+                await updatePayCycle(recId, data);
+            }
+        });
+
+        // Al cambiar de tab a "Ciclos de Pago", recargar si es necesario
+        $('a[href="#tab_content2"]').on('shown.bs.tab', function () {
+            console.log('📑 Tab Ciclos de Pago activado');
+            const payrollIdFromDOM = getPayrollIdFromDOM();
+            if (payrollIdFromDOM !== currentPayrollId) {
+                console.log('🔄 PayrollId cambió, recargando...');
+                currentPayrollId = payrollIdFromDOM;
+                loadPayCycles();
+            }
         });
 
         console.log('✅ Event handlers configurados');
     };
 
     // ========================================================================
-    // INICIALIZACIÓN
+    // INICIALIZACIÓN PÚBLICA
     // ========================================================================
 
-    const initialize = async (): Promise<void> => {
-        console.log('🚀 Inicializando módulo PayCycles...');
-
-        try {
+    /**
+     * Inicializa el módulo de ciclos de pago.
+     * Debe ser llamado desde payroll-form.ts después de guardar el Payroll.
+     */
+    (w as any).PayCyclesTab = {
+        init: async function (payrollId: number) {
+            console.log('🚀 PayCyclesTab.init() - Payroll ID:', payrollId);
+            currentPayrollId = payrollId;
             setupEventHandlers();
             await loadPayCycles();
-            console.log('✅ Módulo PayCycles inicializado correctamente');
-        } catch (error) {
-            console.error('❌ Error al inicializar PayCycles:', error);
-            showEmptyState();
+        },
+        refresh: async function () {
+            console.log('🔄 PayCyclesTab.refresh()');
+            await loadPayCycles();
+        },
+        setPayrollId: function (payrollId: number) {
+            console.log('📝 PayCyclesTab.setPayrollId():', payrollId);
+            currentPayrollId = payrollId;
         }
     };
 
-    // Ejecutar al cargar el DOM
+    // ========================================================================
+    // AUTO-INICIALIZACIÓN
+    // ========================================================================
+
+    /**
+     * Se ejecuta automáticamente al cargar el DOM.
+     */
     $(async function () {
-        console.log('📄 DOM listo - ejecutando initialize()');
-        await initialize();
+        console.log('📄 DOM ready - paycycles-tab.ts');
+        
+        // Obtener PayrollId desde el DOM
+        currentPayrollId = getPayrollIdFromDOM();
+        console.log('📊 PayrollId inicial:', currentPayrollId);
+
+        // Configurar event handlers
+        setupEventHandlers();
+
+        // Cargar ciclos si estamos en modo edición
+        if (currentPayrollId > 0) {
+            console.log('✅ Modo edición detectado, cargando ciclos...');
+            await loadPayCycles();
+        } else {
+            console.log('ℹ️ Modo creación detectado, mostrando mensaje');
+            showNewPayrollState();
+        }
     });
 
-    console.log('✅ paycycles-tab.ts cargado');
+    console.log('✅ paycycles-tab.ts cargado y listo');
 })();

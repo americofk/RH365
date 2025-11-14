@@ -111,25 +111,29 @@ namespace RH365.Infrastructure.Services
                 startDate,
                 quantity);
 
-            // 5. Guardar en BD de forma transaccional
-            using var transaction = _context.Database.BeginTransaction();
-            try
+            // 5. Guardar en BD usando la estrategia de ejecución para compatibilidad con EnableRetryOnFailure
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                await _context.PayCycles.AddRangeAsync(newCycles, ct);
-                await _context.SaveChangesAsync(ct);
-                transaction.Commit();
+                using var transaction = await _context.Database.BeginTransactionAsync(ct);
+                try
+                {
+                    await _context.PayCycles.AddRangeAsync(newCycles, ct);
+                    await _context.SaveChangesAsync(ct);
+                    await transaction.CommitAsync(ct);
 
-                _logger.LogInformation(
-                    "Generados exitosamente {Count} ciclos para Payroll {PayrollId}",
-                    newCycles.Count,
-                    payrollRefRecID);
-            }
-            catch (Exception ex)
-            {
-                transaction.Rollback();
-                _logger.LogError(ex, "Error al guardar ciclos para Payroll {PayrollId}", payrollRefRecID);
-                throw;
-            }
+                    _logger.LogInformation(
+                        "Generados exitosamente {Count} ciclos para Payroll {PayrollId}",
+                        newCycles.Count,
+                        payrollRefRecID);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(ct);
+                    _logger.LogError(ex, "Error al guardar ciclos para Payroll {PayrollId}", payrollRefRecID);
+                    throw;
+                }
+            });
 
             // 6. Mapear a DTOs
             var dtos = newCycles.Select(cycle => new PayCycleDto
