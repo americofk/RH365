@@ -9,6 +9,7 @@
 // ============================================================================
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using RH365.Core.Domain.Entities;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace RH365.Core.Application.Common.Interfaces
     /// </summary>
     public interface IApplicationDbContext
     {
+        DatabaseFacade Database { get; }
         // Security
         DbSet<User> Users { get; }
         DbSet<UserImage> UserImages { get; }

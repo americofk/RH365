@@ -5,13 +5,16 @@
 // Descripción:
 //   - Controlador API REST para PayCycle (dbo.PayCycles)
 //   - CRUD completo con validaciones de FK
+//   - Endpoint para generación masiva de ciclos
 // ============================================================================
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RH365.Core.Application.Common.Interfaces;
 using RH365.Core.Application.Features.DTOs.PayCycle;
 using RH365.Core.Domain.Entities;
+using RH365.Infrastructure.Services;
 
 namespace RH365.WebAPI.Controllers
 {
@@ -22,11 +25,16 @@ namespace RH365.WebAPI.Controllers
     {
         private readonly IApplicationDbContext _context;
         private readonly ILogger<PayCyclesController> _logger;
+        private readonly IPayCycleGeneratorService _generatorService;
 
-        public PayCyclesController(IApplicationDbContext context, ILogger<PayCyclesController> logger)
+        public PayCyclesController(
+            IApplicationDbContext context,
+            ILogger<PayCyclesController> logger,
+            IPayCycleGeneratorService generatorService)
         {
             _context = context;
             _logger = logger;
+            _generatorService = generatorService;
         }
 
         // GET: api/PayCycles?skip=0&take=50
@@ -253,6 +261,73 @@ namespace RH365.WebAPI.Controllers
             {
                 _logger.LogError(ex, "Error al eliminar PayCycle {RecID}", recId);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al eliminar PayCycle.");
+            }
+        }
+
+        // ========================================================================
+        // ENDPOINT PARA GENERACIÓN MASIVA DE CICLOS
+        // ========================================================================
+
+        /// <summary>
+        /// Genera múltiples ciclos de pago de forma automática.
+        /// Calcula las fechas según la frecuencia de pago del Payroll.
+        /// </summary>
+        /// <param name="request">Request con PayrollRefRecID y Quantity</param>
+        /// <param name="ct">Token de cancelación</param>
+        /// <returns>Lista de ciclos generados</returns>
+        /// <response code="200">Ciclos generados exitosamente</response>
+        /// <response code="400">Request inválido o Payroll no existe</response>
+        /// <response code="500">Error interno del servidor</response>
+        [HttpPost("generate")]
+        [ProducesResponseType(typeof(IEnumerable<PayCycleDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IEnumerable<PayCycleDto>>> GeneratePayCycles(
+            [FromBody] GeneratePayCyclesRequest request,
+            CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "Request para generar {Quantity} ciclos para Payroll {PayrollId}",
+                    request.Quantity,
+                    request.PayrollRefRecID);
+
+                // Validar modelo
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Llamar al servicio de generación
+                var generatedCycles = await _generatorService.GeneratePayCyclesAsync(
+                    request.PayrollRefRecID,
+                    request.Quantity,
+                    ct);
+
+                _logger.LogInformation(
+                    "Generados exitosamente {Count} ciclos para Payroll {PayrollId}",
+                    generatedCycles.Count,
+                    request.PayrollRefRecID);
+
+                return Ok(new
+                {
+                    Message = $"Se generaron exitosamente {generatedCycles.Count} ciclo(s) de pago",
+                    Count = generatedCycles.Count,
+                    Data = generatedCycles
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Validación fallida al generar ciclos");
+                return BadRequest(new { Error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al generar ciclos para Payroll {PayrollId}", request.PayrollRefRecID);
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new { Error = "Error interno al generar los ciclos de pago" });
             }
         }
     }
