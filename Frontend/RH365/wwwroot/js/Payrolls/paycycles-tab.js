@@ -8,7 +8,8 @@
 //   - CRUD individual de ciclos
 //   - Eliminación múltiple de ciclos seleccionados
 //   - Validaciones de estado (solo Open se puede editar/eliminar)
-//   - Soporte para ISR y TSS
+//   - Soporte para ISR y TSS con iconos verdes
+//   - MEJORAS: Iconos verdes para ISR/TSS + Ordenamiento por columnas
 // ISO 27001: Gestión de ciclos con trazabilidad completa
 // ============================================================================
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -29,6 +30,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // Variables globales
     let currentPayrollId = 0;
     let payCycles = [];
+    let sortField = '';
+    let sortOrder = 'asc';
     // ========================================================================
     // INICIALIZACIÓN DE PAYROLL ID
     // ========================================================================
@@ -84,6 +87,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 return match;
             });
             console.log(`✅ ${payCycles.length} ciclos filtrados para Payroll ${currentPayrollId}`);
+            // Aplicar ordenamiento si existe
+            if (sortField) {
+                sortPayCycles();
+            }
             renderPayCyclesTable();
             updateCycleCount(payCycles.length);
             updateButtonStates();
@@ -94,6 +101,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             showEmptyState();
         }
     });
+    // ========================================================================
+    // ✅ NUEVA FUNCIÓN: ORDENAMIENTO DE CICLOS
+    // ========================================================================
+    const sortPayCycles = () => {
+        if (!sortField)
+            return;
+        payCycles.sort((a, b) => {
+            let aVal = a[sortField];
+            let bVal = b[sortField];
+            // Convertir fechas a timestamps para comparar
+            if (sortField.includes('Date')) {
+                aVal = new Date(aVal).getTime();
+                bVal = new Date(bVal).getTime();
+            }
+            // Convertir números
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+            }
+            // Comparar strings
+            const aStr = String(aVal || '').toLowerCase();
+            const bStr = String(bVal || '').toLowerCase();
+            if (sortOrder === 'asc') {
+                return aStr < bStr ? -1 : aStr > bStr ? 1 : 0;
+            }
+            else {
+                return bStr < aStr ? -1 : bStr > aStr ? 1 : 0;
+            }
+        });
+    };
     // ========================================================================
     // RENDERIZADO DE TABLA
     // ========================================================================
@@ -107,6 +143,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         payCycles.forEach(cycle => {
             const statusBadge = getStatusBadge(cycle.StatusPeriod);
             const isLocked = cycle.StatusPeriod === 2 || cycle.StatusPeriod === 3; // Paid or Registered
+            // ✅ MEJORADO: Iconos verdes para ISR y TSS
+            const isrIcon = cycle.IsForTax
+                ? '<i class="fa fa-check-circle check-icon-green"></i>'
+                : '<i class="fa fa-circle-thin check-icon-gray"></i>';
+            const tssIcon = cycle.IsForTss
+                ? '<i class="fa fa-check-circle check-icon-green"></i>'
+                : '<i class="fa fa-circle-thin check-icon-gray"></i>';
             const row = `
                 <tr data-recid="${cycle.RecID}">
                     <td class="text-center">
@@ -122,18 +165,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     <td>${formatDate(cycle.PayDate)}</td>
                     <td class="text-right">${formatCurrency(cycle.AmountPaidPerPeriod)}</td>
                     <td class="text-center">${statusBadge}</td>
-                    <td class="text-center">
-                        <input type="checkbox" 
-                               class="flat" 
-                               ${cycle.IsForTax ? 'checked' : ''} 
-                               disabled>
-                    </td>
-                    <td class="text-center">
-                        <input type="checkbox" 
-                               class="flat" 
-                               ${cycle.IsForTss ? 'checked' : ''} 
-                               disabled>
-                    </td>
+                    <td class="text-center">${isrIcon}</td>
+                    <td class="text-center">${tssIcon}</td>
                     <td class="text-center">
                         <button type="button" 
                                 class="btn btn-xs btn-primary btn-edit-cycle" 
@@ -159,6 +192,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             $('.flat').iCheck({
                 checkboxClass: 'icheckbox_flat-green'
             });
+        }
+        // ✅ Actualizar indicadores visuales de ordenamiento
+        updateSortIndicators();
+    };
+    // ========================================================================
+    // ✅ NUEVA FUNCIÓN: ACTUALIZAR INDICADORES DE ORDENAMIENTO
+    // ========================================================================
+    const updateSortIndicators = () => {
+        // Remover clases de ordenamiento previas
+        $('.sortable-header').removeClass('asc desc');
+        // Actualizar iconos
+        $('.sortable-header .sort-icon').removeClass('fa-sort-up fa-sort-down').addClass('fa-sort');
+        // Aplicar clase al campo actualmente ordenado
+        if (sortField) {
+            const $header = $(`.sortable-header[data-field="${sortField}"]`);
+            $header.addClass(sortOrder);
+            const iconClass = sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+            $header.find('.sort-icon').removeClass('fa-sort').addClass(iconClass);
         }
     };
     const showEmptyState = () => {
@@ -353,7 +404,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }), { type: 'danger' });
     });
     // ========================================================================
-    // ✅ NUEVA FUNCIÓN: ELIMINAR MÚLTIPLES CICLOS SELECCIONADOS
+    // ELIMINACIÓN MÚLTIPLE DE CICLOS SELECCIONADOS
     // ========================================================================
     const deleteSelectedCycles = () => __awaiter(this, void 0, void 0, function* () {
         var _a, _b;
@@ -456,6 +507,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     const setupEventHandlers = () => {
         console.log('🔧 Configurando event handlers de PayCycles');
+        // ✅ NUEVO: Click en encabezados para ordenar
+        $(document).off('click', '.sortable-header').on('click', '.sortable-header', function () {
+            const field = $(this).data('field');
+            console.log('🔄 Ordenando por:', field);
+            // Si es el mismo campo, invertir orden
+            if (sortField === field) {
+                sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            }
+            else {
+                // Nuevo campo, ordenar ascendente
+                sortField = field;
+                sortOrder = 'asc';
+            }
+            // Ordenar y renderizar
+            sortPayCycles();
+            renderPayCyclesTable();
+        });
         // Botón: Generar Ciclos
         $(document).off('click', '#btn-generate-cycles').on('click', '#btn-generate-cycles', function () {
             return __awaiter(this, void 0, void 0, function* () {
@@ -539,7 +607,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             console.log('🗑️ Click en btn-delete-cycle:', { cycleId, cycleStatus });
             deleteCycle(cycleId, cycleStatus);
         });
-        // ✅ NUEVO: Botón Eliminar Seleccionados
+        // Botón Eliminar Seleccionados
         $(document).off('click', '#btn-delete-cycles').on('click', '#btn-delete-cycles', function () {
             return __awaiter(this, void 0, void 0, function* () {
                 console.log('🗑️ Click en btn-delete-cycles');
