@@ -208,7 +208,7 @@
         try {
             await fetchJson(url, { method, body: JSON.stringify(payload) });
             (w as any).ALERTS?.ok(isNew ? 'Nivel educativo creado' : 'Nivel educativo actualizado', 'Éxito');
-            setTimeout(() => { window.location.href = '/EducationLevel/LP_EducationLevels'; }, 1200);
+            /*setTimeout(() => { window.location.href = '/EducationLevel/LP_EducationLevels'; }, 1200);*/
         } catch (e: any) {
             let msg = 'Error al guardar el nivel educativo';
             try {

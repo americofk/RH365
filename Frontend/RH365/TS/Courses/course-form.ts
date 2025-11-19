@@ -595,9 +595,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/Course/LP_Courses';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Course/LP_Courses';
+            //}, 1500);
 
         } catch (error: any) {
             let errorMessage = 'No se pudo guardar el curso';

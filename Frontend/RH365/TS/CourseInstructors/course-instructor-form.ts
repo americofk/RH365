@@ -436,9 +436,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/CourseInstructor/LP_CourseInstructors';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/CourseInstructor/LP_CourseInstructors';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

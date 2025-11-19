@@ -386,9 +386,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/Job/LP_Jobs';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Job/LP_Jobs';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

@@ -469,9 +469,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 body: JSON.stringify(payload)
             });
             w.ALERTS.ok(isNew ? 'Posición creada exitosamente' : 'Posición actualizada exitosamente', 'Éxito');
-            setTimeout(() => {
-                window.location.href = '/Position/LP_Positions';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Position/LP_Positions';
+            //}, 1500);
         }
         catch (error) {
             console.error('Error al guardar:', error);

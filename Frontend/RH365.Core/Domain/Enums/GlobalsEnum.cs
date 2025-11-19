@@ -1,4 +1,17 @@
-﻿using System;
+﻿// ============================================================================
+// Archivo: GlobalsEnum.cs
+// Proyecto: RH365.Core
+// Ruta: RH365.Core/Domain/Models/Enums/GlobalsEnum.cs
+// Descripción:
+//   - Catálogo centralizado de enumeraciones del sistema
+//   - Define todos los valores de listas desplegables
+//   - Estandarización ISO 27001: Documentación completa y trazabilidad
+//   - Todos los valores y descripciones en español
+// Autor: Sistema RH365
+// Fecha: 2025
+// ============================================================================
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -6,366 +19,598 @@ using System.Text;
 
 namespace RH365.Core.Domain.Models.Enums
 {
-    public class GlobalsEnum
+    /// <summary>
+    /// Frecuencia de pago para nómina
+    /// ISO 27001: Control de frecuencias de procesamiento de pagos
+    /// </summary>
+    public enum FrecuenciaPago
     {
-        public enum PayFrecuency
-        {
-            Diario = 0,
-            Semanal = 1,
-            Bisemanal = 2,
-            Quincenal = 3,
-            Mensual = 4,
-            Trimestral = 5,
-            Cuatrimestral = 6,
-            Semestral = 7,
-            Anual = 8
-        }
+        [Display(Name = "Diario")]
+        Diario = 0,
+
+        [Display(Name = "Semanal")]
+        Semanal = 1,
+
+        [Display(Name = "Bisemanal")]
+        Bisemanal = 2,
+
+        [Display(Name = "Quincenal")]
+        Quincenal = 3,
+
+        [Display(Name = "Mensual")]
+        Mensual = 4,
+
+        [Display(Name = "Trimestral")]
+        Trimestral = 5,
+
+        [Display(Name = "Cuatrimestral")]
+        Cuatrimestral = 6,
+
+        [Display(Name = "Semestral")]
+        Semestral = 7,
+
+        [Display(Name = "Anual")]
+        Anual = 8
     }
-    public enum EmployeeAction
+
+    /// <summary>
+    /// Acciones de empleado para gestión de recursos humanos
+    /// ISO 27001: Registro de cambios en el estado del empleado
+    /// </summary>
+    public enum AccionEmpleado
     {
+        [Display(Name = "Ninguno")]
         Ninguno = 0,
+
+        [Display(Name = "Desahucio")]
         Desahucio = 1,
+
+        [Display(Name = "Renuncia")]
         Renuncia = 2,
+
+        [Display(Name = "Término de Contrato Temporal")]
         TerminoContratoTemporal = 3,
+
+        [Display(Name = "Muerte")]
         Muerte = 4,
+
+        [Display(Name = "Transferencia")]
         Transferencia = 5,
+
+        [Display(Name = "Término Contrato Periodo Probatorio")]
         TerminoContratoPeriodoProbatorio = 6,
+
+        [Display(Name = "Promoción")]
         Promocion = 7,
+
+        [Display(Name = "Transferencia de Departamento")]
         TransferenciaDepartamento = 8,
+
+        [Display(Name = "Transferencia entre Empresas")]
         TransferenciaEmpresas = 9,
+
+        [Display(Name = "Contrato Temporero")]
         ContratoTemporero = 10,
+
+        [Display(Name = "Término de Contrato")]
         TerminoContrato = 11,
+
+        [Display(Name = "Despido")]
         Despido = 12,
+
+        [Display(Name = "Enfermedad")]
         Enfermedad = 13
     }
 
-
-    public enum StatusPeriod
+    /// <summary>
+    /// Estados del período de nómina
+    /// ISO 27001: Control de estados para procesamiento de pagos
+    /// </summary>
+    public enum EstadoPeriodo
     {
         [Display(Name = "Abierto")]
-        Open = 0,
+        Abierto = 0,
+
         [Display(Name = "Procesado")]
-        Processed = 1,
+        Procesado = 1,
+
         [Display(Name = "Pagado")]
-        Paid = 2,
+        Pagado = 2,
+
         [Display(Name = "Registrado")]
-        Registered = 3
+        Registrado = 3
     }
 
-    public enum AdminType
+    /// <summary>
+    /// Tipos de administrador del sistema
+    /// ISO 27001: Control de acceso basado en roles
+    /// </summary>
+    public enum TipoAdministrador
     {
-        LocalAdmin = 0,
-        GlobalAdmin = 1,
-        User = 2
+        [Display(Name = "Administrador Local")]
+        AdministradorLocal = 0,
+
+        [Display(Name = "Administrador Global")]
+        AdministradorGlobal = 1,
+
+        [Display(Name = "Usuario")]
+        Usuario = 2
     }
 
-    public enum CourseStatus
+    /// <summary>
+    /// Estados de cursos de capacitación
+    /// ISO 27001: Seguimiento de formación del personal
+    /// </summary>
+    public enum EstadoCurso
     {
-        Created = 0,
-        InProcess = 1,
-        Closed = 2
+        [Display(Name = "Creado")]
+        Creado = 0,
+
+        [Display(Name = "En Proceso")]
+        EnProceso = 1,
+
+        [Display(Name = "Cerrado")]
+        Cerrado = 2
     }
 
-    public enum InternalExternal
+    /// <summary>
+    /// Clasificación interno/externo
+    /// ISO 27001: Identificación de recursos internos y externos
+    /// </summary>
+    public enum InternoExterno
     {
         [Display(Name = "Interno")]
-        Internal = 0,
+        Interno = 0,
+
         [Display(Name = "Externo")]
-        External = 1,
+        Externo = 1
     }
 
-    public enum Gender
+    /// <summary>
+    /// Género del empleado
+    /// ISO 27001: Datos demográficos para reportes de cumplimiento
+    /// </summary>
+    public enum Genero
     {
         [Display(Name = "Masculino")]
-        Male = 0,
+        Masculino = 0,
+
         [Display(Name = "Femenino")]
-        Female = 1,
+        Femenino = 1,
+
         [Display(Name = "No especificado")]
-        NonSpecific = 2
+        NoEspecificado = 2
     }
 
-    public enum MaritalStatus
+    /// <summary>
+    /// Estado civil del empleado
+    /// ISO 27001: Información personal para beneficios y deducciones
+    /// </summary>
+    public enum EstadoCivil
     {
         [Display(Name = "Casado/a")]
-        Married = 0,
+        Casado = 0,
+
         [Display(Name = "Soltero/a")]
-        Single = 1,
+        Soltero = 1,
+
         [Display(Name = "Viudo/a")]
-        Widowed = 2,
+        Viudo = 2,
+
         [Display(Name = "Divorciado/a")]
-        Divorced = 3,
+        Divorciado = 3,
+
         [Display(Name = "Separado/a")]
-        Separated = 4
+        Separado = 4
     }
 
-    public enum EmployeeType
+    /// <summary>
+    /// Tipo de empleado
+    /// ISO 27001: Clasificación laboral para control de acceso
+    /// </summary>
+    public enum TipoEmpleado
     {
         [Display(Name = "Empleado")]
-        Employee = 0,
+        Empleado = 0,
+
         [Display(Name = "Contratista")]
-        Contractor = 1,
-        //[Display(Name = "Pendiente por suspender")]
-        //PendingSuspend = 2
+        Contratista = 1
     }
 
-    public enum ContactType
+    /// <summary>
+    /// Tipo de contacto
+    /// ISO 27001: Medios de comunicación con el empleado
+    /// </summary>
+    public enum TipoContacto
     {
         [Display(Name = "Celular")]
-        MobilePhone = 0,
+        Celular = 0,
 
-        [Display(Name = "Correo")]
-        Email = 1,
+        [Display(Name = "Correo Electrónico")]
+        Correo = 1,
 
         [Display(Name = "Teléfono")]
-        Phone = 2,
+        Telefono = 2,
 
         [Display(Name = "Otro")]
         Otro = 3
     }
 
-    public enum IndexBase
+    /// <summary>
+    /// Base de índice para cálculos de nómina
+    /// ISO 27001: Métodos de cálculo para pagos y deducciones
+    /// </summary>
+    public enum BaseIndice
     {
         [Display(Name = "Hora")]
-        Hour = 0, //Hora
+        Hora = 0,
+
         [Display(Name = "Período de pago")]
-        PayPeriod = 1,// Periodo de pago
+        PeriodoPago = 1,
+
         [Display(Name = "Mensual")]
-        Monthly = 2,//Mensual
+        Mensual = 2,
+
         [Display(Name = "Anual")]
-        Yearly = 3, //Anual
+        Anual = 3,
+
         [Display(Name = "Monto fijo")]
-        FixedAmount = 4, //Monto fijo
+        MontoFijo = 4,
+
         [Display(Name = "Retroactivo")]
-        Retroactive = 5, //Retroactivo
-        [Display(Name = "Indice salarial estándar")]
-        StandardWageRate = 6, // Indice salarial estandar
+        Retroactivo = 5,
+
+        [Display(Name = "Índice salarial estándar")]
+        IndiceSalarialEstandar = 6,
+
         [Display(Name = "Porcentaje de ganancia")]
-        EarningPercent = 7, // Porcenatge de ganancia
+        PorcentajeGanancia = 7,
+
         [Display(Name = "Horas de trabajo")]
-        EarningHours = 8 // Horas de trabajo
+        HorasTrabajo = 8
     }
 
-    public enum WorkStatus
+    /// <summary>
+    /// Estado laboral del empleado
+    /// ISO 27001: Control de estado del personal
+    /// </summary>
+    public enum EstadoLaboral
     {
-        Candidate = 0,
-        Dismissed = 1,
-        Employ = 2,
-        Disable = 3
+        [Display(Name = "Candidato")]
+        Candidato = 0,
+
+        [Display(Name = "Despedido")]
+        Despedido = 1,
+
+        [Display(Name = "Empleado")]
+        Empleado = 2,
+
+        [Display(Name = "Deshabilitado")]
+        Deshabilitado = 3
     }
 
-    public enum IndexBaseTwo
+    /// <summary>
+    /// Base de índice simplificada (hora y monto fijo)
+    /// ISO 27001: Cálculos simplificados de nómina
+    /// </summary>
+    public enum BaseIndiceDos
     {
         [Display(Name = "Hora")]
-        Hour = 0, //Hora
-        [Display(Name = "Monto fijo")]
-        FixedAmount = 4, //Monto fijo
+        Hora = 0,
 
+        [Display(Name = "Monto fijo")]
+        MontoFijo = 4
     }
 
-    public enum PayrollAction
+    /// <summary>
+    /// Tipo de acción de nómina
+    /// ISO 27001: Control de deducciones y contribuciones
+    /// </summary>
+    public enum AccionNomina
     {
         [Display(Name = "Deducción")]
-        Deduction = 0,
+        Deduccion = 0,
+
         [Display(Name = "Contribución")]
-        Contribution = 1,
+        Contribucion = 1,
+
         [Display(Name = "Ambos")]
-        Both = 2
+        Ambos = 2
     }
 
-    public enum PayFrecuency
-    {
-        [Display(Name = "Diario")]
-        Diary = 0,
-        [Display(Name = "Semanal")]
-        Weekly = 1,
-        [Display(Name = "Bisemanal")]
-        TwoWeekly = 2,
-        [Display(Name = "Quincenal")]
-        BiWeekly = 3,
-        [Display(Name = "Mensual")]
-        Monthly = 4,
-        [Display(Name = "Trimestral")]
-        ThreeMonth = 5,
-        [Display(Name = "Cuatrimestral")]
-        FourMonth = 6,
-        [Display(Name = "Semestral")]
-        Biannual = 7,
-        [Display(Name = "Anual")]
-        Yearly = 8
-    }
-
-    public enum AccountType
+    /// <summary>
+    /// Tipo de cuenta bancaria
+    /// ISO 27001: Información bancaria para transferencias
+    /// </summary>
+    public enum TipoCuenta
     {
         [Display(Name = "Ahorro")]
         Ahorro = 0,
+
         [Display(Name = "Corriente")]
         Corriente = 1
     }
 
-    public enum DocumentType
+    /// <summary>
+    /// Tipo de documento de identificación
+    /// ISO 27001: Documentación legal del empleado
+    /// </summary>
+    public enum TipoDocumento
     {
-        [Display(Name = "Cedula")]
-        IdentificationCard = 0,
+        [Display(Name = "Cédula")]
+        Cedula = 0,
+
         [Display(Name = "Pasaporte")]
-        Passport = 1,
+        Pasaporte = 1,
+
         [Display(Name = "Residencia")]
-        Residence = 2,
+        Residencia = 2,
+
         [Display(Name = "Licencia de conducir")]
-        DriverLicence = 3
+        LicenciaConducir = 3
     }
 
-    public enum PayrollProcessStatus
+    /// <summary>
+    /// Estado del proceso de nómina
+    /// ISO 27001: Flujo de trabajo del procesamiento de pagos
+    /// </summary>
+    public enum EstadoProcesoNomina
     {
         [Display(Name = "Creada")]
-        Created = 0,
+        Creada = 0,
 
         [Display(Name = "Procesada")]
-        Processed = 1,
+        Procesada = 1,
 
         [Display(Name = "Calculada")]
-        Calculated = 2,
+        Calculada = 2,
 
         [Display(Name = "Pagada")]
-        Paid = 3,
+        Pagada = 3,
 
         [Display(Name = "Cerrada")]
-        Closed = 4,
+        Cerrada = 4,
 
         [Display(Name = "Cancelada")]
-        Canceled = 5
+        Cancelada = 5
     }
 
-    public enum SelectListOptions
+    /// <summary>
+    /// Opciones de listas desplegables del sistema
+    /// ISO 27001: Catálogo de entidades para selección
+    /// </summary>
+    public enum OpcionesListaSeleccion
     {
-        FormatCode = 0,
-        Currency = 1,
-        Payroll = 2,
-        Project = 3,
-        ProjCategory = 4,
-        Company = 5,
-        PayCycles = 6,
-        Department = 7,
-        DeductionCode = 8,
-        Loan = 9,
-        Tax = 10,
-        Job = 11,
-        Position = 12,
-        EarningCode = 13,
-        EarningCodehours = 14,
-        CourseType = 15,
-        ClassRoomId = 16,
-        CourseParentId = 17,
-        InstructorId = 18,
-        EmployeeId = 19,
-        EarningCodeEarning = 20,
-        EducationLevel = 21,
-        DisabilityType = 22,
-        Occupation = 23,
-        Country = 24,
-        PositionVacant = 25,
-        Province = 26
+        [Display(Name = "Código de formato")]
+        CodigoFormato = 0,
 
+        [Display(Name = "Moneda")]
+        Moneda = 1,
+
+        [Display(Name = "Nómina")]
+        Nomina = 2,
+
+        [Display(Name = "Proyecto")]
+        Proyecto = 3,
+
+        [Display(Name = "Categoría de proyecto")]
+        CategoriaProyecto = 4,
+
+        [Display(Name = "Empresa")]
+        Empresa = 5,
+
+        [Display(Name = "Ciclos de pago")]
+        CiclosPago = 6,
+
+        [Display(Name = "Departamento")]
+        Departamento = 7,
+
+        [Display(Name = "Código de deducción")]
+        CodigoDeduccion = 8,
+
+        [Display(Name = "Préstamo")]
+        Prestamo = 9,
+
+        [Display(Name = "Impuesto")]
+        Impuesto = 10,
+
+        [Display(Name = "Trabajo")]
+        Trabajo = 11,
+
+        [Display(Name = "Posición")]
+        Posicion = 12,
+
+        [Display(Name = "Código de ganancia")]
+        CodigoGanancia = 13,
+
+        [Display(Name = "Código de ganancia por horas")]
+        CodigoGananciaHoras = 14,
+
+        [Display(Name = "Tipo de curso")]
+        TipoCurso = 15,
+
+        [Display(Name = "Aula")]
+        Aula = 16,
+
+        [Display(Name = "Curso padre")]
+        CursoPadre = 17,
+
+        [Display(Name = "Instructor")]
+        Instructor = 18,
+
+        [Display(Name = "Empleado")]
+        Empleado = 19,
+
+        [Display(Name = "Código de ganancia adicional")]
+        CodigoGananciaAdicional = 20,
+
+        [Display(Name = "Nivel educativo")]
+        NivelEducativo = 21,
+
+        [Display(Name = "Tipo de discapacidad")]
+        TipoDiscapacidad = 22,
+
+        [Display(Name = "Ocupación")]
+        Ocupacion = 23,
+
+        [Display(Name = "País")]
+        Pais = 24,
+
+        [Display(Name = "Posición vacante")]
+        PosicionVacante = 25,
+
+        [Display(Name = "Provincia")]
+        Provincia = 26
     }
 
-    public enum StatusExtraHour
+    /// <summary>
+    /// Estado de horas extras
+    /// ISO 27001: Control de horas extraordinarias
+    /// </summary>
+    public enum EstadoHoraExtra
     {
         [Display(Name = "Abierta")]
-        Open = 0,
+        Abierta = 0,
+
         [Display(Name = "Pagada")]
         Pagada = 1
     }
 
-    public enum PayMethod
+    /// <summary>
+    /// Método de pago
+    /// ISO 27001: Medios de pago a empleados
+    /// </summary>
+    public enum MetodoPago
     {
-
         [Display(Name = "Efectivo")]
-        Cash = 0,
-        [Display(Name = "Transferencia")]
-        Transfer = 1,
-    }
-    public enum TypeDTG
-    {
+        Efectivo = 0,
 
+        [Display(Name = "Transferencia")]
+        Transferencia = 1
+    }
+
+    /// <summary>
+    /// Tipos de reporte DGT (Dirección General de Trabajo)
+    /// ISO 27001: Reportes gubernamentales obligatorios
+    /// </summary>
+    public enum TipoDGT
+    {
+        [Display(Name = "DGT-2")]
         Dgt2 = 0,
+
+        [Display(Name = "DGT-3")]
         Dgt3 = 1,
+
+        [Display(Name = "DGT-4")]
         Dgt4 = 2,
+
+        [Display(Name = "DGT-5")]
         Dgt5 = 3,
+
+        [Display(Name = "DGT-9")]
         Dgt9 = 4,
+
+        [Display(Name = "DGT-12")]
         Dgt12 = 5,
+
+        [Display(Name = "TSS")]
         TSS = 6
     }
 
-    public enum PayrollActionType
+    /// <summary>
+    /// Tipo de acción de nómina
+    /// ISO 27001: Categorización de transacciones de nómina
+    /// </summary>
+    public enum TipoAccionNomina
     {
         [Display(Name = "Ganancia")]
-        Earning = 0,
+        Ganancia = 0,
+
         [Display(Name = "Deducción")]
-        Deduction = 1,
+        Deduccion = 1,
+
         [Display(Name = "Impuesto")]
-        Tax = 2,
+        Impuesto = 2,
+
         [Display(Name = "Préstamo")]
-        Loan = 3,
+        Prestamo = 3,
+
         [Display(Name = "Cooperativa")]
-        Cooperative = 4,
+        Cooperativa = 4,
+
         [Display(Name = "Contribución")]
-        Contribution = 5,
+        Contribucion = 5,
+
         [Display(Name = "Horas extras")]
-        ExtraHours = 6
+        HorasExtras = 6
     }
 
-    public enum IndexBaseDeduction
+    /// <summary>
+    /// Base de índice para deducciones
+    /// ISO 27001: Métodos de cálculo para deducciones
+    /// </summary>
+    public enum BaseIndiceDeduccion
     {
         [Display(Name = "Monto fijo")]
-        FixedAmount = 4,
-        [Display(Name = "Porcentaje de ganancia")]
-        EarningPercent = 7,
+        MontoFijo = 4,
 
+        [Display(Name = "Porcentaje de ganancia")]
+        PorcentajeGanancia = 7
     }
 
-    public enum BatchEntity
+    /// <summary>
+    /// Entidades para procesamiento por lotes
+    /// ISO 27001: Procesamiento masivo de datos
+    /// </summary>
+    public enum EntidadLote
     {
         [Display(Name = "Empleados")]
-        Employee = 0,
+        Empleado = 0,
 
         [Display(Name = "Dirección de empleados")]
-        Employeeaddress = 1,
+        DireccionEmpleado = 1,
 
         [Display(Name = "Contacto de empleados")]
-        EmployeeContactInfo = 2,
+        ContactoEmpleado = 2,
 
         [Display(Name = "Documentos de empleados")]
-        EmployeeDocument = 3,
+        DocumentosEmpleado = 3,
 
         [Display(Name = "Horas extras de empleados")]
-        EmployeeExtraHours = 4,
+        HorasExtrasEmpleado = 4,
 
         [Display(Name = "Ganancias de empleados")]
-        EmployeeEarningCode = 5,
+        GananciasEmpleado = 5,
 
         [Display(Name = "Préstamos de empleados")]
-        EmployeeLoans = 6,
+        PrestamosEmpleado = 6,
 
         [Display(Name = "Bancos de empleados")]
-        EmployeeBanks = 7,
+        BancosEmpleado = 7,
 
         [Display(Name = "Impuestos de empleados")]
-        EmployeeTax = 8,
+        ImpuestosEmpleado = 8,
 
         [Display(Name = "Deducciones de empleados")]
-        EmployeeDeductionCode = 9,
-        
+        DeduccionesEmpleado = 9,
+
         [Display(Name = "Horarios de empleados")]
-        EmployeeWorkCalendars = 10,
-        
+        HorariosEmpleado = 10,
+
         [Display(Name = "Control asistencia de empleados")]
-        EmployeeWorkControlCalendar = 11,
+        ControlAsistenciaEmpleado = 11
     }
 
-    public enum StatusWorkControl
+    /// <summary>
+    /// Estado del control de trabajo
+    /// ISO 27001: Control de asistencia y horas trabajadas
+    /// </summary>
+    public enum EstadoControlTrabajo
     {
         [Display(Name = "Pendiente")]
-        Pendint = 0,
+        Pendiente = 0,
+
         [Display(Name = "Pagado")]
-        Paid = 1
+        Pagado = 1
     }
 }

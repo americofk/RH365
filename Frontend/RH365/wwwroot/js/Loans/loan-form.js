@@ -308,9 +308,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 body: JSON.stringify(payload)
             });
             w.ALERTS.ok('Préstamo guardado correctamente', 'Éxito');
-            setTimeout(() => {
-                window.location.href = '/Loan/LP_Loans';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Loan/LP_Loans';
+            //}, 1500);
         }
         catch (error) {
             w.ALERTS.error('Error al guardar el préstamo', 'Error');

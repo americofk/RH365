@@ -53,6 +53,7 @@
 		<Folder Include="TS\Jobs\" />
 		<Folder Include="TS\DeductionCodes\" />
 		<Folder Include="TS\EarningCodes\" />
+		<Folder Include="TS\Employees\" />
 		<Folder Include="TS\Payrolls\" />
 		<Folder Include="TS\Taxes\" />
 		<Folder Include="TS\Positions\" />

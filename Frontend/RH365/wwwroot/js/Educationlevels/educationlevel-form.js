@@ -200,7 +200,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         try {
             yield fetchJson(url, { method, body: JSON.stringify(payload) });
             (_b = w.ALERTS) === null || _b === void 0 ? void 0 : _b.ok(isNew ? 'Nivel educativo creado' : 'Nivel educativo actualizado', 'Éxito');
-            setTimeout(() => { window.location.href = '/EducationLevel/LP_EducationLevels'; }, 1200);
+            /*setTimeout(() => { window.location.href = '/EducationLevel/LP_EducationLevels'; }, 1200);*/
         }
         catch (e) {
             let msg = 'Error al guardar el nivel educativo';

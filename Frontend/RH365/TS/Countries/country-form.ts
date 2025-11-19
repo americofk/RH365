@@ -457,9 +457,9 @@
             );
 
             // Redirigir al listado después de 1.5 segundos
-            setTimeout(() => {
-                window.location.href = '/Country/LP_Countries';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Country/LP_Countries';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

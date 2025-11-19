@@ -387,9 +387,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             // Mostrar alerta de éxito
             w.ALERTS.ok(isNew ? 'País creado exitosamente' : 'País actualizado exitosamente', 'Éxito');
             // Redirigir al listado después de 1.5 segundos
-            setTimeout(() => {
-                window.location.href = '/Country/LP_Countries';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Country/LP_Countries';
+            //}, 1500);
         }
         catch (error) {
             console.error('Error al guardar:', error);

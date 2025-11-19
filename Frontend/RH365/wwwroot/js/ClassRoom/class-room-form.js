@@ -476,10 +476,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             });
             // Mostrar alerta de éxito
             w.ALERTS.ok(isNew ? 'Salón de clases creado exitosamente' : 'Salón de clases actualizado exitosamente', 'Éxito');
-            // Redirigir al listado después de 1.5 segundos
-            setTimeout(() => {
-                window.location.href = '/ClassRoom/LP_ClassRooms';
-            }, 1500);
+            //// Redirigir al listado después de 1.5 segundos
+            //setTimeout(() => {
+            //    window.location.href = '/ClassRoom/LP_ClassRooms';
+            //}, 1500);
         }
         catch (error) {
             console.error('Error al guardar:', error);

@@ -435,9 +435,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/ProjectCategory/LP_ProjectCategories';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/ProjectCategory/LP_ProjectCategories';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

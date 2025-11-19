@@ -817,9 +817,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/DeductionCode/LP_DeductionCodes';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/DeductionCode/LP_DeductionCodes';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

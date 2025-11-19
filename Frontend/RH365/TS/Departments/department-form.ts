@@ -464,9 +464,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/Department/LP_Departments';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Department/LP_Departments';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

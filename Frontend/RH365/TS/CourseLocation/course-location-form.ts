@@ -360,9 +360,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/CourseLocation/LP_CourseLocations';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/CourseLocation/LP_CourseLocations';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

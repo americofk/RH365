@@ -538,9 +538,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             w.ALERTS.ok(isNew
                 ? 'El curso ha sido creado exitosamente'
                 : 'El curso ha sido actualizado exitosamente', 'Éxito');
-            setTimeout(() => {
-                window.location.href = '/Course/LP_Courses';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Course/LP_Courses';
+            //}, 1500);
         }
         catch (error) {
             let errorMessage = 'No se pudo guardar el curso';

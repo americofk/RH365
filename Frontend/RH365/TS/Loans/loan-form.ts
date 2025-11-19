@@ -351,9 +351,9 @@
             });
 
             (w as any).ALERTS.ok('Préstamo guardado correctamente', 'Éxito');
-            setTimeout(() => {
-                window.location.href = '/Loan/LP_Loans';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Loan/LP_Loans';
+            //}, 1500);
         } catch (error) {
             (w as any).ALERTS.error('Error al guardar el préstamo', 'Error');
         }

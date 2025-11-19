@@ -536,9 +536,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/Position/LP_Positions';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/Position/LP_Positions';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

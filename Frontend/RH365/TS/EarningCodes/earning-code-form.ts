@@ -685,9 +685,9 @@
                 'Éxito'
             );
 
-            setTimeout(() => {
-                window.location.href = '/EarningCode/LP_EarningCodes';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/EarningCode/LP_EarningCodes';
+            //}, 1500);
 
         } catch (error: any) {
             console.error('Error al guardar:', error);

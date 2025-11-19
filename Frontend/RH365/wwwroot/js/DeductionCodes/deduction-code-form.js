@@ -739,9 +739,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 body: JSON.stringify(formData)
             });
             w.ALERTS.ok(isNew ? 'Creado exitosamente' : 'Actualizado exitosamente', 'Éxito');
-            setTimeout(() => {
-                window.location.href = '/DeductionCode/LP_DeductionCodes';
-            }, 1500);
+            //setTimeout(() => {
+            //    window.location.href = '/DeductionCode/LP_DeductionCodes';
+            //}, 1500);
         }
         catch (error) {
             console.error('Error al guardar:', error);
