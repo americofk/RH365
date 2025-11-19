@@ -5,9 +5,9 @@
    Descripcion: 
        - Formulario para Crear/Editar Empleados con estilo Gentelella
        - Layout de 3 COLUMNAS en Tab General
+       - Tab Informacion Personal: DataTable con direcciones del empleado
+       - Modal con campos reales: Home, Province, Comment, IsPrincipal
        - Tab Auditoria: Campos de trazabilidad ISO 27001 en 1 COLUMNA
-       - Renderizado dinamico de campos desde TypeScript
-       - URLs del API centralizadas desde backend
    Estandar: ISO 27001 - Formularios con validacion y auditoria
    ============================================================================ *@
 @{
@@ -35,6 +35,9 @@
     <link href="~/vendors/nprogress/nprogress.css" rel="stylesheet">
     <!-- iCheck -->
     <link href="~/vendors/iCheck/skins/flat/green.css" rel="stylesheet">
+    <!-- Datatables -->
+    <link href="~/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="~/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
     <!-- PNotify CSS -->
     <link href="~/vendors/pnotify/dist/pnotify.css" rel="stylesheet">
     <link href="~/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
@@ -92,16 +95,19 @@
                                                 </a>
                                             </li>
                                             <li role="presentation" class="">
-                                                <a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">
+                                                <a href="#tab_content2" role="tab" id="address-tab" data-toggle="tab" aria-expanded="false">
+                                                    <i class="fa fa-map-marker"></i> Informacion Personal
+                                                </a>
+                                            </li>
+                                            <li role="presentation" class="">
+                                                <a href="#tab_content3" role="tab" id="audit-tab" data-toggle="tab" aria-expanded="false">
                                                     <i class="fa fa-history"></i> Auditoria
                                                 </a>
                                             </li>
                                         </ul>
 
                                         <div id="myTabContent" class="tab-content">
-                                            <!-- ========================================== -->
-                                            <!-- TAB 1: GENERAL (Campos de Negocio - 3 COLUMNAS)  -->
-                                            <!-- ========================================== -->
+                                            <!-- TAB 1: GENERAL -->
                                             <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
                                                 <div class="row">
                                                     <div class="col-md-12 col-sm-12 col-xs-12">
@@ -121,30 +127,22 @@
                                                                 <br />
                                                                 <form id="frm-employee" class="form-horizontal form-label-left">
                                                                     @Html.AntiForgeryToken()
-
-                                                                    <!-- Hidden fields -->
                                                                     <input type="hidden" id="RecID" name="RecID" value="@recId" />
                                                                     <input type="hidden" id="DataareaID" name="DataareaID" value="@dataareaId" />
 
-                                                                    <!-- Contenedor para campos en 3 COLUMNAS -->
                                                                     <div class="row">
-                                                                        <!-- COLUMNA IZQUIERDA -->
                                                                         <div class="col-md-4" id="dynamic-fields-col-left">
                                                                             <div class="text-center" style="padding: 40px;">
                                                                                 <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
                                                                                 <p class="text-muted">Cargando...</p>
                                                                             </div>
                                                                         </div>
-
-                                                                        <!-- COLUMNA CENTRAL -->
                                                                         <div class="col-md-4" id="dynamic-fields-col-center">
                                                                             <div class="text-center" style="padding: 40px;">
                                                                                 <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
                                                                                 <p class="text-muted">Cargando...</p>
                                                                             </div>
                                                                         </div>
-
-                                                                        <!-- COLUMNA DERECHA -->
                                                                         <div class="col-md-4" id="dynamic-fields-col-right">
                                                                             <div class="text-center" style="padding: 40px;">
                                                                                 <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
@@ -155,7 +153,6 @@
 
                                                                     <div class="ln_solid"></div>
 
-                                                                    <!-- Botones de Accion -->
                                                                     <div class="form-group">
                                                                         <div class="col-md-12 text-center">
                                                                             <button type="button" class="btn btn-default" onclick="window.location.href='/Employee/LP_Employees'">
@@ -172,12 +169,60 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- /TAB 1: GENERAL -->
                                             
-                                            <!-- ========================================== -->
-                                            <!-- TAB 2: AUDITORIA (Campos ISO 27001 - 1 COLUMNA) -->
-                                            <!-- ========================================== -->
-                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                                            <!-- TAB 2: INFORMACION PERSONAL (Direcciones) -->
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="address-tab">
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>
+                                                                    <i class="fa fa-map-marker"></i> Direcciones del Empleado
+                                                                </h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <button type="button" id="btn-new-address" class="btn btn-primary btn-sm">
+                                                                            <i class="fa fa-plus"></i> Nueva Direccion
+                                                                        </button>
+                                                                    </li>
+                                                                    <li>
+                                                                        <button type="button" id="btn-edit-address" class="btn btn-default btn-sm" disabled>
+                                                                            <i class="fa fa-pencil"></i> Editar
+                                                                        </button>
+                                                                    </li>
+                                                                    <li>
+                                                                        <button type="button" id="btn-delete-address" class="btn btn-danger btn-sm" disabled>
+                                                                            <i class="fa fa-trash"></i> Eliminar
+                                                                        </button>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <div id="addresses-info-container"></div>
+
+                                                                <div class="table-responsive">
+                                                                    <table id="employee-addresses-table" class="table table-striped table-bordered">
+                                                                        <thead></thead>
+                                                                        <tbody></tbody>
+                                                                    </table>
+                                                                </div>
+
+                                                                <div class="clearfix"></div>
+
+                                                                <div class="alert alert-info" role="alert" style="margin-top: 15px;">
+                                                                    <strong><i class="fa fa-info-circle"></i> Nota:</strong>
+                                                                    Las direcciones son gestionadas de forma independiente. 
+                                                                    Puede marcar una direccion como principal para identificarla facilmente.
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- TAB 3: AUDITORIA -->
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="audit-tab">
                                                 <div class="row">
                                                     <div class="col-md-12 col-sm-12 col-xs-12">
                                                         <div class="x_panel">
@@ -197,7 +242,6 @@
                                                             <div class="x_content">
                                                                 <br />
                                                                 <form class="form-horizontal form-label-left">
-                                                                    <!-- Contenedor para campos de auditoria en 1 COLUMNA -->
                                                                     <div id="audit-fields-container">
                                                                         <div class="text-center" style="padding: 40px;">
                                                                             <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
@@ -207,7 +251,6 @@
 
                                                                     <div class="ln_solid"></div>
 
-                                                                    <!-- Info adicional sobre auditoria -->
                                                                     <div class="alert alert-info" role="alert">
                                                                         <strong><i class="fa fa-info-circle"></i> Nota:</strong>
                                                                         Los campos de auditoria son generados automaticamente por el sistema
@@ -220,17 +263,14 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- /TAB 2: AUDITORIA -->
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- /Panel con Tabs -->
                 </div>
             </div>
-            <!-- /page content -->
             
             <!-- footer content -->
             <footer>
@@ -239,7 +279,125 @@
                 </div>
                 <div class="clearfix"></div>
             </footer>
-            <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- MODAL: CREAR/EDITAR DIRECCION -->
+    <div class="modal fade" id="modal-address" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">
+                        <i class="fa fa-map-marker"></i> 
+                        <span id="modal-address-title">Nueva Direccion</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form id="frm-address" class="form-horizontal form-label-left">
+                        <input type="hidden" id="address-RecID" name="RecID" value="0" />
+                        <input type="hidden" id="address-EmployeeRefRecID" name="EmployeeRefRecID" value="@recId" />
+
+                        <div class="row">
+                            <!-- COLUMNA IZQUIERDA -->
+                            <div class="col-md-6">
+                                <!-- Pais -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Pais <span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <select id="address-CountryRefRecID" name="CountryRefRecID" class="form-control" required>
+                                            <option value="">-- Seleccione --</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Provincia -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Provincia <span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="address-Province" name="Province" class="form-control" maxlength="100" required>
+                                    </div>
+                                </div>
+
+                                <!-- Ciudad -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Ciudad <span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="address-City" name="City" class="form-control" maxlength="100" required>
+                                    </div>
+                                </div>
+
+                                <!-- Sector -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Sector
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="address-Sector" name="Sector" class="form-control" maxlength="100">
+                                    </div>
+                                </div>
+
+                                <!-- Direccion Principal -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Direccion Principal
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="checkbox" id="address-IsPrincipal" name="IsPrincipal" class="flat">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- COLUMNA DERECHA -->
+                            <div class="col-md-6">
+                                <!-- Calle -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Calle
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="address-Street" name="Street" class="form-control" maxlength="200">
+                                    </div>
+                                </div>
+
+                                <!-- Casa/Apartamento -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Casa/Apto
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="address-Home" name="Home" class="form-control" maxlength="50">
+                                    </div>
+                                </div>
+
+                                <!-- Comentarios -->
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Comentarios
+                                    </label>
+                                    <div class="col-md-8">
+                                        <textarea id="address-Comment" name="Comment" class="form-control" rows="5" maxlength="500"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fa fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-save-address">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -253,6 +411,11 @@
     <script src="~/vendors/nprogress/nprogress.js"></script>
     <!-- iCheck -->
     <script src="~/vendors/iCheck/icheck.min.js"></script>
+    <!-- Datatables -->
+    <script src="~/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="~/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+    <script src="~/vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
     <!-- PNotify JS -->
     <script src="~/vendors/pnotify/dist/pnotify.js"></script>
     <script src="~/vendors/pnotify/dist/pnotify.buttons.js"></script>
@@ -291,19 +454,13 @@
 
     <!-- Custom Theme Scripts -->
     <script src="~/build/js/custom.min.js"></script>
-
-    <!-- ============================================================ -->
-    <!-- CRITICO: API URLs - DEBE IR ANTES DE CUALQUIER SCRIPT PERSONALIZADO -->
-    <!-- ============================================================ -->
     @await Html.PartialAsync("~/Views/Layout/_ApiUrls.cshtml")
-
-    <!-- Sistema de Alertas -->
     @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
-
-    <!-- Modal Generico -->
     @await Html.PartialAsync("~/Views/Generic/_Modal.cshtml")
 
     <!-- Script del formulario de empleados -->
     <script src="~/js/Employees/employee-form.js"></script>
+    <!-- Script de la tabla de direcciones -->
+    <script src="~/js/Employees/employee-addresses.js"></script>
 </body>
 </html>
