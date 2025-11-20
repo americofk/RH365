@@ -186,44 +186,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             return;
         }
         const recId = parseInt($('#contact-RecID').val()) || 0;
-        // CRITICAL: Leer IsPrincipal correctamente con iCheck
-        const $checkbox = $('#contact-IsPrincipal');
-        const isPrincipal = $checkbox.is(':checked');
-        console.log('=== GUARDANDO CONTACTO ===');
-        console.log('Checkbox element:', $checkbox);
-        console.log('Is checked?', isPrincipal);
-        console.log('Checkbox prop checked:', $checkbox.prop('checked'));
+        // Helper para convertir strings vacios a null
+        const getValueOrNull = (selector) => {
+            const val = ($(selector).val() || '').trim();
+            return val === '' ? null : val;
+        };
         const payload = {
             EmployeeRefRecID: employeeRecId,
             ContactType: parseInt($('#contact-ContactType').val()),
-            ContactValue: $('#contact-ContactValue').val().trim(),
-            IsPrincipal: isPrincipal,
-            Comment: ($('#contact-Comment').val() || '').trim()
+            ContactValue: getValueOrNull('#contact-ContactValue'),
+            Comment: getValueOrNull('#contact-Comment'),
+            IsPrincipal: $('#contact-IsPrincipal').is(':checked')
         };
-        console.log('Payload a enviar:', payload);
+        console.log('=== GUARDANDO CONTACTO ===');
+        console.log('RecID:', recId);
+        console.log('Payload:', JSON.stringify(payload, null, 2));
         try {
-            const url = isEditMode
+            const url = recId > 0
                 ? `${apiBase}/EmployeeContactsInf/${recId}`
                 : `${apiBase}/EmployeeContactsInf`;
-            const method = isEditMode ? 'PUT' : 'POST';
-            const result = yield fetchJson(url, {
+            const method = recId > 0 ? 'PUT' : 'POST';
+            yield fetchJson(url, {
                 method: method,
                 body: JSON.stringify(payload)
             });
-            console.log('Respuesta del servidor:', result);
-            w.ALERTS.ok(isEditMode ? 'Contacto actualizado exitosamente' : 'Contacto creado exitosamente', 'Exito');
+            w.ALERTS.ok(recId > 0 ? 'Contacto actualizado exitosamente' : 'Contacto creado exitosamente', 'Exito');
             $('#modal-contact').modal('hide');
-            // CRITICAL: Recargar tabla correctamente
-            if ($.fn.DataTable.isDataTable($table)) {
-                $table.DataTable().ajax.reload(null, false); // false = mantener paginación
-            }
-            else {
-                initializeDataTable();
-            }
+            $table.DataTable().ajax.reload(null, false);
         }
         catch (error) {
             console.error('Error al guardar contacto:', error);
-            w.ALERTS.error('Error al guardar contacto', 'Error');
+            w.ALERTS.error('Error al guardar el contacto', 'Error');
         }
     });
     const deleteContact = (recId) => __awaiter(this, void 0, void 0, function* () {
@@ -231,7 +224,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const response = yield fetch(url, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
         if (!response.ok) {
@@ -261,22 +255,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             serverSide: false,
             responsive: true,
             autoWidth: false,
+            paging: false,
+            searching: false,
+            info: false,
+            lengthChange: false,
             order: [[1, 'asc']],
-            pageLength: 10,
-            lengthMenu: [[5, 10, 25], [5, 10, 25]],
             language: {
-                lengthMenu: 'Mostrar _MENU_ registros',
                 zeroRecords: 'No hay contactos registrados',
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ contactos',
-                infoEmpty: 'No hay contactos',
-                infoFiltered: '(filtrado de _MAX_ registros)',
-                search: 'Buscar:',
-                paginate: {
-                    first: 'Primera',
-                    last: 'Ultima',
-                    next: 'Siguiente',
-                    previous: 'Anterior'
-                },
                 processing: 'Procesando...'
             },
             columns: [

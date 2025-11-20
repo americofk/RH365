@@ -4,7 +4,7 @@
 // Ruta: TS/Employees/employee-addresses.ts
 // Descripcion:
 //   - Tabla de direcciones dentro del formulario de empleado
-//   - Endpoint correcto: /api/Countries (plural)
+//   - Incluye campo Pais (CountryRefRecID)
 //   - CRUD con MODAL para crear/editar
 // ISO 27001: Trazabilidad de operaciones sobre direcciones
 // ============================================================================
@@ -145,10 +145,9 @@ type AddressRow = AddressResponse;
             return [];
         }
     };
-    
+
     const loadCountries = async (): Promise<void> => {
         try {
-            // Endpoint correcto: /api/Countries (plural)
             const url = `${apiBase}/Countries?pageNumber=1&pageSize=100`;
             const response = await fetchJson(url);
 
@@ -169,7 +168,7 @@ type AddressRow = AddressResponse;
     // MODAL
     // ========================================================================
 
-    const openModal = (recId?: number): void => {
+    const openModal = async (recId?: number): Promise<void> => {
         isEditMode = !!recId;
 
         $('#modal-address-title').text(isEditMode ? 'Editar Direccion' : 'Nueva Direccion');
@@ -180,11 +179,13 @@ type AddressRow = AddressResponse;
         $('#address-RecID').val(recId || 0);
         $('#address-EmployeeRefRecID').val(employeeRecId);
 
-        loadCountries();
+        // CRITICAL: Esperar a que se carguen los paises ANTES de establecer valores
+        await loadCountries();
 
         if (isEditMode && recId) {
             const address = addressesData.find((a: AddressRow) => a.RecID === recId);
             if (address) {
+                // Ahora SI podemos establecer el valor porque las opciones ya estan cargadas
                 $('#address-CountryRefRecID').val(address.CountryRefRecID || '');
                 $('#address-City').val(address.City || '');
                 $('#address-Province').val(address.Province || '');
@@ -192,6 +193,9 @@ type AddressRow = AddressResponse;
                 $('#address-Street').val(address.Street || '');
                 $('#address-Home').val(address.Home || '');
                 $('#address-Comment').val(address.Comment || '');
+
+                console.log('Cargando direccion en modal:', address);
+                console.log('CountryRefRecID establecido a:', address.CountryRefRecID);
 
                 if (address.IsPrincipal) {
                     $('#address-IsPrincipal').iCheck('check');
@@ -218,17 +222,31 @@ type AddressRow = AddressResponse;
         }
 
         const recId = parseInt($('#address-RecID').val() as string) || 0;
+
+        // Helper para convertir strings vacios a null
+        const getValueOrNull = (selector: string): string | null => {
+            const val = ($(selector).val() as string || '').trim();
+            return val === '' ? null : val;
+        };
+
+        const countryRefRecID = parseInt($('#address-CountryRefRecID').val() as string) || null;
+
         const payload = {
             EmployeeRefRecID: employeeRecId,
-            CountryRefRecID: parseInt($('#address-CountryRefRecID').val() as string) || null,
-            City: $('#address-City').val() as string || null,
-            Province: $('#address-Province').val() as string || null,
-            Sector: $('#address-Sector').val() as string || null,
-            Street: $('#address-Street').val() as string || null,
-            Home: $('#address-Home').val() as string || null,
-            Comment: $('#address-Comment').val() as string || null,
+            CountryRefRecID: countryRefRecID,
+            Street: getValueOrNull('#address-Street'),
+            Home: getValueOrNull('#address-Home'),
+            Sector: getValueOrNull('#address-Sector'),
+            City: getValueOrNull('#address-City'),
+            Province: getValueOrNull('#address-Province'),
+            ProvinceName: getValueOrNull('#address-Province'),
+            Comment: getValueOrNull('#address-Comment'),
             IsPrincipal: $('#address-IsPrincipal').is(':checked')
         };
+
+        console.log('=== GUARDANDO DIRECCION ===');
+        console.log('RecID:', recId);
+        console.log('Payload:', JSON.stringify(payload, null, 2));
 
         try {
             const url = recId > 0
@@ -256,11 +274,14 @@ type AddressRow = AddressResponse;
         }
     };
 
-    const deleteAddress = async (recId: string): Promise<void> => {
+    const deleteAddress = async (recId: number): Promise<void> => {
         const url = `${apiBase}/EmployeesAddress/${recId}`;
         const response = await fetch(url, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
         if (!response.ok) {
@@ -297,22 +318,13 @@ type AddressRow = AddressResponse;
             serverSide: false,
             responsive: true,
             autoWidth: false,
+            paging: false,
+            searching: false,
+            info: false,
+            lengthChange: false,
             order: [[1, 'asc']],
-            pageLength: 10,
-            lengthMenu: [[5, 10, 25], [5, 10, 25]],
             language: {
-                lengthMenu: 'Mostrar _MENU_ registros',
                 zeroRecords: 'No hay direcciones registradas',
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ direcciones',
-                infoEmpty: 'No hay direcciones',
-                infoFiltered: '(filtrado de _MAX_ registros)',
-                search: 'Buscar:',
-                paginate: {
-                    first: 'Primera',
-                    last: 'Ultima',
-                    next: 'Siguiente',
-                    previous: 'Anterior'
-                },
                 processing: 'Procesando...'
             },
             columns: [
@@ -398,13 +410,13 @@ type AddressRow = AddressResponse;
         updateButtonStates();
     });
 
-    $('#btn-new-address').on('click', () => {
+    $('#btn-new-address').on('click', async () => {
         if (isNew) {
             (w as any).ALERTS.warn('Debe guardar el empleado antes de agregar direcciones', 'Advertencia');
             return;
         }
 
-        openModal();
+        await openModal();
     });
 
     $('#btn-edit-address').on('click', () => {

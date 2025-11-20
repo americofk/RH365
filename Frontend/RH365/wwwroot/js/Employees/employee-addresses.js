@@ -4,7 +4,7 @@
 // Ruta: TS/Employees/employee-addresses.ts
 // Descripcion:
 //   - Tabla de direcciones dentro del formulario de empleado
-//   - Endpoint correcto: /api/Countries (plural)
+//   - Incluye campo Pais (CountryRefRecID)
 //   - CRUD con MODAL para crear/editar
 // ISO 27001: Trazabilidad de operaciones sobre direcciones
 // ============================================================================
@@ -112,7 +112,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
     const loadCountries = () => __awaiter(this, void 0, void 0, function* () {
         try {
-            // Endpoint correcto: /api/Countries (plural)
             const url = `${apiBase}/Countries?pageNumber=1&pageSize=100`;
             const response = yield fetchJson(url);
             const $select = $('#address-CountryRefRecID');
@@ -130,7 +129,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     // ========================================================================
     // MODAL
     // ========================================================================
-    const openModal = (recId) => {
+    const openModal = (recId) => __awaiter(this, void 0, void 0, function* () {
         isEditMode = !!recId;
         $('#modal-address-title').text(isEditMode ? 'Editar Direccion' : 'Nueva Direccion');
         const form = d.getElementById('frm-address');
@@ -138,10 +137,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             form.reset();
         $('#address-RecID').val(recId || 0);
         $('#address-EmployeeRefRecID').val(employeeRecId);
-        loadCountries();
+        // CRITICAL: Esperar a que se carguen los paises ANTES de establecer valores
+        yield loadCountries();
         if (isEditMode && recId) {
             const address = addressesData.find((a) => a.RecID === recId);
             if (address) {
+                // Ahora SI podemos establecer el valor porque las opciones ya estan cargadas
                 $('#address-CountryRefRecID').val(address.CountryRefRecID || '');
                 $('#address-City').val(address.City || '');
                 $('#address-Province').val(address.Province || '');
@@ -149,6 +150,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 $('#address-Street').val(address.Street || '');
                 $('#address-Home').val(address.Home || '');
                 $('#address-Comment').val(address.Comment || '');
+                console.log('Cargando direccion en modal:', address);
+                console.log('CountryRefRecID establecido a:', address.CountryRefRecID);
                 if (address.IsPrincipal) {
                     $('#address-IsPrincipal').iCheck('check');
                 }
@@ -164,7 +167,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             $('.flat').iCheck({ checkboxClass: 'icheckbox_flat-green' });
         }
         $('#modal-address').modal('show');
-    };
+    });
     const saveAddress = () => __awaiter(this, void 0, void 0, function* () {
         const form = d.getElementById('frm-address');
         if (!form.checkValidity()) {
@@ -172,17 +175,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             return;
         }
         const recId = parseInt($('#address-RecID').val()) || 0;
+        // Helper para convertir strings vacios a null
+        const getValueOrNull = (selector) => {
+            const val = ($(selector).val() || '').trim();
+            return val === '' ? null : val;
+        };
+        const countryRefRecID = parseInt($('#address-CountryRefRecID').val()) || null;
         const payload = {
             EmployeeRefRecID: employeeRecId,
-            CountryRefRecID: parseInt($('#address-CountryRefRecID').val()) || null,
-            City: $('#address-City').val() || null,
-            Province: $('#address-Province').val() || null,
-            Sector: $('#address-Sector').val() || null,
-            Street: $('#address-Street').val() || null,
-            Home: $('#address-Home').val() || null,
-            Comment: $('#address-Comment').val() || null,
+            CountryRefRecID: countryRefRecID,
+            Street: getValueOrNull('#address-Street'),
+            Home: getValueOrNull('#address-Home'),
+            Sector: getValueOrNull('#address-Sector'),
+            City: getValueOrNull('#address-City'),
+            Province: getValueOrNull('#address-Province'),
+            ProvinceName: getValueOrNull('#address-Province'),
+            Comment: getValueOrNull('#address-Comment'),
             IsPrincipal: $('#address-IsPrincipal').is(':checked')
         };
+        console.log('=== GUARDANDO DIRECCION ===');
+        console.log('RecID:', recId);
+        console.log('Payload:', JSON.stringify(payload, null, 2));
         try {
             const url = recId > 0
                 ? `${apiBase}/EmployeesAddress/${recId}`
@@ -205,7 +218,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const url = `${apiBase}/EmployeesAddress/${recId}`;
         const response = yield fetch(url, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
         if (!response.ok) {
             throw new Error(`Error al eliminar direccion: ${response.status}`);
@@ -234,22 +250,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             serverSide: false,
             responsive: true,
             autoWidth: false,
+            paging: false,
+            searching: false,
+            info: false,
+            lengthChange: false,
             order: [[1, 'asc']],
-            pageLength: 10,
-            lengthMenu: [[5, 10, 25], [5, 10, 25]],
             language: {
-                lengthMenu: 'Mostrar _MENU_ registros',
                 zeroRecords: 'No hay direcciones registradas',
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ direcciones',
-                infoEmpty: 'No hay direcciones',
-                infoFiltered: '(filtrado de _MAX_ registros)',
-                search: 'Buscar:',
-                paginate: {
-                    first: 'Primera',
-                    last: 'Ultima',
-                    next: 'Siguiente',
-                    previous: 'Anterior'
-                },
                 processing: 'Procesando...'
             },
             columns: [
@@ -326,13 +333,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         updateButtonStates();
     });
-    $('#btn-new-address').on('click', () => {
+    $('#btn-new-address').on('click', () => __awaiter(this, void 0, void 0, function* () {
         if (isNew) {
             w.ALERTS.warn('Debe guardar el empleado antes de agregar direcciones', 'Advertencia');
             return;
         }
-        openModal();
-    });
+        yield openModal();
+    }));
     $('#btn-edit-address').on('click', () => {
         const $checked = $table.find('tbody input.row-check-address:checked').first();
         if ($checked.length) {
