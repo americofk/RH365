@@ -5,8 +5,9 @@
    Descripcion: 
        - Formulario para Crear/Editar Empleados con estilo Gentelella
        - Layout de 3 COLUMNAS en Tab General
-       - Tab Informacion Personal: DataTable con direcciones del empleado
-       - Modal con campos reales: Home, Province, Comment, IsPrincipal
+       - Tab Informacion Personal: 
+           * Seccion 1 - DataTable con direcciones del empleado
+           * Seccion 2 - DataTable con contactos del empleado
        - Tab Auditoria: Campos de trazabilidad ISO 27001 en 1 COLUMNA
    Estandar: ISO 27001 - Formularios con validacion y auditoria
    ============================================================================ *@
@@ -95,8 +96,8 @@
                                                 </a>
                                             </li>
                                             <li role="presentation" class="">
-                                                <a href="#tab_content2" role="tab" id="address-tab" data-toggle="tab" aria-expanded="false">
-                                                    <i class="fa fa-map-marker"></i> Informacion Personal
+                                                <a href="#tab_content2" role="tab" id="personal-tab" data-toggle="tab" aria-expanded="false">
+                                                    <i class="fa fa-address-book"></i> Informacion Personal
                                                 </a>
                                             </li>
                                             <li role="presentation" class="">
@@ -170,8 +171,12 @@
                                                 </div>
                                             </div>
                                             
-                                            <!-- TAB 2: INFORMACION PERSONAL (Direcciones) -->
-                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="address-tab">
+                                            <!-- TAB 2: INFORMACION PERSONAL (Direcciones + Contactos) -->
+                                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="personal-tab">
+                                                
+                                                <!-- ========================================== -->
+                                                <!-- SECCION 1: DIRECCIONES -->
+                                                <!-- ========================================== -->
                                                 <div class="row">
                                                     <div class="col-md-12 col-sm-12 col-xs-12">
                                                         <div class="x_panel">
@@ -209,16 +214,56 @@
                                                                 </div>
 
                                                                 <div class="clearfix"></div>
-
-                                                                <div class="alert alert-info" role="alert" style="margin-top: 15px;">
-                                                                    <strong><i class="fa fa-info-circle"></i> Nota:</strong>
-                                                                    Las direcciones son gestionadas de forma independiente. 
-                                                                    Puede marcar una direccion como principal para identificarla facilmente.
-                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <!-- ========================================== -->
+                                                <!-- SECCION 2: CONTACTOS -->
+                                                <!-- ========================================== -->
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>
+                                                                    <i class="fa fa-phone"></i> Informacion de Contacto
+                                                                </h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <button type="button" id="btn-new-contact" class="btn btn-primary btn-sm">
+                                                                            <i class="fa fa-plus"></i> Nuevo Contacto
+                                                                        </button>
+                                                                    </li>
+                                                                    <li>
+                                                                        <button type="button" id="btn-edit-contact" class="btn btn-default btn-sm" disabled>
+                                                                            <i class="fa fa-pencil"></i> Editar
+                                                                        </button>
+                                                                    </li>
+                                                                    <li>
+                                                                        <button type="button" id="btn-delete-contact" class="btn btn-danger btn-sm" disabled>
+                                                                            <i class="fa fa-trash"></i> Eliminar
+                                                                        </button>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <div id="contacts-info-container"></div>
+
+                                                                <div class="table-responsive">
+                                                                    <table id="employee-contacts-table" class="table table-striped table-bordered">
+                                                                        <thead></thead>
+                                                                        <tbody></tbody>
+                                                                    </table>
+                                                                </div>
+
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                             
                                             <!-- TAB 3: AUDITORIA -->
@@ -282,7 +327,9 @@
         </div>
     </div>
 
-    <!-- MODAL: CREAR/EDITAR DIRECCION -->
+    <!-- ========================================================================
+         MODAL: CREAR/EDITAR DIRECCION
+         ======================================================================== -->
     <div class="modal fade" id="modal-address" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -301,7 +348,6 @@
                         <div class="row">
                             <!-- COLUMNA IZQUIERDA -->
                             <div class="col-md-6">
-                                <!-- Pais -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Pais <span class="required">*</span>
@@ -313,7 +359,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Provincia -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Provincia <span class="required">*</span>
@@ -323,7 +368,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Ciudad -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Ciudad <span class="required">*</span>
@@ -333,7 +377,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Sector -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Sector
@@ -343,7 +386,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Direccion Principal -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Direccion Principal
@@ -356,7 +398,6 @@
 
                             <!-- COLUMNA DERECHA -->
                             <div class="col-md-6">
-                                <!-- Calle -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Calle
@@ -366,7 +407,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Casa/Apartamento -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Casa/Apto
@@ -376,7 +416,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Comentarios -->
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
                                         Comentarios
@@ -394,6 +433,87 @@
                         <i class="fa fa-times"></i> Cancelar
                     </button>
                     <button type="button" class="btn btn-primary" id="btn-save-address">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         MODAL: CREAR/EDITAR CONTACTO
+         ======================================================================== -->
+    <div class="modal fade" id="modal-contact" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">
+                        <i class="fa fa-phone"></i> 
+                        <span id="modal-contact-title">Nuevo Contacto</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form id="frm-contact" class="form-horizontal form-label-left">
+                        <input type="hidden" id="contact-RecID" name="RecID" value="0" />
+                        <input type="hidden" id="contact-EmployeeRefRecID" name="EmployeeRefRecID" value="@recId" />
+
+                        <!-- Tipo de Contacto -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Tipo de Contacto <span class="required">*</span>
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <select id="contact-ContactType" name="ContactType" class="form-control" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="0">Celular</option>
+                                    <option value="1">Correo</option>
+                                    <option value="2">Telefono</option>
+                                    <option value="3">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Valor del Contacto -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Valor <span class="required">*</span>
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <input type="text" id="contact-ContactValue" name="ContactValue" 
+                                       class="form-control" maxlength="200" required 
+                                       placeholder="Ej: 809-555-1234 o email@ejemplo.com">
+                            </div>
+                        </div>
+
+                        <!-- Contacto Principal -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Contacto Principal
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <input type="checkbox" id="contact-IsPrincipal" name="IsPrincipal" class="flat">
+                            </div>
+                        </div>
+
+                        <!-- Comentarios -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Comentario
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <textarea id="contact-Comment" name="Comment" 
+                                          class="form-control" rows="3" maxlength="500"
+                                          placeholder="Comentarios adicionales..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fa fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-save-contact">
                         <i class="fa fa-save"></i> Guardar
                     </button>
                 </div>
@@ -458,9 +578,11 @@
     @await Html.PartialAsync("~/Views/Generic/_Alerts.cshtml")
     @await Html.PartialAsync("~/Views/Generic/_Modal.cshtml")
 
-    <!-- Script del formulario de empleados -->
+    <!-- Scripts de empleados -->
     <script src="~/js/Employees/employee-form.js"></script>
-    <!-- Script de la tabla de direcciones -->
+    <!-- Script de direcciones -->
     <script src="~/js/Employees/employee-addresses.js"></script>
+    <!-- Script de contactos -->
+    <script src="~/js/Employees/employee-contacts.js"></script>
 </body>
 </html>
