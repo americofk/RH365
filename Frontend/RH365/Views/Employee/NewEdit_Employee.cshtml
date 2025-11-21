@@ -8,6 +8,7 @@
        - Tab Informacion Personal: 
            * Seccion 1 - DataTable con direcciones del empleado (CON campo Pais)
            * Seccion 2 - DataTable con contactos del empleado
+           * Seccion 3 - DataTable con documentos del empleado (CON DueDate e IsPrincipal)
        - Tab Auditoria: Campos de trazabilidad ISO 27001 en 1 COLUMNA
    Estandar: ISO 27001 - Formularios con validacion y auditoria
    ============================================================================ *@
@@ -171,12 +172,10 @@
                                                 </div>
                                             </div>
                                             
-                                            <!-- TAB 2: INFORMACION PERSONAL (Direcciones + Contactos) -->
+                                            <!-- TAB 2: INFORMACION PERSONAL (Direcciones + Contactos + Documentos) -->
                                             <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="personal-tab">
                                                 
-                                                <!-- ========================================== -->
                                                 <!-- SECCION 1: DIRECCIONES -->
-                                                <!-- ========================================== -->
                                                 <div class="row">
                                                     <div class="col-md-12 col-sm-12 col-xs-12">
                                                         <div class="x_panel">
@@ -219,9 +218,7 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- ========================================== -->
                                                 <!-- SECCION 2: CONTACTOS -->
-                                                <!-- ========================================== -->
                                                 <div class="row">
                                                     <div class="col-md-12 col-sm-12 col-xs-12">
                                                         <div class="x_panel">
@@ -253,6 +250,49 @@
 
                                                                 <div class="table-responsive">
                                                                     <table id="employee-contacts-table" class="table table-striped table-bordered">
+                                                                        <thead></thead>
+                                                                        <tbody></tbody>
+                                                                    </table>
+                                                                </div>
+
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- SECCION 3: DOCUMENTOS -->
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <div class="x_title">
+                                                                <h2>
+                                                                    <i class="fa fa-id-card"></i> Documentos del Empleado
+                                                                </h2>
+                                                                <ul class="nav navbar-right panel_toolbox">
+                                                                    <li>
+                                                                        <button type="button" id="btn-new-document" class="btn btn-primary btn-sm">
+                                                                            <i class="fa fa-plus"></i> Nuevo Documento
+                                                                        </button>
+                                                                    </li>
+                                                                    <li>
+                                                                        <button type="button" id="btn-edit-document" class="btn btn-default btn-sm" disabled>
+                                                                            <i class="fa fa-pencil"></i> Editar
+                                                                        </button>
+                                                                    </li>
+                                                                    <li>
+                                                                        <button type="button" id="btn-delete-document" class="btn btn-danger btn-sm" disabled>
+                                                                            <i class="fa fa-trash"></i> Eliminar
+                                                                        </button>
+                                                                    </li>
+                                                                </ul>
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                <div id="documents-info-container"></div>
+
+                                                                <div class="table-responsive">
+                                                                    <table id="employee-documents-table" class="table table-striped table-bordered">
                                                                         <thead></thead>
                                                                         <tbody></tbody>
                                                                     </table>
@@ -327,9 +367,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================
-         MODAL: CREAR/EDITAR DIRECCION (CON CAMPO PAIS)
-         ======================================================================== -->
+    <!-- MODAL: CREAR/EDITAR DIRECCION (CON CAMPO PAIS) -->
     <div class="modal fade" id="modal-address" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -346,7 +384,6 @@
                         <input type="hidden" id="address-EmployeeRefRecID" name="EmployeeRefRecID" value="@recId" />
 
                         <div class="row">
-                            <!-- COLUMNA IZQUIERDA -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
@@ -396,7 +433,6 @@
                                 </div>
                             </div>
 
-                            <!-- COLUMNA DERECHA -->
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label col-md-4">
@@ -440,9 +476,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================
-         MODAL: CREAR/EDITAR CONTACTO
-         ======================================================================== -->
+    <!-- MODAL: CREAR/EDITAR CONTACTO -->
     <div class="modal fade" id="modal-contact" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -458,7 +492,6 @@
                         <input type="hidden" id="contact-RecID" name="RecID" value="0" />
                         <input type="hidden" id="contact-EmployeeRefRecID" name="EmployeeRefRecID" value="@recId" />
 
-                        <!-- Tipo de Contacto -->
                         <div class="form-group">
                             <label class="control-label col-md-4 col-sm-4 col-xs-12">
                                 Tipo de Contacto <span class="required">*</span>
@@ -474,7 +507,6 @@
                             </div>
                         </div>
 
-                        <!-- Valor del Contacto -->
                         <div class="form-group">
                             <label class="control-label col-md-4 col-sm-4 col-xs-12">
                                 Valor <span class="required">*</span>
@@ -486,7 +518,6 @@
                             </div>
                         </div>
 
-                        <!-- Contacto Principal -->
                         <div class="form-group">
                             <label class="control-label col-md-4 col-sm-4 col-xs-12">
                                 Contacto Principal
@@ -496,7 +527,6 @@
                             </div>
                         </div>
 
-                        <!-- Comentarios -->
                         <div class="form-group">
                             <label class="control-label col-md-4 col-sm-4 col-xs-12">
                                 Comentario
@@ -514,6 +544,95 @@
                         <i class="fa fa-times"></i> Cancelar
                     </button>
                     <button type="button" class="btn btn-primary" id="btn-save-contact">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREAR/EDITAR DOCUMENTO -->
+    <div class="modal fade" id="modal-document" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">
+                        <i class="fa fa-id-card"></i> 
+                        <span id="modal-document-title">Nuevo Documento</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <form id="frm-document" class="form-horizontal form-label-left">
+                        <input type="hidden" id="document-RecID" name="RecID" value="0" />
+                        <input type="hidden" id="document-EmployeeRefRecID" name="EmployeeRefRecID" value="@recId" />
+
+                        <!-- Tipo de Documento -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Tipo de Documento <span class="required">*</span>
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <select id="document-DocumentType" name="DocumentType" class="form-control" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="0">Cedula</option>
+                                    <option value="1">Pasaporte</option>
+                                    <option value="2">Residencia</option>
+                                    <option value="3">Licencia de conducir</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Numero de Documento -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Numero <span class="required">*</span>
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <input type="text" id="document-DocumentNumber" name="DocumentNumber" 
+                                       class="form-control" maxlength="50" required 
+                                       placeholder="Ej: 001-1234567-8">
+                            </div>
+                        </div>
+
+                        <!-- Fecha de Vencimiento -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Fecha Vencimiento
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <input type="date" id="document-DueDate" name="DueDate" class="form-control">
+                            </div>
+                        </div>
+
+                        <!-- Documento Principal -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Documento Principal
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <input type="checkbox" id="document-IsPrincipal" name="IsPrincipal" class="flat">
+                            </div>
+                        </div>
+
+                        <!-- Comentarios -->
+                        <div class="form-group">
+                            <label class="control-label col-md-4 col-sm-4 col-xs-12">
+                                Comentario
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <textarea id="document-Comment" name="Comment" 
+                                          class="form-control" rows="3" maxlength="500"
+                                          placeholder="Comentarios adicionales..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fa fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-save-document">
                         <i class="fa fa-save"></i> Guardar
                     </button>
                 </div>
@@ -580,9 +699,8 @@
 
     <!-- Scripts de empleados -->
     <script src="~/js/Employees/employee-form.js"></script>
-    <!-- Script de direcciones -->
     <script src="~/js/Employees/employee-addresses.js"></script>
-    <!-- Script de contactos -->
     <script src="~/js/Employees/employee-contacts.js"></script>
+    <script src="~/js/Employees/employee-documents.js"></script>
 </body>
 </html>
